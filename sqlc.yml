@@ -1,0 +1,9 @@
+version: "2"
+sql:
+  - engine: "sqlite"
+    queries: "sql/queries.sql"
+    schema: "sql/migration-1.sql"
+    gen:
+      go:
+        package: "repository"
+        out: "internal/repository"
