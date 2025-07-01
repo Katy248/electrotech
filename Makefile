@@ -1,4 +1,8 @@
-protogen:
-	protoc --go_out=. --go_opt=paths=source_relative \
-		--go-grpc_out=. --go-grpc_opt=paths=source_relative \
-    	proto/service.proto
+.PHONY: test run
+
+test:
+	go test ./...
+
+run:
+	sqlc generate
+	go run cmd/server/main.go
