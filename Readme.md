@@ -1,5 +1,7 @@
 # Electrotech
 
+> We all fucked up with nothing to do
+
 ## Development
 
 **Requirements:**
