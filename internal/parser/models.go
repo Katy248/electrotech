@@ -4,16 +4,15 @@ import "encoding/xml"
 
 // imports
 
-type BaseUnit struct {
+type baseUnit struct {
 	XMLName                   xml.Name `xml:"БазоваяЕдиница"`
 	Code                      int      `xml:"Код,attr"`
 	FullName                  string   `xml:"ПолноеНаименование,attr"`
 	InternationalAbbreviation string   `xml:"МеждународноеСокращение,attr"`
 }
 
-type Product struct {
-	Id             string `xml:"Ид"`
-	ProductUnit    BaseUnit
+type product struct {
+	Id             string          `xml:"Ид"`
 	ArticleNumber  string          `xml:"Артикул"`
 	Code           string          `xml:"Код"`
 	Name           string          `xml:"Наименование"`
@@ -22,40 +21,50 @@ type Product struct {
 	Description    string          `xml:"Описание"`
 	Country        string          `xml:"Страна"`
 	Image          string          `xml:"Картинка"`
-	PropertyValues []PropertyValue `xml:"ЗначенияСвойств>ЗначенияСвойства"`
+	PropertyValues []propertyValue `xml:"ЗначенияСвойств>ЗначенияСвойства"`
+	ProductUnit    baseUnit
 }
-type PropertyValue struct {
+type group struct {
+	Id   string `xml:"Ид"`
+	Name string `xml:"Наименование"`
+}
+type classifier struct {
+	Groups []group `xml:"Группы>Группа"`
+}
+
+type propertyValue struct {
 	Id    string `xml:"Ид"`
 	Value string `xml:"Значение"`
 }
-type Catalog struct {
+type catalog struct {
 	ContainsOnlyChanges bool      `xml:"СодержитТолькоИзменения,attr"`
-	Products            []Product `xml:"Товары>Товар"`
+	Products            []product `xml:"Товары>Товар"`
 }
-type ImportsModel struct {
-	Catalog Catalog `xml:"Каталог"`
+type importsModel struct {
+	Catalog    catalog    `xml:"Каталог"`
+	Classifier classifier `xml:"Классификатор"`
 }
 
 // offers
 
-type Price struct {
+type price struct {
 	Presentation string  `xml:"Представление"`
 	PriceTypeId  string  `xml:"ИдТипаЦены"`
-	Value        float64 `xml:"ЦенаЗаЕдиницу"`
+	Value        float32 `xml:"ЦенаЗаЕдиницу"`
 	Currency     string  `xml:"Валюта"`
 	Unit         string  `xml:"Единица"`
 	Ratio        int     `xml:"Коэффициент"`
 }
 
-type Offer struct {
+type offer struct {
 	Id            string `xml:"Ид"`
 	Name          string `xml:"Наименование"`
-	Unit          BaseUnit
+	Unit          baseUnit
 	ArticleNumber string  `xml:"Артикул"`
 	Count         int     `xml:"Количество"`
-	Prices        []Price `xml:"Цены>Цена"`
+	Prices        []price `xml:"Цены>Цена"`
 }
-type PriceType struct {
+type priceType struct {
 	Id       string `xml:"Ид"`
 	Name     string `xml:"Наименование"`
 	Currency string `xml:"Валюта"`
@@ -65,13 +74,13 @@ type PriceType struct {
 	} `xml:"Налог"`
 }
 
-type OffersPackage struct {
+type offersPackage struct {
 	XMLName             xml.Name    `xml:"ПакетПредложений"`
-	Offers              []Offer     `xml:"Предложения>Предложение"`
+	Offers              []offer     `xml:"Предложения>Предложение"`
 	ContainsOnlyChanges bool        `xml:"СодержитТолькоИзменения,attr"`
-	PriceTypes          []PriceType `xml:"ТипыЦен>ТипЦены"`
+	PriceTypes          []priceType `xml:"ТипыЦен>ТипЦены"`
 }
 
-type OffersModel struct {
-	Package OffersPackage `xml:"ПакетПредложений"`
+type offersModel struct {
+	Package offersPackage `xml:"ПакетПредложений"`
 }

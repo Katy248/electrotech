@@ -1,8 +1,10 @@
 package parser
 
 import (
+	"electrotech/internal/models"
 	"encoding/xml"
 	"errors"
+	"fmt"
 	"os"
 )
 
@@ -41,19 +43,56 @@ func fileExists(filename string) bool {
 	return true
 }
 
-func (p *Parser) Parse() error {
-	return nil
+func (p *Parser) Parse() ([]models.Product, error) {
+	imp, err := p.parseImports()
+	if err != nil {
+		return nil, err
+	}
+	off, err := p.parseOffers()
+	if err != nil {
+		return nil, err
+	}
+
+	products, err := mapModels(off, imp)
+	if err != nil {
+		return nil, fmt.Errorf("failed map xml data: %s", err)
+	}
+
+	return products, nil
 }
 
-func parseImportsData(data []byte) (*ImportsModel, error) {
-	var model ImportsModel
+func getDataFromFile(filepath string) ([]byte, error) {
+	data, err := os.ReadFile(filepath)
+	return data, err
+}
+
+func (p *Parser) parseImports() (*importsModel, error) {
+	data, err := getDataFromFile(getImportsFilepath(p.dir))
+	if err != nil {
+		return nil, err
+	}
+
+	return parseImportsData(data)
+}
+
+func (p *Parser) parseOffers() (*offersModel, error) {
+	data, err := getDataFromFile(getOffersFilepath(p.dir))
+	if err != nil {
+		return nil, err
+	}
+
+	return parseOffersData(data)
+}
+
+func parseImportsData(data []byte) (*importsModel, error) {
+	var model importsModel
 	err := xml.Unmarshal(data, &model)
 
 	return &model, err
 }
 
-func parseOffersData(data []byte) (*OffersModel, error) {
-	var model OffersModel
+func parseOffersData(data []byte) (*offersModel, error) {
+	var model offersModel
 	err := xml.Unmarshal(data, &model)
 
 	return &model, err
