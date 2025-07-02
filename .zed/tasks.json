@@ -1,0 +1,13 @@
+[
+  {
+    "label": "run",
+    "command": "go run cmd/server/main.go",
+    "use_new_terminal": false,
+    "hide": "on_success"
+  },
+  {
+    "label": "test",
+    "command": "go test ./...",
+    "use_new_terminal": false
+  }
+]
