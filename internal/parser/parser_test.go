@@ -33,8 +33,7 @@ func TestParseImportsData(t *testing.T) {
 	}
 
 	if len(result.Catalog.Products) <= 0 {
-		t.Error("Products failed to parse (should be not zero items)")
-		return
+		t.Fatal("Products failed to parse (should be not zero items)")
 	}
 
 	firstProduct := result.Catalog.Products[0]
@@ -44,15 +43,13 @@ func TestParseImportsData(t *testing.T) {
 	}
 
 	if len(firstProduct.GroupIds) <= 0 {
-		t.Error("Groups failed to parse (should be not zero items)")
-		return
+		t.Fatal("Groups failed to parse (should be not zero items)")
 	}
 	if firstProduct.GroupIds[0] != "GroupId" {
 		t.Error("Groups failed to parse (should be 'GroupId')")
 	}
 	if len(firstProduct.PropertyValues) <= 0 {
-		t.Error("PropertyValues failed to parse (should be not zero items)")
-		return
+		t.Fatal("PropertyValues failed to parse (should be not zero items)")
 	}
 	if firstProduct.PropertyValues[0].Id != "PropValId" {
 		t.Error("PropertyValues failed to parse: Id should be 'PropValId'")
@@ -75,13 +72,11 @@ func TestParseOffersData(t *testing.T) {
 	}
 
 	if len(result.Package.Offers) != 3 {
-		t.Errorf("Offers failed to parse, there should be 3 offers but found %d", len(result.Package.Offers))
-		return
+		t.Fatalf("Offers failed to parse, there should be 3 offers but found %d", len(result.Package.Offers))
 	}
 
 	if len(result.Package.PriceTypes) != 1 {
-		t.Errorf("Failed to parse PriceTypes found %d, expected 1", len(result.Package.PriceTypes))
-		return
+		t.Fatalf("Failed to parse PriceTypes found %d, expected 1", len(result.Package.PriceTypes))
 	}
 
 }

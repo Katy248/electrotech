@@ -1,8 +1,18 @@
 package models
 
+type ParameterType = string
+
+const (
+	ParameterTypeNumber     ParameterType = "number"
+	ParameterTypeString     ParameterType = "str"
+	ParameterTypeDictionary ParameterType = "dict"
+)
+
 type Parameter struct {
-	Name  string
-	Value string
+	Name string        `json:"name"`
+	Type ParameterType `json:"type"`
+	// Value string
+	Values []string `json:"values,omitzero"`
 }
 
 type Product struct {
