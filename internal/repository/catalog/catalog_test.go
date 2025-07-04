@@ -19,6 +19,17 @@ func TestNewCatalogBadDir(t *testing.T) {
 	}
 }
 
+func testGetNewCatalog(t *testing.T) *CatalogRepo {
+	currentDir, _ := os.Getwd()
+	t.Logf("Current dir: %s", currentDir)
+	os.Setenv("DATA_DIR", "../../../example")
+	catalog, err := New()
+	if err != nil {
+		t.Fatalf("Failed create repository: %s", err)
+	}
+	return catalog
+}
+
 func TestNewCatalog(t *testing.T) {
 	currentDir, _ := os.Getwd()
 	t.Logf("Current dir: %s", currentDir)

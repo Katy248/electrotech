@@ -11,6 +11,26 @@ type baseUnit struct {
 	InternationalAbbreviation string   `xml:"МеждународноеСокращение,attr"`
 }
 
+type property struct {
+	Id       string            `xml:"Ид"`
+	Name     string            `xml:"Наименование"`
+	Type     propertyType      `xml:"ТипЗначений"`
+	Variants []handbookVariant `xml:"ВариантыЗначений>Справочник"`
+}
+
+type handbookVariant struct {
+	Id    string `xml:"Ид"`
+	Value string `xml:"Значение"`
+}
+
+type propertyType string
+
+const (
+	propertyTypeString   propertyType = "Строка"
+	propertyTypeNumber   propertyType = "Число"
+	propertyTypeHandbook propertyType = "Справочник"
+)
+
 type product struct {
 	Id             string          `xml:"Ид"`
 	ArticleNumber  string          `xml:"Артикул"`
@@ -29,7 +49,8 @@ type group struct {
 	Name string `xml:"Наименование"`
 }
 type classifier struct {
-	Groups []group `xml:"Группы>Группа"`
+	Groups     []group    `xml:"Группы>Группа"`
+	Properties []property `xml:"Свойства>Свойство"`
 }
 
 type propertyValue struct {

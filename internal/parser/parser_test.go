@@ -58,6 +58,14 @@ func TestParseImportsData(t *testing.T) {
 		t.Error("PropertyValues failed to parse: Values should be 'PropValVal'")
 	}
 
+	for _, prop := range result.Classifier.Properties {
+		if prop.Type == propertyTypeHandbook {
+			if len(prop.Variants) <= 0 {
+				t.Errorf("Property %s of type handbook but has no variants", prop.Name)
+			}
+		}
+	}
+
 }
 
 func TestParseOffersData(t *testing.T) {

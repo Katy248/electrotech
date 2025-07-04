@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func mapModels(offers *offersModel, imports *importsModel) ([]models.Product, error) {
+func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, error) {
 	products := make([]models.Product, len(imports.Catalog.Products))
 	for _, xmlProduct := range imports.Catalog.Products {
 		p := models.Product{
@@ -34,8 +34,25 @@ func mapModels(offers *offersModel, imports *importsModel) ([]models.Product, er
 		p.Count = count
 
 		products = append(products, p)
+
+		for _, prop := range xmlProduct.PropertyValues {
+			propertyFull, err := getProperty(imports.Classifier.Properties, prop.Id)
+			if err != nil {
+				return products, fmt.Errorf("failed get property id = '%s': %s", prop.Id, err)
+			}
+			p.Parameters[propertyFull.Name] = prop.Value
+		}
 	}
 	return products, nil
+}
+
+func getProperty(props []property, id string) (property, error) {
+	for _, prop := range props {
+		if prop.Id == id {
+			return prop, nil
+		}
+	}
+	return property{}, fmt.Errorf("there is no property with id = '%s'", id)
 }
 
 func getPrice(p product, offers *offersModel) (float32, error) {

@@ -10,6 +10,9 @@ import (
 
 type Parser struct {
 	dir string
+
+	offers  *offersModel
+	imports *importsModel
 }
 
 var (
@@ -43,17 +46,29 @@ func fileExists(filename string) bool {
 	return true
 }
 
-func (p *Parser) Parse() ([]models.Product, error) {
-	imp, err := p.parseImports()
-	if err != nil {
-		return nil, err
-	}
-	off, err := p.parseOffers()
-	if err != nil {
-		return nil, err
+func (p *Parser) parse() error {
+	if p.imports == nil {
+		imp, err := p.parseImports()
+		if err != nil {
+			return err
+		}
+		p.imports = imp
 	}
 
-	products, err := mapModels(off, imp)
+	if p.offers == nil {
+		off, err := p.parseOffers()
+		if err != nil {
+			return err
+		}
+		p.offers = off
+	}
+	return nil
+}
+
+func (p *Parser) GetProducts() ([]models.Product, error) {
+	p.parse()
+
+	products, err := mapProducts(p.offers, p.imports)
 	if err != nil {
 		return nil, fmt.Errorf("failed map xml data: %s", err)
 	}

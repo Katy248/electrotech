@@ -1,20 +1,5 @@
 package models
 
-type ParameterType = string
-
-const (
-	ParameterTypeNumber     ParameterType = "number"
-	ParameterTypeString     ParameterType = "str"
-	ParameterTypeDictionary ParameterType = "dict"
-)
-
-type Parameter struct {
-	Name string        `json:"name"`
-	Type ParameterType `json:"type"`
-	// Value string
-	Values []string `json:"values,omitzero"`
-}
-
 type Product struct {
 	Id            string
 	Name          string
@@ -24,4 +9,7 @@ type Product struct {
 	ArticleNumber string
 	Count         int
 	Manufacturer  string
+	Parameters    ParametersList
 }
+
+type ParametersList = map[string]string
