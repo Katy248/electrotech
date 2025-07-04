@@ -7,3 +7,10 @@ sql:
       go:
         package: "users"
         out: "internal/repository/users"
+  - engine: "sqlite"
+    queries: "sql/order-queries.sql"
+    schema: "sql/migration-1.sql"
+    gen:
+      go:
+        package: "orders"
+        out: "internal/repository/orders"
