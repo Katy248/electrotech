@@ -33,17 +33,38 @@ func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, 
 		}
 		p.Count = count
 
-		products = append(products, p)
-
+		p.Parameters = make(map[string]string)
 		for _, prop := range xmlProduct.PropertyValues {
 			propertyFull, err := getProperty(imports.Classifier.Properties, prop.Id)
 			if err != nil {
 				return products, fmt.Errorf("failed get property id = '%s': %s", prop.Id, err)
 			}
-			p.Parameters[propertyFull.Name] = prop.Value
+			if propertyFull.Type == propertyTypeHandbook && prop.Value != "" {
+				val, err := getPropertyVariantValue(prop.Value, propertyFull)
+				if err != nil {
+					return products, fmt.Errorf("failed get property value id = '%s': %s", prop.Value, err)
+				}
+				p.Parameters[propertyFull.Name] = val
+			} else {
+				p.Parameters[propertyFull.Name] = prop.Value
+			}
+			fmt.Println(propertyFull.Name, p.Parameters[propertyFull.Name])
+
 		}
+
+		products = append(products, p)
 	}
 	return products, nil
+}
+
+func getPropertyVariantValue(valueId string, p property) (string, error) {
+	for _, v := range p.Variants {
+		if v.Id == valueId {
+			return v.Value, nil
+		}
+	}
+	return "", fmt.Errorf("there is no variant value with id = '%s'", valueId)
+
 }
 
 func getProperty(props []property, id string) (property, error) {

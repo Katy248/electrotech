@@ -19,7 +19,7 @@ type property struct {
 }
 
 type handbookVariant struct {
-	Id    string `xml:"Ид"`
+	Id    string `xml:"ИдЗначения"`
 	Value string `xml:"Значение"`
 }
 
