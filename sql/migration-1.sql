@@ -4,9 +4,12 @@ CREATE TABLE IF NOT EXISTS users (
     surname VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
+    phone_number VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
+    -- Not necessary for viewing data
     company_name VARCHAR(255),
     company_inn VARCHAR(255),
+    company_address VARCHAR(255),
     position_in_company VARCHAR(255) 
 );
 

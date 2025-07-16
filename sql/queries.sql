@@ -1,47 +1,65 @@
--- name: GetUserByEmail :one
+-- name: GetByEmail :one
 
 SELECT
     *
 FROM
     users u
 WHERE
-    u.email = @email ;
+    u.email = @email;
     
--- name: InsertNewUser :exec
+-- name: InsertNew :exec
 
 INSERT INTO users (
     email,
     password_hash,
     first_name,
     surname,
-    last_name
+    last_name,
+    phone_number
 ) VALUES (
     @email,
-    @passwordHash,
-    @firstName,
+    @password_hash,
+    @first_name,
     @surname,
-    @lastName
+    @last_name,
+    @phone_number
 );
 
--- name: UpdateUserEmail :exec
+-- name: UpdateEmail :exec
 
 UPDATE users
 SET
     email = @email
 WHERE
-    id = @id ;
+    id = @id;
 
--- name: UpdateUserPassword :exec
+-- name: UpdatePassword :exec
 
 UPDATE users
 SET
-    password_hash = @passwordHash
+    password_hash = @password_hash
 WHERE
-    id = @id ;
+    id = @id;
 
--- name: GetUserOrders :many
+-- name: UpdateData :exec
 
-SELECT * 
-FROM orders o 
-WHERE o.user_id = @userId
-LIMIT 40 * @page, 40;
+UPDATE users
+SET
+    first_name = @first_name,
+    surname = @surname,
+    last_name = @last_name,
+    phone_number = @phone_number
+WHERE
+    id = @id;
+
+-- name: UpdateCompanyData :exec
+
+UPDATE users
+SET
+    company_name = company_name,
+    company_inn = company_inn,
+    company_address = company_address,
+    position_in_company = position_in_company
+WHERE
+    id = @id;
+

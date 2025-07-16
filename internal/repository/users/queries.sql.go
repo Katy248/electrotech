@@ -9,18 +9,18 @@ import (
 	"context"
 )
 
-const getUserByEmail = `-- name: GetUserByEmail :one
+const getByEmail = `-- name: GetByEmail :one
 
 SELECT
-    id, first_name, surname, last_name, email, password_hash, company_name, company_inn, position_in_company
+    id, first_name, surname, last_name, email, phone_number, password_hash, company_name, company_inn, company_address, position_in_company
 FROM
     users u
 WHERE
     u.email = ?1
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
+func (q *Queries) GetByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getByEmail, email)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -28,96 +28,105 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Surname,
 		&i.LastName,
 		&i.Email,
+		&i.PhoneNumber,
 		&i.PasswordHash,
 		&i.CompanyName,
 		&i.CompanyInn,
+		&i.CompanyAddress,
 		&i.PositionInCompany,
 	)
 	return i, err
 }
 
-const getUserOrders = `-- name: GetUserOrders :many
-;
-
-
-SELECT id, user_id, creation_date, total_price 
-FROM orders o 
-WHERE o.user_id = ?1
-LIMIT 40 * ?2, 40
-`
-
-type GetUserOrdersParams struct {
-	UserId int64
-	Page   interface{}
-}
-
-func (q *Queries) GetUserOrders(ctx context.Context, arg GetUserOrdersParams) ([]Order, error) {
-	rows, err := q.db.QueryContext(ctx, getUserOrders, arg.UserId, arg.Page)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Order
-	for rows.Next() {
-		var i Order
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.CreationDate,
-			&i.TotalPrice,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const insertNewUser = `-- name: InsertNewUser :exec
-;
-    
+const insertNew = `-- name: InsertNew :exec
 
 INSERT INTO users (
     email,
     password_hash,
     first_name,
     surname,
-    last_name
+    last_name,
+    phone_number
 ) VALUES (
     ?1,
     ?2,
     ?3,
     ?4,
-    ?5
+    ?5,
+    ?6
 )
 `
 
-type InsertNewUserParams struct {
+type InsertNewParams struct {
 	Email        string
 	PasswordHash string
 	FirstName    string
 	Surname      string
 	LastName     string
+	PhoneNumber  string
 }
 
-func (q *Queries) InsertNewUser(ctx context.Context, arg InsertNewUserParams) error {
-	_, err := q.db.ExecContext(ctx, insertNewUser,
+func (q *Queries) InsertNew(ctx context.Context, arg InsertNewParams) error {
+	_, err := q.db.ExecContext(ctx, insertNew,
 		arg.Email,
 		arg.PasswordHash,
 		arg.FirstName,
 		arg.Surname,
 		arg.LastName,
+		arg.PhoneNumber,
 	)
 	return err
 }
 
-const updateUserEmail = `-- name: UpdateUserEmail :exec
+const updateCompanyData = `-- name: UpdateCompanyData :exec
+
+UPDATE users
+SET
+    company_name = company_name,
+    company_inn = company_inn,
+    company_address = company_address,
+    position_in_company = position_in_company
+WHERE
+    id = ?1
+`
+
+func (q *Queries) UpdateCompanyData(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, updateCompanyData, id)
+	return err
+}
+
+const updateData = `-- name: UpdateData :exec
+
+UPDATE users
+SET
+    first_name = ?1,
+    surname = ?2,
+    last_name = ?3,
+    phone_number = ?4
+WHERE
+    id = ?5
+`
+
+type UpdateDataParams struct {
+	FirstName   string
+	Surname     string
+	LastName    string
+	PhoneNumber string
+	ID          int64
+}
+
+func (q *Queries) UpdateData(ctx context.Context, arg UpdateDataParams) error {
+	_, err := q.db.ExecContext(ctx, updateData,
+		arg.FirstName,
+		arg.Surname,
+		arg.LastName,
+		arg.PhoneNumber,
+		arg.ID,
+	)
+	return err
+}
+
+const updateEmail = `-- name: UpdateEmail :exec
 
 UPDATE users
 SET
@@ -126,19 +135,17 @@ WHERE
     id = ?2
 `
 
-type UpdateUserEmailParams struct {
+type UpdateEmailParams struct {
 	Email string
 	ID    int64
 }
 
-func (q *Queries) UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams) error {
-	_, err := q.db.ExecContext(ctx, updateUserEmail, arg.Email, arg.ID)
+func (q *Queries) UpdateEmail(ctx context.Context, arg UpdateEmailParams) error {
+	_, err := q.db.ExecContext(ctx, updateEmail, arg.Email, arg.ID)
 	return err
 }
 
-const updateUserPassword = `-- name: UpdateUserPassword :exec
-;
-
+const updatePassword = `-- name: UpdatePassword :exec
 
 UPDATE users
 SET
@@ -147,12 +154,12 @@ WHERE
     id = ?2
 `
 
-type UpdateUserPasswordParams struct {
+type UpdatePasswordParams struct {
 	PasswordHash string
 	ID           int64
 }
 
-func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
-	_, err := q.db.ExecContext(ctx, updateUserPassword, arg.PasswordHash, arg.ID)
+func (q *Queries) UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error {
+	_, err := q.db.ExecContext(ctx, updatePassword, arg.PasswordHash, arg.ID)
 	return err
 }
