@@ -5,11 +5,13 @@ import (
 	"log"
 	"os"
 
+	"electrotech/internal/handlers/auth"
 	catalogHandlers "electrotech/internal/handlers/catalog"
 	"electrotech/internal/handlers/user"
 	"electrotech/internal/repository/catalog"
 	usersRepository "electrotech/internal/repository/users"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	_ "modernc.org/sqlite"
@@ -31,6 +33,9 @@ func main() {
 	usersRepo := usersRepository.New(db)
 
 	server := gin.Default()
+	// Enables cors
+	server.Use(cors.Default())
+
 	{
 		api := server.Group("/api")
 		{
@@ -38,12 +43,31 @@ func main() {
 			if err != nil {
 				log.Fatalf("Error creating catalog repository: %v", err)
 			}
-			products := api.Group("/products")
-			products.GET("/all", catalogHandlers.GetProducts(catalogRepo))
 
-			usersGroup := api.Group("/user")
-			usersGroup.POST("/register", user.RegisterHandler(usersRepo))
-			usersGroup.POST("/login", user.LoginHandler(usersRepo))
+			{
+				products := api.Group("/products")
+				products.GET("/all", catalogHandlers.GetProducts(catalogRepo))
+			}
+
+			{
+				authGroup := api.Group("/auth")
+				authGroup.POST("/login", auth.LoginHandler(usersRepo))
+				authGroup.POST("/register", auth.RegisterHandler(usersRepo))
+				authGroup.POST("/refresh", auth.Refresh(usersRepo))
+			}
+
+			{
+				usersGroup := api.Group("/user")
+				usersGroup.Use(auth.AuthMiddleware())
+
+				usersGroup.POST("/change-password", user.ChangePassword(usersRepo))
+				usersGroup.POST("/change-email", user.ChangeEmail(usersRepo))
+				usersGroup.POST("/change-phone", user.ChangePhoneNumber(usersRepo))
+				usersGroup.POST("/update-data", user.UpdateUserData(usersRepo))
+				usersGroup.POST("/get-data", user.GetData(usersRepo))
+				usersGroup.POST("/update-company-data", user.UpdateCompanyData(usersRepo))
+				usersGroup.POST("/get-company-data", user.GetCompanyData(usersRepo))
+			}
 		}
 
 	}

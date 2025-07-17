@@ -1,22 +1,27 @@
 package user
 
-type RegisterRequest struct {
-	Email       string `json:"email" binding:"required,email"`
-	Password    string `json:"password" binding:"required,min=8"`
-	FirstName   string `json:"first_name" binding:"required"`
-	Surname     string `json:"surname" binding:"required"`
-	LastName    string `json:"last_name"`
+type ChangePasswordRequest struct {
+	OldPassword string `json:"old_password" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required,min=8"`
+}
+
+type ChangeEmailRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+type ChangePhoneNumberRequest struct {
 	PhoneNumber string `json:"phone_number" binding:"required"`
 }
 
-type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
+type UpdateUserDataRequest struct {
+	FirstName string `json:"first_name" binding:"required"`
+	Surname   string `json:"surname" binding:"required"`
+	LastName  string `json:"last_name" binding:"required"`
 }
 
-type AuthResponse struct {
-	Token     string `json:"token"`
-	Email     string `json:"email"`
-	FirstName string `json:"first_name"`
-	Surname   string `json:"surname"`
+type UpdateCompanyDataRequest struct {
+	CompanyName       string `json:"company_name" binding:"required"`
+	CompanyINN        string `json:"company_inn" binding:"required"`
+	CompanyAddress    string `json:"company_address" binding:"required"`
+	PositionInCompany string `json:"position_in_company" binding:"required"`
 }

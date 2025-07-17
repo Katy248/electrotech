@@ -7,6 +7,7 @@ package users
 
 import (
 	"context"
+	"database/sql"
 )
 
 const getByEmail = `-- name: GetByEmail :one
@@ -30,6 +31,67 @@ func (q *Queries) GetByEmail(ctx context.Context, email string) (User, error) {
 		&i.Email,
 		&i.PhoneNumber,
 		&i.PasswordHash,
+		&i.CompanyName,
+		&i.CompanyInn,
+		&i.CompanyAddress,
+		&i.PositionInCompany,
+	)
+	return i, err
+}
+
+const getById = `-- name: GetById :one
+
+SELECT
+    id, first_name, surname, last_name, email, phone_number, password_hash, company_name, company_inn, company_address, position_in_company
+FROM
+    users u
+WHERE
+    u.id = ?1
+`
+
+func (q *Queries) GetById(ctx context.Context, id int64) (User, error) {
+	row := q.db.QueryRowContext(ctx, getById, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.Surname,
+		&i.LastName,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.PasswordHash,
+		&i.CompanyName,
+		&i.CompanyInn,
+		&i.CompanyAddress,
+		&i.PositionInCompany,
+	)
+	return i, err
+}
+
+const getCompanyData = `-- name: GetCompanyData :one
+
+SELECT
+    company_name,
+    company_inn,
+    company_address,
+    position_in_company
+FROM
+    users
+WHERE
+    email = ?1
+`
+
+type GetCompanyDataRow struct {
+	CompanyName       sql.NullString
+	CompanyInn        sql.NullString
+	CompanyAddress    sql.NullString
+	PositionInCompany sql.NullString
+}
+
+func (q *Queries) GetCompanyData(ctx context.Context, email string) (GetCompanyDataRow, error) {
+	row := q.db.QueryRowContext(ctx, getCompanyData, email)
+	var i GetCompanyDataRow
+	err := row.Scan(
 		&i.CompanyName,
 		&i.CompanyInn,
 		&i.CompanyAddress,
@@ -82,16 +144,30 @@ const updateCompanyData = `-- name: UpdateCompanyData :exec
 
 UPDATE users
 SET
-    company_name = company_name,
-    company_inn = company_inn,
-    company_address = company_address,
-    position_in_company = position_in_company
+    company_name = ?1,
+    company_inn = ?2,
+    company_address = ?3,
+    position_in_company = ?4
 WHERE
-    id = ?1
+    email = ?5
 `
 
-func (q *Queries) UpdateCompanyData(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, updateCompanyData, id)
+type UpdateCompanyDataParams struct {
+	CompanyName       sql.NullString
+	CompanyInn        sql.NullString
+	CompanyAddress    sql.NullString
+	PositionInCompany sql.NullString
+	Email             string
+}
+
+func (q *Queries) UpdateCompanyData(ctx context.Context, arg UpdateCompanyDataParams) error {
+	_, err := q.db.ExecContext(ctx, updateCompanyData,
+		arg.CompanyName,
+		arg.CompanyInn,
+		arg.CompanyAddress,
+		arg.PositionInCompany,
+		arg.Email,
+	)
 	return err
 }
 
@@ -101,18 +177,16 @@ UPDATE users
 SET
     first_name = ?1,
     surname = ?2,
-    last_name = ?3,
-    phone_number = ?4
+    last_name = ?3
 WHERE
-    id = ?5
+    email = ?4
 `
 
 type UpdateDataParams struct {
-	FirstName   string
-	Surname     string
-	LastName    string
-	PhoneNumber string
-	ID          int64
+	FirstName string
+	Surname   string
+	LastName  string
+	Email     string
 }
 
 func (q *Queries) UpdateData(ctx context.Context, arg UpdateDataParams) error {
@@ -120,8 +194,7 @@ func (q *Queries) UpdateData(ctx context.Context, arg UpdateDataParams) error {
 		arg.FirstName,
 		arg.Surname,
 		arg.LastName,
-		arg.PhoneNumber,
-		arg.ID,
+		arg.Email,
 	)
 	return err
 }
@@ -151,15 +224,34 @@ UPDATE users
 SET
     password_hash = ?1
 WHERE
-    id = ?2
+    email = ?2
 `
 
 type UpdatePasswordParams struct {
 	PasswordHash string
-	ID           int64
+	Email        string
 }
 
 func (q *Queries) UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error {
-	_, err := q.db.ExecContext(ctx, updatePassword, arg.PasswordHash, arg.ID)
+	_, err := q.db.ExecContext(ctx, updatePassword, arg.PasswordHash, arg.Email)
+	return err
+}
+
+const updatePhoneNumber = `-- name: UpdatePhoneNumber :exec
+
+UPDATE users
+SET
+    phone_number = ?1
+WHERE
+    email = ?2
+`
+
+type UpdatePhoneNumberParams struct {
+	PhoneNumber string
+	Email       string
+}
+
+func (q *Queries) UpdatePhoneNumber(ctx context.Context, arg UpdatePhoneNumberParams) error {
+	_, err := q.db.ExecContext(ctx, updatePhoneNumber, arg.PhoneNumber, arg.Email)
 	return err
 }

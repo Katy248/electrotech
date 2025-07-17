@@ -1,6 +1,7 @@
 package user
 
 import (
+	"database/sql"
 	"electrotech/internal/repository/users"
 	"log"
 	"net/http"
@@ -9,106 +10,227 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func RegisterHandler(repo *users.Queries) gin.HandlerFunc {
+func ChangePassword(repo *users.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req RegisterRequest
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		// Проверяем, существует ли пользователь с таким email
-		existingUser, err := repo.GetByEmail(c.Request.Context(), req.Email)
-		if err == nil && existingUser.Email != "" {
-			c.JSON(http.StatusConflict, gin.H{"error": "user with this email already exists"})
-			return
-		}
-
-		// Хешируем пароль
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash password"})
-			return
-		}
-
-		// Создаем нового пользователя
-		err = repo.InsertNew(c.Request.Context(), users.InsertNewParams{
-			Email:        req.Email,
-			PasswordHash: string(hashedPassword),
-			FirstName:    req.FirstName,
-			Surname:      req.Surname,
-			LastName:     req.LastName,
-			PhoneNumber:  req.PhoneNumber,
-		})
-
-		log.Printf("Error creating user: %v", err)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create user"})
-			return
-		}
-
-		c.JSON(http.StatusCreated, gin.H{"message": "user created successfully"})
-	}
-}
-
-func LoginHandler(repo *users.Queries) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var req LoginRequest
+		var req ChangePasswordRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			log.Printf("Error binding request: %v", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		user, err := repo.GetByEmail(c.Request.Context(), req.Email)
+		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
 		if err != nil || user.Email == "" {
-			log.Printf("Error getting user by email '%s': %v", req.Email, err)
+			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 			return
 		}
 
-		err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password))
+		err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.OldPassword))
 		if err != nil {
 			log.Printf("Error comparing password: %v", err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 			return
 		}
 
-		token, err := GenerateToken(user.Email, user.ID)
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 		if err != nil {
-			log.Printf("Error generating token: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate token"})
+			log.Printf("Error hashing password: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash password"})
 			return
 		}
 
-		response := AuthResponse{
-			Token:     token,
-			Email:     user.Email,
-			FirstName: user.FirstName,
-			Surname:   user.Surname,
+		err = repo.UpdatePassword(c.Request.Context(), users.UpdatePasswordParams{
+			Email:        c.GetString("email"),
+			PasswordHash: string(hashedPassword),
+		})
+		if err != nil {
+			log.Printf("Error updating password: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update password"})
+			return
 		}
 
-		c.JSON(http.StatusOK, response)
+		c.JSON(http.StatusOK, gin.H{"message": "password changed successfully"})
 	}
 }
-func AuthMiddleware() gin.HandlerFunc {
+
+func ChangeEmail(repo *users.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenString := c.GetHeader("Authorization")
-		if tokenString == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization header required"})
-			c.Abort()
+		var req ChangeEmailRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			log.Printf("Error binding request: %v", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		claims, err := ValidateToken(tokenString)
+		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
+		if err != nil || user.Email == "" {
+			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+			return
+		}
+
+		err = repo.UpdateEmail(c.Request.Context(), users.UpdateEmailParams{
+			Email: req.Email,
+			ID:    user.ID,
+		})
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
-			c.Abort()
+			log.Printf("Error updating email: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update email"})
 			return
 		}
 
-		c.Set("email", claims.Email)
-		c.Set("user_id", claims.UserID)
-		c.Next()
+		c.JSON(http.StatusOK, gin.H{"message": "email changed successfully"})
+
+		log.Printf("// TODO: should implement refresh tokens")
+		log.Printf("// TODO: should implement refresh tokens")
+		log.Printf("// TODO: should implement refresh tokens")
+		log.Printf("// TODO: should implement refresh tokens")
+		log.Printf("// TODO: should implement refresh tokens")
 	}
+}
+
+func ChangePhoneNumber(repo *users.Queries) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req ChangePhoneNumberRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			log.Printf("Error binding request: %v", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
+		if err != nil || user.Email == "" {
+			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+			return
+		}
+
+		err = repo.UpdatePhoneNumber(c.Request.Context(), users.UpdatePhoneNumberParams{
+			PhoneNumber: req.PhoneNumber,
+			Email:       c.GetString("email"),
+		})
+		if err != nil {
+			log.Printf("Error updating phone number: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update phone number"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "phone number changed successfully"})
+	}
+}
+
+func UpdateUserData(repo *users.Queries) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req UpdateUserDataRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
+		if err != nil || user.Email == "" {
+			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+			return
+		}
+
+		err = repo.UpdateData(c.Request.Context(), users.UpdateDataParams{
+			Email:     c.GetString("email"),
+			FirstName: req.FirstName,
+			LastName:  req.LastName,
+			Surname:   req.Surname,
+		})
+		if err != nil {
+			log.Printf("Error updating user data: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user data"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "User data updated successfully"})
+	}
+}
+
+func UpdateCompanyData(repo *users.Queries) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req UpdateCompanyDataRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
+		if err != nil || user.Email == "" {
+			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+			return
+		}
+
+		err = repo.UpdateCompanyData(c.Request.Context(), users.UpdateCompanyDataParams{
+			Email:             c.GetString("email"),
+			CompanyName:       sql.NullString{String: req.CompanyName, Valid: true},
+			CompanyInn:        sql.NullString{String: req.CompanyINN, Valid: true},
+			CompanyAddress:    sql.NullString{String: req.CompanyAddress, Valid: true},
+			PositionInCompany: sql.NullString{String: req.PositionInCompany, Valid: true},
+		})
+		if err != nil {
+			log.Printf("Error updating company data: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update company data"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Company data updated successfully"})
+	}
+}
+func GetData(repo *users.Queries) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
+		if err != nil || user.Email == "" {
+			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"email":        user.Email,
+			"phone_number": user.PhoneNumber,
+			"first_name":   user.FirstName,
+			"surname":      user.Surname,
+			"last_name":    user.LastName,
+		})
+	}
+}
+func GetCompanyData(repo *users.Queries) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
+		if err != nil || user.Email == "" {
+			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+			return
+		}
+
+		c.JSON(http.StatusOK, NewCompanyData(user))
+	}
+}
+
+type CompanyData struct {
+	CompanyName       string `json:"companyName"`
+	CompanyINN        string `json:"companyINN"`
+	CompanyAddress    string `json:"companyAddress"`
+	PositionInCompany string `json:"positionInCompany"`
+
+	AllRequiredFields bool `json:"allRequiredFields"`
+}
+
+func NewCompanyData(u users.User) *CompanyData {
+	data := &CompanyData{
+		CompanyName:       u.CompanyName.String,
+		CompanyINN:        u.CompanyInn.String,
+		CompanyAddress:    u.CompanyAddress.String,
+		PositionInCompany: u.PositionInCompany.String,
+	}
+
+	data.AllRequiredFields = data.CompanyName != "" && data.CompanyINN != "" && data.CompanyAddress != "" && data.PositionInCompany != ""
+
+	return data
 }
