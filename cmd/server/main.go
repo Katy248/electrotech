@@ -42,7 +42,8 @@ func main() {
 			products.GET("/all", catalogHandlers.GetProducts(catalogRepo))
 
 			usersGroup := api.Group("/user")
-			usersGroup.GET("/register", user.RegisterHandler(usersRepo))
+			usersGroup.POST("/register", user.RegisterHandler(usersRepo))
+			usersGroup.POST("/login", user.LoginHandler(usersRepo))
 		}
 
 	}

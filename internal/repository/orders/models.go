@@ -30,8 +30,10 @@ type User struct {
 	Surname           string
 	LastName          string
 	Email             string
+	PhoneNumber       string
 	PasswordHash      string
 	CompanyName       sql.NullString
 	CompanyInn        sql.NullString
+	CompanyAddress    sql.NullString
 	PositionInCompany sql.NullString
 }
