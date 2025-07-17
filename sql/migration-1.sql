@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS users (
-    id INT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     first_name VARCHAR(255) NOT NULL,
     surname VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS orders (
-    id INT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INT NOT NULL,
     creation_date DATE NOT NULL,
     total_price DECIMAL(10, 2) NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS orders (
 );
 
 CREATE TABLE IF NOT EXISTS order_products (
-    id INT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     order_id INT,
     product_name VARCHAR(255) NOT NULL,
     quantity INT NOT NULL,
