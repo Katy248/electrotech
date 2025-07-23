@@ -38,7 +38,10 @@ func main() {
 
 	server := gin.Default()
 	// Enables cors
-	server.Use(cors.Default())
+	corsConf := cors.Config{
+		AllowAllOrigins: true,
+	}
+	server.Use(cors.New(corsConf))
 
 	{
 		api := server.Group("/api")
