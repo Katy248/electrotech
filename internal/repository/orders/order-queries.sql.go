@@ -7,7 +7,7 @@ package orders
 
 import (
 	"context"
-	"database/sql"
+	"time"
 )
 
 const addOrderProduct = `-- name: AddOrderProduct :exec
@@ -17,7 +17,7 @@ VALUES (?1, ?2, ?3, ?4)
 `
 
 type AddOrderProductParams struct {
-	OrderId     sql.NullInt64
+	OrderID     int64
 	ProductName string
 	Quantity    int64
 	Price       float64
@@ -25,7 +25,7 @@ type AddOrderProductParams struct {
 
 func (q *Queries) AddOrderProduct(ctx context.Context, arg AddOrderProductParams) error {
 	_, err := q.db.ExecContext(ctx, addOrderProduct,
-		arg.OrderId,
+		arg.OrderID,
 		arg.ProductName,
 		arg.Quantity,
 		arg.Price,
@@ -33,26 +33,67 @@ func (q *Queries) AddOrderProduct(ctx context.Context, arg AddOrderProductParams
 	return err
 }
 
-const insertOrder = `-- name: InsertOrder :one
+const getUserOrders = `-- name: GetUserOrders :many
 
-INSERT INTO orders (user_id, total_price) 
-VALUES (?1, ?2)
-RETURNING id, user_id, creation_date, total_price
+SELECT o.id, user_id, creation_date, p.id, order_id, product_name, quantity, product_price
+FROM orders o
+    JOIN order_products p ON o.id = p.order_id
+WHERE o.user_id = ?1
 `
 
-type InsertOrderParams struct {
-	UserId     int64
-	TotalPrice float64
+type GetUserOrdersRow struct {
+	ID           int64
+	UserID       int64
+	CreationDate time.Time
+	ID_2         int64
+	OrderID      int64
+	ProductName  string
+	Quantity     int64
+	ProductPrice float64
 }
 
-func (q *Queries) InsertOrder(ctx context.Context, arg InsertOrderParams) (Order, error) {
-	row := q.db.QueryRowContext(ctx, insertOrder, arg.UserId, arg.TotalPrice)
+func (q *Queries) GetUserOrders(ctx context.Context, userID int64) ([]GetUserOrdersRow, error) {
+	rows, err := q.db.QueryContext(ctx, getUserOrders, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUserOrdersRow
+	for rows.Next() {
+		var i GetUserOrdersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.CreationDate,
+			&i.ID_2,
+			&i.OrderID,
+			&i.ProductName,
+			&i.Quantity,
+			&i.ProductPrice,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const insertOrder = `-- name: InsertOrder :one
+
+INSERT INTO orders (user_id, creation_date) 
+VALUES (?1, now())
+RETURNING id, user_id, creation_date
+`
+
+func (q *Queries) InsertOrder(ctx context.Context, userID int64) (Order, error) {
+	row := q.db.QueryRowContext(ctx, insertOrder, userID)
 	var i Order
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.CreationDate,
-		&i.TotalPrice,
-	)
+	err := row.Scan(&i.ID, &i.UserID, &i.CreationDate)
 	return i, err
 }

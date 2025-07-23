@@ -19,7 +19,7 @@ func TestNewCatalogBadDir(t *testing.T) {
 	}
 }
 
-func testGetNewCatalog(t *testing.T) *CatalogRepo {
+func testGetNewCatalog(t *testing.T) *Repo {
 	currentDir, _ := os.Getwd()
 	t.Logf("Current dir: %s", currentDir)
 	os.Setenv("DATA_DIR", "../../../example")

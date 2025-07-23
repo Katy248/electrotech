@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetProducts(r *repo.CatalogRepo) gin.HandlerFunc {
+func GetProducts(r *repo.Repo) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		products, err := r.GetProducts(0)
 

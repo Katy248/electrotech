@@ -7,8 +7,10 @@ import (
 
 	"electrotech/internal/handlers/auth"
 	catalogHandlers "electrotech/internal/handlers/catalog"
+	"electrotech/internal/handlers/orders"
 	"electrotech/internal/handlers/user"
 	"electrotech/internal/repository/catalog"
+	ordersRepository "electrotech/internal/repository/orders"
 	usersRepository "electrotech/internal/repository/users"
 
 	"github.com/gin-contrib/cors"
@@ -31,6 +33,8 @@ func main() {
 	}
 
 	usersRepo := usersRepository.New(db)
+	catalogRepo, err := catalog.New()
+	ordersRepo := ordersRepository.New(db)
 
 	server := gin.Default()
 	// Enables cors
@@ -39,7 +43,6 @@ func main() {
 	{
 		api := server.Group("/api")
 		{
-			catalogRepo, err := catalog.New()
 			if err != nil {
 				log.Fatalf("Error creating catalog repository: %v", err)
 			}
@@ -54,6 +57,14 @@ func main() {
 				authGroup.POST("/login", auth.LoginHandler(usersRepo))
 				authGroup.POST("/register", auth.RegisterHandler(usersRepo))
 				authGroup.POST("/refresh", auth.Refresh(usersRepo))
+			}
+
+			{
+				ordersGroup := api.Group("/orders")
+				ordersGroup.Use(auth.AuthMiddleware())
+
+				ordersGroup.POST("/create", orders.CreateOrderHandler(ordersRepo, usersRepo, catalogRepo))
+				ordersGroup.GET("/get", orders.GetUserOrdersHandler(ordersRepo))
 			}
 
 			{

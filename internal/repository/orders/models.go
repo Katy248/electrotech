@@ -13,12 +13,11 @@ type Order struct {
 	ID           int64
 	UserID       int64
 	CreationDate time.Time
-	TotalPrice   float64
 }
 
 type OrderProduct struct {
 	ID           int64
-	OrderID      sql.NullInt64
+	OrderID      int64
 	ProductName  string
 	Quantity     int64
 	ProductPrice float64

@@ -13,11 +13,11 @@ var (
 
 type Page int
 
-type CatalogRepo struct {
+type Repo struct {
 	parser *parser.Parser
 }
 
-func New() (*CatalogRepo, error) {
+func New() (*Repo, error) {
 	dataDir := os.Getenv("DATA_DIR")
 	if dataDir == "" {
 		return nil, ErrDataDirNotSpecified
@@ -27,5 +27,5 @@ func New() (*CatalogRepo, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &CatalogRepo{parser: p}, nil
+	return &Repo{parser: p}, nil
 }

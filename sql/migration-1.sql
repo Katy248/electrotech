@@ -17,14 +17,13 @@ CREATE TABLE IF NOT EXISTS orders (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INT NOT NULL,
     creation_date DATE NOT NULL,
-    total_price DECIMAL(10, 2) NOT NULL,
 
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS order_products (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    order_id INT,
+    order_id INT NOT NULL,
     product_name VARCHAR(255) NOT NULL,
     quantity INT NOT NULL,
     product_price DECIMAL NOT NULL,
