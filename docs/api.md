@@ -227,3 +227,33 @@ Response 200
     ]
 }
 ```
+
+### `GET /api/products/all`
+
+**Known issues:**
+
+- Pictures currently no implemented, so `imagePath` should be changed
+
+Response 200
+
+```json
+{
+    "code": 200,
+    "products": [
+        {
+            "id": "5aa5c1a0-61d8-418e-8346-6edd9decb864",
+            "name": "Product 1",
+            "description": "Description 1",
+            "price": 100.2,
+            "imagePath": "import_files/7c/7c63329c7b3711ee802be0b9a548d6d8_f11face0469f11f0ad0f000c292ac68f.jpg", 
+            "articleNumber": "123",
+            "count": 10,
+            "manufacturer": "Manufacturer 1",
+            "parameters": {
+                "param1": "value1",
+                "param2": "value2"
+            }
+        }
+    ]
+}
+```
