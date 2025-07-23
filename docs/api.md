@@ -152,3 +152,57 @@ Response
     "error": "Error message"
 }
 ```
+
+### `POST /api/orders/create`
+
+Auth needed
+
+**Known issues:**
+
+- Currently if there will be 2 equal products in request, there won't be errors, but in future this will be fixed.
+
+Request
+
+```json
+{
+  "products": [
+    {
+      "id": "e76aefbc-0fa1-4fe4-af90-b320438b03b4",
+      "quantity": 2
+    },
+    {
+      "id": "5aa5c1a0-61d8-418e-8346-6edd9decb864",
+      "quantity": 3
+    }
+  ]
+}
+```
+
+Response 200
+
+```json
+{
+    "message": "Order created",
+    "order_id": "e76aefbc-0fa1-4fe4-af90-b320438b03b4"
+}
+```
+
+Response 400, 401, 404, 500
+
+```json
+{
+    "error": "Error message"
+}
+```
+
+### `GET /api/orders/get`
+
+Auth needed
+
+Currently not implemented
+
+Response 200
+
+```json
+{}
+```
