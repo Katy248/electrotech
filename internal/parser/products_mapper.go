@@ -6,7 +6,7 @@ import (
 )
 
 func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, error) {
-	products := make([]models.Product, len(imports.Catalog.Products))
+	products := []models.Product{}
 	for _, xmlProduct := range imports.Catalog.Products {
 		p := models.Product{
 			Id:            xmlProduct.Id,
