@@ -208,7 +208,21 @@ Response 200
     "orders": [
         {
             "id": 12,
-            "created_at": "2020-01-01 00:00:00"
+            "created_at": "2020-01-01 00:00:00",
+            "products": [
+                {
+                    "id": 1,
+                    "name": "Product 1",
+                    "quantity": 2,
+                    "price": 100
+                },
+                {
+                    "id": 2,
+                    "name": "Product 2",
+                    "quantity": 3,
+                    "price": 200
+                }
+            ],
         }
     ]
 }
