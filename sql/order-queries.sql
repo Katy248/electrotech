@@ -15,3 +15,17 @@ SELECT *
 FROM orders o
     JOIN order_products p ON o.id = p.order_id
 WHERE o.user_id = @user_id;
+
+
+-- name: GetOrders :many
+
+SELECT *
+FROM orders o
+WHERE user_id = @user_id;
+
+
+-- name: GetOrderProducts :many
+
+SELECT *
+FROM order_products
+WHERE order_id = @id;

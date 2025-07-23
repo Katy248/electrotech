@@ -204,5 +204,12 @@ Currently not implemented
 Response 200
 
 ```json
-{}
+{
+    "orders": [
+        {
+            "id": 12,
+            "created_at": "2020-01-01 00:00:00"
+        }
+    ]
+}
 ```

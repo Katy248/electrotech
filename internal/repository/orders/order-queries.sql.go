@@ -33,6 +33,72 @@ func (q *Queries) AddOrderProduct(ctx context.Context, arg AddOrderProductParams
 	return err
 }
 
+const getOrderProducts = `-- name: GetOrderProducts :many
+
+SELECT id, order_id, product_name, quantity, product_price
+FROM order_products
+WHERE order_id = ?1
+`
+
+func (q *Queries) GetOrderProducts(ctx context.Context, id int64) ([]OrderProduct, error) {
+	rows, err := q.db.QueryContext(ctx, getOrderProducts, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []OrderProduct
+	for rows.Next() {
+		var i OrderProduct
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrderID,
+			&i.ProductName,
+			&i.Quantity,
+			&i.ProductPrice,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getOrders = `-- name: GetOrders :many
+
+SELECT id, user_id, creation_date
+FROM orders o
+WHERE user_id = ?1
+`
+
+func (q *Queries) GetOrders(ctx context.Context, userID int64) ([]Order, error) {
+	rows, err := q.db.QueryContext(ctx, getOrders, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(&i.ID, &i.UserID, &i.CreationDate); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserOrders = `-- name: GetUserOrders :many
 
 SELECT o.id, user_id, creation_date, p.id, order_id, product_name, quantity, product_price

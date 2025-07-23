@@ -112,14 +112,57 @@ func GetUserOrdersHandler(orderRepo *orders.Queries) gin.HandlerFunc {
 			return
 		}
 
-		// Получаем заказы пользователя
-		orders, err := orderRepo.GetUserOrders(c.Request.Context(), userID.(int64))
+		orders, err := orderRepo.GetOrders(c.Request.Context(), userID.(int64))
 		if err != nil {
 			log.Printf("Error getting user orders: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get orders"})
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"orders": orders})
+		responseOrders := []ResponseOrder{}
+
+		for _, order := range orders {
+			products, err := orderRepo.GetOrderProducts(c.Request.Context(), order.ID)
+			if err != nil {
+				log.Printf("Error getting order: %v", err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get order"})
+				return
+			}
+			responseOrder := newResponseOrder(order, products)
+			responseOrders = append(responseOrders, responseOrder)
+		}
+
+		// Получаем заказы пользователя
+		c.JSON(http.StatusOK, gin.H{"orders": responseOrders})
 	}
+}
+
+func newResponseOrder(order orders.Order, products []orders.OrderProduct) ResponseOrder {
+	response := ResponseOrder{
+		ID:        order.ID,
+		CreatedAt: order.CreationDate.String(),
+	}
+
+	for _, p := range products {
+		response.Products = append(response.Products, ResponseOrderProduct{
+			Name:     p.ProductName,
+			Id:       p.ID,
+			Quantity: p.Quantity,
+			Price:    p.ProductPrice,
+		})
+	}
+	return response
+}
+
+type ResponseOrder struct {
+	ID        int64                  `json:"id"`
+	CreatedAt string                 `json:"createdAt"`
+	Products  []ResponseOrderProduct `json:"products"`
+}
+
+type ResponseOrderProduct struct {
+	Name     string  `json:"productName"`
+	Id       int64   `json:"productId"`
+	Quantity int64   `json:"quantity"`
+	Price    float64 `json:"price"`
 }
