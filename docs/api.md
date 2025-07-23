@@ -169,6 +169,53 @@ Response
 }
 ```
 
+### `POST /api/user/update-company-data`
+
+Auth needed
+
+Request
+
+```json
+{
+  "companyName": "Company name",
+  "companyAddress": "Company address",
+  "positionInCompany": "123",
+  "companyINN": "123"
+}
+```
+
+Response 200
+
+```json
+{
+    "message": "Company data updated"
+}
+```
+
+Response 400, 401, 500
+
+```json
+{
+    "error": "Error message"
+}
+```
+
+### `POST /api/user/get-company-data`
+
+Auth needed
+
+Response
+
+```json
+{
+  "companyName": "Company name",
+  "companyAddress": "Company address",
+  "positionInCompany": "123",
+  "companyINN": "123",
+  "allRequiredFields": true
+}
+```
+
 ### `POST /api/orders/create`
 
 Auth needed
