@@ -153,6 +153,22 @@ Response
 }
 ```
 
+### `POST /api/user/get-data`
+
+Auth needed
+
+Response
+
+```json
+{
+  "email": "user@example.com",
+  "first_name": "",
+  "surname": "",
+  "last_name": "",
+  "phone_number": "123"
+}
+```
+
 ### `POST /api/orders/create`
 
 Auth needed
