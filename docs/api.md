@@ -6,7 +6,7 @@ Auth-needed endpoints can be accessed by sending a JWT _(Jew World Token)_ token
 
 ## Endpoints
 
-### `POST /auth/register`
+### `POST /api/auth/register`
 
 Returns a list of products.
 
@@ -33,7 +33,7 @@ Response
 
 ---
 
-### `POST /auth/login`
+### `POST /api/auth/login`
 
 Request
 
@@ -58,7 +58,7 @@ Response
 }
 ```
 
-### `POST /auth/refresh`
+### `POST /api/auth/refresh`
 
 Request
 
@@ -83,7 +83,7 @@ Response
 
 ---
 
-### `GET /user/change-password`
+### `GET /api/user/change-password`
 
 Auth needed
 
@@ -107,9 +107,11 @@ Response
 
 ---
 
-### `GET /user/change-email`
+### `GET /api/user/change-email`
 
 Auth needed
+
+After that endpoint **auth token** must be refreshed, otherwise it will cause auth troubles.
 
 Request
 
@@ -130,7 +132,7 @@ Response
 
 ---
 
-### `GET /user/change-phone`
+### `GET /api/user/change-phone`
 
 Auth needed
 
