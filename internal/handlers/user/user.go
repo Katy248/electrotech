@@ -2,6 +2,7 @@ package user
 
 import (
 	"database/sql"
+	"electrotech/internal/handlers/auth"
 	"electrotech/internal/repository/users"
 	"log"
 	"net/http"
@@ -106,8 +107,15 @@ func ChangePhoneNumber(repo *users.Queries) gin.HandlerFunc {
 			return
 		}
 
+		phone, err := auth.FormatPhoneNumber(req.PhoneNumber)
+		if err != nil {
+			log.Printf("Error formatting phone number: %v", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid phone number"})
+			return
+		}
+
 		err = repo.UpdatePhoneNumber(c.Request.Context(), users.UpdatePhoneNumberParams{
-			PhoneNumber: req.PhoneNumber,
+			PhoneNumber: phone,
 			Email:       c.GetString("email"),
 		})
 		if err != nil {

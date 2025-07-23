@@ -2,8 +2,10 @@ package auth
 
 import (
 	"electrotech/internal/repository/users"
+	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -16,6 +18,31 @@ type RegisterRequest struct {
 	Surname     string `json:"surname" binding:"required"`
 	LastName    string `json:"last_name"`
 	PhoneNumber string `json:"phone_number" binding:"required"`
+}
+
+func FormatPhoneNumber(phone string) (string, error) {
+	if phone == "" {
+		return "", fmt.Errorf("phone number is required")
+
+	}
+	if len(phone) < 11 {
+		return "", fmt.Errorf("probably invalid phone number, length is less than 11 (%d)", len(phone))
+	}
+	phone = strings.TrimSpace(phone)
+	phone = strings.ReplaceAll(phone, "-", "")
+	phone = strings.ReplaceAll(phone, "(", "")
+	phone = strings.ReplaceAll(phone, ")", "")
+	phone = strings.ReplaceAll(phone, " ", "")
+
+	if phone[0] == '+' && phone[1] == '7' {
+		phone = "8" + phone[2:]
+	}
+
+	if phone[0] != '8' {
+		return phone, fmt.Errorf("invalid country code %d", phone[0])
+	}
+
+	return phone, nil
 }
 
 func RegisterHandler(repo *users.Queries) gin.HandlerFunc {
@@ -40,6 +67,13 @@ func RegisterHandler(repo *users.Queries) gin.HandlerFunc {
 			return
 		}
 
+		phone, err := FormatPhoneNumber(req.PhoneNumber)
+		if err != nil {
+			log.Printf("Error formatting phone number (is is probably invalid): %v", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid phone number"})
+			return
+		}
+
 		// Создаем нового пользователя
 		err = repo.InsertNew(c.Request.Context(), users.InsertNewParams{
 			Email:        req.Email,
@@ -47,7 +81,7 @@ func RegisterHandler(repo *users.Queries) gin.HandlerFunc {
 			FirstName:    req.FirstName,
 			Surname:      req.Surname,
 			LastName:     req.LastName,
-			PhoneNumber:  req.PhoneNumber,
+			PhoneNumber:  phone,
 		})
 
 		log.Printf("Error creating user: %v", err)
