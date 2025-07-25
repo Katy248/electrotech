@@ -59,6 +59,7 @@ func main() {
 				products := api.Group("/products")
 				products.GET("/all/:page", catalogHandlers.GetProducts(catalogRepo))
 				products.POST("/filter", catalogHandlers.GetProductsFilter(catalogRepo))
+				products.GET("/:id", catalogHandlers.GetProduct(catalogRepo))
 			}
 
 			{
