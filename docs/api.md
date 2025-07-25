@@ -10,6 +10,12 @@ Auth-needed endpoints can be accessed by sending a JWT _(Jew World Token)_ token
 
 Returns a list of products.
 
+Phone must be >= 11 chars length before and == 11 after formatting
+
+Phone number may be in any format, has endless amount of spaces (only spaces) and `(`, `)`, `-` characters, it can starts with either `+7` or `8`.
+
+To properly store phone it will be formatted to `81234567890`.
+
 Request
 
 ```json

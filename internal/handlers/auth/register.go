@@ -38,6 +38,12 @@ func FormatPhoneNumber(phone string) (string, error) {
 		phone = "8" + phone[2:]
 	}
 
+	for index, ch := range phone {
+		if ch < '0' || ch > '9' {
+			return phone, fmt.Errorf("invalid character %q at index %d", ch, index)
+		}
+	}
+
 	if phone[0] != '8' {
 		return phone, fmt.Errorf("invalid country code %d", phone[0])
 	}

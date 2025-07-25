@@ -8,17 +8,35 @@ func TestFormatPhoneNumber(t *testing.T) {
 		expected      string
 		shouldBeError bool
 	}{
-		{"+79991234567", "89991234567", false},
-		{"79991234567", "89991234567", true},
-		{"32 9991234567", "89991234567", true},
+		{
+			input:    "+79991234567",
+			expected: "89991234567",
+		},
+		{
+			input:         "79991234567",
+			shouldBeError: true,
+		},
+		{
+			input:         "32 9991234567",
+			shouldBeError: true,
+		},
 		{
 			input:    "+7 (999) 123-45-67",
 			expected: "89991234567"},
 		{
 			input:         "",
 			shouldBeError: true,
-		}, {
+		},
+		{
 			input:         " 8 8   8   8  888   ",
+			shouldBeError: true,
+		},
+		{
+			input:         "some simple chars, ---",
+			shouldBeError: true,
+		},
+		{
+			input:         "+7 958 803 92-95c",
 			shouldBeError: true,
 		},
 	}
