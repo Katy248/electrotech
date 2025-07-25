@@ -3,18 +3,83 @@ package catalog
 import (
 	"electrotech/internal/models"
 	"errors"
+	"log"
+	"slices"
 )
 
 var (
 	ErrNotFound = errors.New("product not found")
 )
 
-func (r *Repo) GetProducts(p Page) ([]models.Product, error) {
-	return r.parser.GetProducts()
+func ListFilter(parameterName string, values []string) FilterFunc {
+	return func(p models.Product) bool {
+
+		parameter, err := p.GetParameter(parameterName)
+		if err != nil {
+			log.Printf("Error getting parameter: %v", err)
+			return false
+		}
+
+		if parameter.Type != models.ParameterTypeList {
+			log.Printf("Wrong filter with type %q for parameter with type %q", models.ParameterTypeList, parameter.Type)
+			return false
+		}
+
+		if parameter.StringValue != "" {
+			return slices.Contains(values, parameter.StringValue)
+		}
+
+		for _, v := range values {
+			if !slices.Contains(parameter.SliceValue, v) {
+				return false
+			}
+		}
+
+		return true
+	}
+}
+func RangeFilter(parameterName string, min, max float64) FilterFunc {
+	return func(p models.Product) bool {
+
+		parameter, err := p.GetParameter(parameterName)
+		if err != nil {
+			log.Printf("Error getting parameter: %v", err)
+			return false
+		}
+
+		if parameter.Type != models.ParameterTypeNumber {
+			log.Printf("Wrong filter with type %q for parameter with type %q", models.ParameterTypeNumber, parameter.Type)
+			return false
+		}
+
+		return parameter.NumberValue >= min && parameter.NumberValue <= max
+	}
 }
 
-type Filter struct {
+func (r *Repo) GetProducts(p Page, filters ...FilterFunc) ([]models.Product, error) {
+	products, err := r.parser.GetProducts()
+	if err != nil {
+		return nil, err
+	}
+
+	var filtered []models.Product
+	for _, p := range products {
+		ok := true
+		for _, f := range filters {
+			if !f(p) {
+				ok = false
+				break
+			}
+		}
+		if ok {
+			filtered = append(filtered, p)
+		}
+	}
+
+	return filtered, nil
 }
+
+type FilterFunc func(p models.Product) bool
 
 func (r *Repo) GetProduct(id string) (models.Product, error) {
 	products, err := r.parser.GetProducts()

@@ -291,7 +291,9 @@ Response 200
 }
 ```
 
-### `GET /api/products/all`
+### `GET /api/products/all/:page`
+
+`page` - page number, must be greater or equal to 0
 
 **Known issues:**
 
@@ -312,10 +314,22 @@ Response 200
             "articleNumber": "123",
             "count": 10,
             "manufacturer": "Manufacturer 1",
-            "parameters": {
-                "param1": "value1",
-                "param2": "value2"
-            }
+            "parameters": [
+                {
+                    "name": "Цвет",
+                    "type":"list",
+                    "stringValue": "Красный",
+                    "numberValue": 0,
+                    "sliceValue": null
+                },
+                {
+                    "name": "Сечение однопроволочного проводника по (кв.мм.)",
+                    "type": "number",
+                    "stringValue": "",
+                    "numberValue": 4,
+                    "sliceValue": null
+                },
+            ]
         }
     ]
 }

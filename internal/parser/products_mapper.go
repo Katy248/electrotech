@@ -3,6 +3,8 @@ package parser
 import (
 	"electrotech/internal/models"
 	"fmt"
+	"log"
+	"strconv"
 )
 
 func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, error) {
@@ -10,7 +12,7 @@ func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, 
 	for _, xmlProduct := range imports.Catalog.Products {
 		p := models.Product{
 			Id:            xmlProduct.Id,
-			Name:          xmlProduct.Image,
+			Name:          xmlProduct.Name,
 			ArticleNumber: xmlProduct.ArticleNumber,
 			Description:   xmlProduct.Description,
 			ImagePath:     xmlProduct.Image,
@@ -33,7 +35,7 @@ func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, 
 		}
 		p.Count = count
 
-		p.Parameters = make(map[string]string)
+		// p.Parameters = make(map[string]string)
 		for _, prop := range xmlProduct.PropertyValues {
 			propertyFull, err := getProperty(imports.Classifier.Properties, prop.Id)
 			if err != nil {
@@ -44,14 +46,23 @@ func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, 
 				if err != nil {
 					return products, fmt.Errorf("failed get property value id = '%s': %s", prop.Value, err)
 				}
-				p.Parameters[propertyFull.Name] = val
+				p.Parameters = append(p.Parameters, models.ProductParameter{
+					Name:        propertyFull.Name,
+					Type:        models.ParameterTypeList,
+					StringValue: val,
+				})
+			} else if propertyFull.Type == propertyTypeNumber {
+				intVal, _ := strconv.ParseFloat(prop.Value, 64)
+				p.Parameters = append(p.Parameters, models.ProductParameter{
+					Name:        propertyFull.Name,
+					Type:        models.ParameterTypeNumber,
+					NumberValue: intVal,
+				})
+
 			} else {
-				p.Parameters[propertyFull.Name] = prop.Value
+				log.Printf("Unknown property type: %s", propertyFull.Type)
 			}
-			fmt.Println(propertyFull.Name, p.Parameters[propertyFull.Name])
-
 		}
-
 		products = append(products, p)
 	}
 	return products, nil

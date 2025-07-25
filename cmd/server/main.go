@@ -55,7 +55,8 @@ func main() {
 
 			{
 				products := api.Group("/products")
-				products.GET("/all", catalogHandlers.GetProducts(catalogRepo))
+				products.GET("/all/:page", catalogHandlers.GetProducts(catalogRepo))
+				products.POST("/filter", catalogHandlers.GetProductsFilter(catalogRepo))
 			}
 
 			{
