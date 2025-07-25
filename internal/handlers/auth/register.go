@@ -42,6 +42,9 @@ func FormatPhoneNumber(phone string) (string, error) {
 		return phone, fmt.Errorf("invalid country code %d", phone[0])
 	}
 
+	if len(phone) != 11 {
+		return phone, fmt.Errorf("invalid phone number length %d", len(phone))
+	}
 	return phone, nil
 }
 

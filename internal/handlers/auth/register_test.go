@@ -17,10 +17,18 @@ func TestFormatPhoneNumber(t *testing.T) {
 		{
 			input:         "",
 			shouldBeError: true,
+		}, {
+			input:         " 8 8   8   8  888   ",
+			shouldBeError: true,
 		},
 	}
 	for _, test := range testCases {
 		actual, err := FormatPhoneNumber(test.input)
+		if test.shouldBeError && err == nil {
+			t.Errorf("FormatPhoneNumber(%q) returned no error, but should have", test.input)
+			break
+		}
+
 		if err != nil {
 			if !test.shouldBeError {
 				t.Errorf("FormatPhoneNumber(%q) returned error %q, but should not", test.input, err)
