@@ -19,6 +19,12 @@ type OrderProductRequest struct {
 	Quantity  int    `json:"quantity" binding:"required,min=1"`
 }
 
+func checkUserHasCompanyData(user users.User) bool {
+	return user.CompanyName.Valid &&
+		user.CompanyAddress.Valid &&
+		user.PositionInCompany.Valid && user.CompanyInn.Valid
+}
+
 func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, catalogRepo *catalog.Repo) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Получаем userID из контекста (предполагаем, что middleware аутентификации уже добавил его)
@@ -35,9 +41,14 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 		}
 
 		// Проверяем, существует ли пользователь
-		_, err := userRepo.GetById(c.Request.Context(), userID.(int64))
+		user, err := userRepo.GetById(c.Request.Context(), userID.(int64))
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			return
+		}
+
+		if !checkUserHasCompanyData(user) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "user has no company data"})
 			return
 		}
 

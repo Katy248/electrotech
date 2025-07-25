@@ -220,6 +220,8 @@ Response
 
 Auth needed
 
+Users must has all company data to create order
+
 **Known issues:**
 
 - Currently if there will be 2 equal products in request, there won't be errors, but in future this will be fixed.
