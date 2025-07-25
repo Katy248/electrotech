@@ -342,3 +342,9 @@ Response 200
     ]
 }
 ```
+
+### GET `/api/files/:file-path`
+
+`file-path` - path to file, must be relative to `DATA_DIR`
+
+Response 200 - Binary file

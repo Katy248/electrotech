@@ -49,6 +49,8 @@ func main() {
 	{
 		api := server.Group("/api")
 		{
+			api.Static("/files", os.Getenv("DATA_DIR"))
+
 			if err != nil {
 				log.Fatalf("Error creating catalog repository: %v", err)
 			}
