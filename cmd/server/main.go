@@ -7,6 +7,7 @@ import (
 
 	"electrotech/internal/handlers/auth"
 	catalogHandlers "electrotech/internal/handlers/catalog"
+	"electrotech/internal/handlers/filter"
 	"electrotech/internal/handlers/orders"
 	"electrotech/internal/handlers/user"
 	"electrotech/internal/repository/catalog"
@@ -50,6 +51,8 @@ func main() {
 		api := server.Group("/api")
 		{
 			api.Static("/files", os.Getenv("DATA_DIR"))
+
+			api.GET("/filters", filter.GetFilters(catalogRepo))
 
 			if err != nil {
 				log.Fatalf("Error creating catalog repository: %v", err)

@@ -388,8 +388,43 @@ Response 200
 }
 ```
 
-### GET `/api/files/:file-path`
+### `GET /api/files/:file-path`
 
 `file-path` - path to file, must be relative to `DATA_DIR`
 
 Response 200 - Binary file
+
+### `GET /api/filters`
+
+Returns a list of parameters that should used as filters
+
+Response 200
+
+```json
+{
+    "code": 200,
+    "parameters": [
+        {
+            "name": "name",
+            "type": "list",
+            "values": [
+                "val1", "val2"
+            ]
+        },
+        {
+            "name": "name",
+            "type": "number",
+            "minValue": 1,
+            "maxValue": 10
+        }
+    ]
+}
+```
+
+Response 500
+
+```json
+{
+    "code": 500
+}
+```
