@@ -2,8 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"electrotech/internal/handlers/auth"
 	catalogHandlers "electrotech/internal/handlers/catalog"
@@ -22,7 +24,20 @@ import (
 
 func init() { godotenv.Load() }
 
+func getPort() int {
+	var portStr = os.Getenv("PORT")
+	if portStr == "" {
+		log.Fatalf("PORT environment variable not set")
+	}
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		log.Fatalf("Error parsing PORT environment variable: %v", err)
+	}
+	return port
+}
+
 func main() {
+
 	sqlConnectionString := os.Getenv("DB_CONNECTION")
 	if sqlConnectionString == "" {
 		log.Fatalf("DB_CONNECTION environment variable not set")
@@ -96,5 +111,7 @@ func main() {
 
 	}
 
-	server.Run(":1488")
+	host := fmt.Sprintf(":%d", getPort())
+
+	server.Run(host)
 }
