@@ -41,7 +41,11 @@ func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, 
 			if err != nil {
 				return products, fmt.Errorf("failed get property id = '%s': %s", prop.Id, err)
 			}
-			if propertyFull.Type == propertyTypeHandbook && prop.Value != "" {
+			if propertyFull.Type == propertyTypeHandbook {
+				if prop.Value == "" {
+					log.Printf("Handbook property value is empty for property id = '%s'", prop.Id)
+					continue
+				}
 				val, err := getPropertyVariantValue(prop.Value, propertyFull)
 				if err != nil {
 					return products, fmt.Errorf("failed get property value id = '%s': %s", prop.Value, err)
@@ -58,9 +62,12 @@ func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, 
 					Type:        models.ParameterTypeNumber,
 					NumberValue: intVal,
 				})
+			} else if propertyFull.Type == propertyTypeString {
+				log.Printf("Skips string property")
+				continue
 
 			} else {
-				log.Printf("Unknown property type: %s", propertyFull.Type)
+				log.Printf("Unknown property type %q", propertyFull.Type)
 			}
 		}
 		products = append(products, p)
