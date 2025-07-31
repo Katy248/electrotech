@@ -52,7 +52,15 @@ func RangeFilter(parameterName string, min, max float64) FilterFunc {
 			return false
 		}
 
-		return parameter.NumberValue >= min && parameter.NumberValue <= max
+		var inMinRange, inMaxRange bool
+
+		inMinRange = parameter.NumberValue >= min
+		if max > 0 {
+			inMaxRange = parameter.NumberValue <= max
+		} else {
+			inMaxRange = true
+		}
+		return inMinRange && inMaxRange
 	}
 }
 
