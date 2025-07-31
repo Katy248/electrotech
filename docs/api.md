@@ -299,6 +299,29 @@ Response 200
 }
 ```
 
+## `POST /api/products/filter`
+
+Request
+
+```json
+{
+    "page": 0,
+    "filters": [
+        {
+            "parameter": "param list",
+            "type": "list",
+            "values": ["val1", "val2"]
+        },
+        {
+            "parameter": "number param",
+            "type": "number",
+            "min": 1,
+            "max": 2,
+        }
+    ]
+}
+```
+
 ### `GET /api/products/:id`
 
 Response 200

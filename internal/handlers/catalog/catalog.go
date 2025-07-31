@@ -84,7 +84,7 @@ func GetProductsFilter(r *catalog.Repo) gin.HandlerFunc {
 
 type Request struct {
 	Page    int             `json:"page" binding:"gte=0"`
-	Filters []RequestFilter `json:"filters" binding:""`
+	Filters []RequestFilter `json:"filters"`
 }
 
 type RequestFilter struct {
