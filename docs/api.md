@@ -301,6 +301,8 @@ Response 200
 
 ## `POST /api/products/filter`
 
+Value of `max` could be empty, than it won't take part in filter process
+
 Request
 
 ```json
