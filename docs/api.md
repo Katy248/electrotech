@@ -322,6 +322,10 @@ Request
 }
 ```
 
+Response
+
+Same as `GET /api/products/all/:page`, but filtered
+
 ### `GET /api/products/:id`
 
 Response 200
