@@ -29,6 +29,7 @@ func NewListParameter(name string, values []string) (*Parameter, error) {
 		return nil, ErrEmptyHandbookValues
 	}
 	return &Parameter{
+		Name:   name,
 		Type:   ParameterTypeList,
 		Values: values,
 	}, nil

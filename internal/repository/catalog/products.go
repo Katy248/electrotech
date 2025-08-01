@@ -60,6 +60,7 @@ func RangeFilter(parameterName string, min, max float64) FilterFunc {
 		} else {
 			inMaxRange = true
 		}
+		log.Printf("Parameter %q has value %f, min - %f, max- %f, result - %v", parameterName, parameter.NumberValue, min, max, inMinRange && inMaxRange)
 		return inMinRange && inMaxRange
 	}
 }

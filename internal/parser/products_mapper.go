@@ -63,9 +63,11 @@ func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, 
 					NumberValue: intVal,
 				})
 			} else if propertyFull.Type == propertyTypeString {
-				log.Printf("Skips string property")
-				continue
-
+				p.Parameters = append(p.Parameters, models.ProductParameter{
+					Name:        propertyFull.Name,
+					Type:        models.ParameterTypeList,
+					StringValue: prop.Value,
+				})
 			} else {
 				log.Printf("Unknown property type %q", propertyFull.Type)
 			}
