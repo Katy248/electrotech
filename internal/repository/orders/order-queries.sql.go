@@ -12,8 +12,10 @@ import (
 
 const addOrderProduct = `-- name: AddOrderProduct :exec
 
-INSERT INTO order_products (order_id, product_name, quantity, product_price) 
-VALUES (?1, ?2, ?3, ?4)
+INSERT INTO order_products
+    (order_id, product_name, quantity, product_price)
+VALUES
+    (?1, ?2, ?3, ?4)
 `
 
 type AddOrderProductParams struct {
@@ -152,13 +154,20 @@ func (q *Queries) GetUserOrders(ctx context.Context, userID int64) ([]GetUserOrd
 
 const insertOrder = `-- name: InsertOrder :one
 
-INSERT INTO orders (user_id, creation_date) 
-VALUES (?1, now())
+INSERT INTO orders
+    (user_id, creation_date)
+VALUES
+    (?1, ?2)
 RETURNING id, user_id, creation_date
 `
 
-func (q *Queries) InsertOrder(ctx context.Context, userID int64) (Order, error) {
-	row := q.db.QueryRowContext(ctx, insertOrder, userID)
+type InsertOrderParams struct {
+	UserID       int64
+	CreationDate time.Time
+}
+
+func (q *Queries) InsertOrder(ctx context.Context, arg InsertOrderParams) (Order, error) {
+	row := q.db.QueryRowContext(ctx, insertOrder, arg.UserID, arg.CreationDate)
 	var i Order
 	err := row.Scan(&i.ID, &i.UserID, &i.CreationDate)
 	return i, err

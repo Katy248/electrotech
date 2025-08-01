@@ -6,6 +6,7 @@ import (
 	"electrotech/internal/repository/users"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -86,7 +87,10 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 		}
 
 		// Создаем заказ
-		order, err := orderRepo.InsertOrder(c.Request.Context(), userID.(int64))
+		order, err := orderRepo.InsertOrder(c.Request.Context(), orders.InsertOrderParams{
+			UserID:       userID.(int64),
+			CreationDate: time.Now(),
+		})
 		if err != nil {
 			log.Printf("Error creating order: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create order"})

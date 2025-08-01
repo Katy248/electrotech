@@ -1,13 +1,17 @@
 -- name: InsertOrder :one
 
-INSERT INTO orders (user_id, creation_date) 
-VALUES (@user_id, now())
+INSERT INTO orders
+    (user_id, creation_date)
+VALUES
+    (@user_id, @creation_date)
 RETURNING *;
 
 -- name: AddOrderProduct :exec
 
-INSERT INTO order_products (order_id, product_name, quantity, product_price) 
-VALUES (@order_id, @product_name, @quantity, @price);
+INSERT INTO order_products
+    (order_id, product_name, quantity, product_price)
+VALUES
+    (@order_id, @product_name, @quantity, @price);
 
 -- name: GetUserOrders :many
 
