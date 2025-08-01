@@ -43,7 +43,12 @@ func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, 
 			}
 			if propertyFull.Type == propertyTypeHandbook {
 				if prop.Value == "" {
-					log.Printf("Handbook property value is empty for property id = '%s'", prop.Id)
+					log.Printf("[WARNING] Handbook property value is empty for property id = %q  (%q)", prop.Id, propertyFull.Name)
+					p.Parameters = append(p.Parameters, models.ProductParameter{
+						Name:        propertyFull.Name,
+						Type:        models.ParameterTypeList,
+						StringValue: "",
+					})
 					continue
 				}
 				val, err := getPropertyVariantValue(prop.Value, propertyFull)
