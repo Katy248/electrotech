@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -64,6 +65,9 @@ func getStringParameterEntries(propId string, products []product) []string {
 	for _, p := range products {
 		for _, param := range p.PropertyValues {
 			if param.Id != propId {
+				continue
+			}
+			if slices.Contains(result, param.Value) {
 				continue
 			}
 			result = append(result, param.Value)
