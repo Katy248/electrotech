@@ -9,9 +9,9 @@ RETURNING *;
 -- name: AddOrderProduct :exec
 
 INSERT INTO order_products
-    (order_id, product_name, quantity, product_price)
+    (order_id, product_name, product_id, quantity, product_price)
 VALUES
-    (@order_id, @product_name, @quantity, @price);
+    (@order_id, @product_name, @product_id, @quantity, @price);
 
 -- name: GetUserOrders :many
 

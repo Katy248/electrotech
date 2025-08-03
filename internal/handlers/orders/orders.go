@@ -78,6 +78,7 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 				ProductName: name,
 				Quantity:    int64(p.Quantity),
 				Price:       float64(price),
+				ProductID:   p.ProductId,
 			})
 		}
 
@@ -98,12 +99,8 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 		}
 
 		for _, p := range products {
-			err := orderRepo.AddOrderProduct(c.Request.Context(), orders.AddOrderProductParams{
-				OrderID:     order.ID,
-				ProductName: p.ProductName,
-				Quantity:    p.Quantity,
-				Price:       p.Price,
-			})
+			p.OrderID = order.ID
+			err := orderRepo.AddOrderProduct(c.Request.Context(), p)
 			if err != nil {
 				log.Printf("Error adding product to order: %v", err)
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to add product to order"})
@@ -118,7 +115,7 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 	}
 }
 
-func GetUserOrdersHandler(orderRepo *orders.Queries) gin.HandlerFunc {
+func GetUserOrdersHandler(orderRepo *orders.Queries, catalogRepo *catalog.Repo) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Получаем userID из контекста
 		userID, exists := c.Get("user_id")
@@ -143,7 +140,7 @@ func GetUserOrdersHandler(orderRepo *orders.Queries) gin.HandlerFunc {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get order"})
 				return
 			}
-			responseOrder := newResponseOrder(order, products)
+			responseOrder := newResponseOrder(catalogRepo, order, products)
 			responseOrders = append(responseOrders, responseOrder)
 		}
 
@@ -152,19 +149,26 @@ func GetUserOrdersHandler(orderRepo *orders.Queries) gin.HandlerFunc {
 	}
 }
 
-func newResponseOrder(order orders.Order, products []orders.OrderProduct) ResponseOrder {
+func newResponseOrder(catalogRepo *catalog.Repo, order orders.Order, products []orders.OrderProduct) ResponseOrder {
 	response := ResponseOrder{
 		ID:        order.ID,
 		CreatedAt: order.CreationDate.String(),
 	}
 
-	for _, p := range products {
-		response.Products = append(response.Products, ResponseOrderProduct{
-			Name:     p.ProductName,
-			Id:       p.ID,
-			Quantity: p.Quantity,
-			Price:    p.ProductPrice,
-		})
+	for _, orderItem := range products {
+		product, err := catalogRepo.GetProduct(orderItem.ProductID)
+		item := ResponseOrderProduct{
+			Name:     orderItem.ProductName,
+			Id:       orderItem.ProductID,
+			Quantity: orderItem.Quantity,
+			Price:    orderItem.ProductPrice,
+		}
+		if err != nil {
+			log.Printf("[WARNING] Error getting product: %v. It was probably deleted", err)
+		} else {
+			item.ImagePath = product.ImagePath
+		}
+		response.Products = append(response.Products, item)
 	}
 	return response
 }
@@ -176,8 +180,9 @@ type ResponseOrder struct {
 }
 
 type ResponseOrderProduct struct {
-	Name     string  `json:"productName"`
-	Id       int64   `json:"productId"`
-	Quantity int64   `json:"quantity"`
-	Price    float64 `json:"price"`
+	Name      string  `json:"productName"`
+	Id        string  `json:"productId"`
+	Quantity  int64   `json:"quantity"`
+	Price     float64 `json:"price"`
+	ImagePath string  `json:"imagePath"`
 }

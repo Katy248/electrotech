@@ -13,14 +13,15 @@ import (
 const addOrderProduct = `-- name: AddOrderProduct :exec
 
 INSERT INTO order_products
-    (order_id, product_name, quantity, product_price)
+    (order_id, product_name, product_id, quantity, product_price)
 VALUES
-    (?1, ?2, ?3, ?4)
+    (?1, ?2, ?3, ?4, ?5)
 `
 
 type AddOrderProductParams struct {
 	OrderID     int64
 	ProductName string
+	ProductID   string
 	Quantity    int64
 	Price       float64
 }
@@ -29,6 +30,7 @@ func (q *Queries) AddOrderProduct(ctx context.Context, arg AddOrderProductParams
 	_, err := q.db.ExecContext(ctx, addOrderProduct,
 		arg.OrderID,
 		arg.ProductName,
+		arg.ProductID,
 		arg.Quantity,
 		arg.Price,
 	)
@@ -37,7 +39,7 @@ func (q *Queries) AddOrderProduct(ctx context.Context, arg AddOrderProductParams
 
 const getOrderProducts = `-- name: GetOrderProducts :many
 
-SELECT id, order_id, product_name, quantity, product_price
+SELECT id, product_id, order_id, product_name, quantity, product_price
 FROM order_products
 WHERE order_id = ?1
 `
@@ -53,6 +55,7 @@ func (q *Queries) GetOrderProducts(ctx context.Context, id int64) ([]OrderProduc
 		var i OrderProduct
 		if err := rows.Scan(
 			&i.ID,
+			&i.ProductID,
 			&i.OrderID,
 			&i.ProductName,
 			&i.Quantity,
@@ -103,7 +106,7 @@ func (q *Queries) GetOrders(ctx context.Context, userID int64) ([]Order, error) 
 
 const getUserOrders = `-- name: GetUserOrders :many
 
-SELECT o.id, user_id, creation_date, p.id, order_id, product_name, quantity, product_price
+SELECT o.id, user_id, creation_date, p.id, product_id, order_id, product_name, quantity, product_price
 FROM orders o
     JOIN order_products p ON o.id = p.order_id
 WHERE o.user_id = ?1
@@ -114,6 +117,7 @@ type GetUserOrdersRow struct {
 	UserID       int64
 	CreationDate time.Time
 	ID_2         int64
+	ProductID    string
 	OrderID      int64
 	ProductName  string
 	Quantity     int64
@@ -134,6 +138,7 @@ func (q *Queries) GetUserOrders(ctx context.Context, userID int64) ([]GetUserOrd
 			&i.UserID,
 			&i.CreationDate,
 			&i.ID_2,
+			&i.ProductID,
 			&i.OrderID,
 			&i.ProductName,
 			&i.Quantity,

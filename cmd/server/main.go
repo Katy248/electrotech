@@ -92,7 +92,7 @@ func main() {
 				ordersGroup.Use(auth.AuthMiddleware())
 
 				ordersGroup.POST("/create", orders.CreateOrderHandler(ordersRepo, usersRepo, catalogRepo))
-				ordersGroup.GET("/get", orders.GetUserOrdersHandler(ordersRepo))
+				ordersGroup.GET("/get", orders.GetUserOrdersHandler(ordersRepo, catalogRepo))
 			}
 
 			{

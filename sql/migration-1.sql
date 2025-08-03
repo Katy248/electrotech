@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS orders (
 
 CREATE TABLE IF NOT EXISTS order_products (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id VARCHAR(255) NOT NULL,
     order_id INT NOT NULL,
     product_name VARCHAR(255) NOT NULL,
     quantity INT NOT NULL,
