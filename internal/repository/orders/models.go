@@ -17,11 +17,11 @@ type Order struct {
 
 type OrderProduct struct {
 	ID           int64
-	ProductID    string
 	OrderID      int64
 	ProductName  string
 	Quantity     int64
 	ProductPrice float64
+	ProductID    string
 }
 
 type User struct {

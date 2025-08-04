@@ -2,14 +2,14 @@ version: "2"
 sql:
   - engine: "sqlite"
     queries: "sql/queries.sql"
-    schema: "sql/migration-1.sql"
+    schema: "sql/migrations"
     gen:
       go:
         package: "users"
         out: "internal/repository/users"
   - engine: "sqlite"
     queries: "sql/order-queries.sql"
-    schema: "sql/migration-1.sql"
+    schema: "sql/migrations"
     gen:
       go:
         package: "orders"

@@ -7,10 +7,10 @@ import (
 	"log"
 )
 
-//go:embed migration-1.sql
+//go:embed migrations/migration-1.sql
 var Migration string
 
-//go:embed migration-2.sql
+//go:embed migrations/migration-2.sql
 var Migration2 string
 
 var migrations = []string{Migration, Migration2}
