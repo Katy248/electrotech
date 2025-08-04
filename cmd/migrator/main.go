@@ -29,7 +29,7 @@ func main() {
 		log.Fatalf("Error opening database: %v", err)
 	}
 
-	if _, err := db.Exec(migration.Migration); err != nil {
+	if err := migration.Migrate(db); err != nil {
 		log.Fatalf("Error executing migration: %v", err)
 	}
 
