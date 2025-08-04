@@ -1,16 +1,15 @@
 package main
 
 import (
-	"database/sql"
 	_ "embed"
 	"flag"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/joho/godotenv"
 
 	migration "electrotech/sql"
+	"electrotech/storage"
 
 	_ "modernc.org/sqlite"
 )
@@ -24,13 +23,7 @@ func main() {
 	flag.Parse()
 	godotenv.Load()
 
-	sqlConnectionString := os.Getenv("DB_CONNECTION")
-	if sqlConnectionString == "" {
-		log.Fatalf("DB_CONNECTION environment variable not set")
-	}
-	fmt.Println("Starting migration to " + sqlConnectionString)
-
-	db, err := sql.Open("sqlite", sqlConnectionString)
+	db, err := storage.New()
 	if err != nil {
 		log.Fatalf("Error opening database: %v", err)
 	}

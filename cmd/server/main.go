@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -15,35 +14,33 @@ import (
 	"electrotech/internal/repository/catalog"
 	ordersRepository "electrotech/internal/repository/orders"
 	usersRepository "electrotech/internal/repository/users"
+	"electrotech/storage"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	_ "modernc.org/sqlite"
 )
 
 func init() { godotenv.Load() }
 
+const defaultPort = 8080
+
 func getPort() int {
 	var portStr = os.Getenv("PORT")
 	if portStr == "" {
-		log.Fatalf("PORT environment variable not set")
+		log.Printf("[WARNING] PORT environment variable not set, fallback to default %d", defaultPort)
+		return defaultPort
 	}
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
-		log.Fatalf("Error parsing PORT environment variable: %v", err)
+		log.Printf("[ERROR] Failed parse PORT environment variable (value %q): %v. Fallback to default %d", portStr, err, defaultPort)
 	}
 	return port
 }
 
 func main() {
 
-	sqlConnectionString := os.Getenv("DB_CONNECTION")
-	if sqlConnectionString == "" {
-		log.Fatalf("DB_CONNECTION environment variable not set")
-	}
-
-	db, err := sql.Open("sqlite", sqlConnectionString)
+	db, err := storage.New()
 	if err != nil {
 		log.Fatalf("Error opening database: %v", err)
 	}
@@ -52,6 +49,7 @@ func main() {
 	catalogRepo, err := catalog.New()
 	ordersRepo := ordersRepository.New(db)
 
+	gin.SetMode(os.Getenv("GIN_MODE"))
 	server := gin.Default()
 	// Enables cors
 	corsConf := cors.Config{
