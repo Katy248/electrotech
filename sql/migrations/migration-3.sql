@@ -1,0 +1,2 @@
+ALTER TABLE users
+ADD COLUMN company_okpo VARCHAR(255);
