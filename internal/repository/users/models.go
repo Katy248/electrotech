@@ -10,30 +10,31 @@ import (
 )
 
 type Order struct {
-	ID           int64
-	UserID       int64
-	CreationDate time.Time
+	ID           int64     `json:"id"`
+	UserID       int64     `json:"userId"`
+	CreationDate time.Time `json:"creationDate"`
 }
 
 type OrderProduct struct {
-	ID           int64
-	OrderID      int64
-	ProductName  string
-	Quantity     int64
-	ProductPrice float64
-	ProductID    string
+	ID           int64   `json:"id"`
+	OrderID      int64   `json:"orderId"`
+	ProductName  string  `json:"productName"`
+	Quantity     int64   `json:"quantity"`
+	ProductPrice float64 `json:"productPrice"`
+	ProductID    string  `json:"productId"`
 }
 
 type User struct {
-	ID                int64
-	FirstName         string
-	Surname           string
-	LastName          string
-	Email             string
-	PhoneNumber       string
-	PasswordHash      string
-	CompanyName       sql.NullString
-	CompanyInn        sql.NullString
-	CompanyAddress    sql.NullString
-	PositionInCompany sql.NullString
+	ID                int64          `json:"id"`
+	FirstName         string         `json:"firstName"`
+	Surname           string         `json:"surname"`
+	LastName          string         `json:"lastName"`
+	Email             string         `json:"email"`
+	PhoneNumber       string         `json:"phoneNumber"`
+	PasswordHash      string         `json:"passwordHash"`
+	CompanyName       sql.NullString `json:"companyName"`
+	CompanyInn        sql.NullString `json:"companyInn"`
+	CompanyAddress    sql.NullString `json:"companyAddress"`
+	PositionInCompany sql.NullString `json:"positionInCompany"`
+	CompanyOkpo       sql.NullString `json:"companyOkpo"`
 }

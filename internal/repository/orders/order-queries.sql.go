@@ -19,11 +19,11 @@ VALUES
 `
 
 type AddOrderProductParams struct {
-	OrderID     int64
-	ProductName string
-	ProductID   string
-	Quantity    int64
-	Price       float64
+	OrderID     int64   `json:"orderId"`
+	ProductName string  `json:"productName"`
+	ProductID   string  `json:"productId"`
+	Quantity    int64   `json:"quantity"`
+	Price       float64 `json:"price"`
 }
 
 func (q *Queries) AddOrderProduct(ctx context.Context, arg AddOrderProductParams) error {
@@ -113,15 +113,15 @@ WHERE o.user_id = ?1
 `
 
 type GetUserOrdersRow struct {
-	ID           int64
-	UserID       int64
-	CreationDate time.Time
-	ID_2         int64
-	OrderID      int64
-	ProductName  string
-	Quantity     int64
-	ProductPrice float64
-	ProductID    string
+	ID           int64     `json:"id"`
+	UserID       int64     `json:"userId"`
+	CreationDate time.Time `json:"creationDate"`
+	ID_2         int64     `json:"id2"`
+	OrderID      int64     `json:"orderId"`
+	ProductName  string    `json:"productName"`
+	Quantity     int64     `json:"quantity"`
+	ProductPrice float64   `json:"productPrice"`
+	ProductID    string    `json:"productId"`
 }
 
 func (q *Queries) GetUserOrders(ctx context.Context, userID int64) ([]GetUserOrdersRow, error) {
@@ -167,8 +167,8 @@ RETURNING id, user_id, creation_date
 `
 
 type InsertOrderParams struct {
-	UserID       int64
-	CreationDate time.Time
+	UserID       int64     `json:"userId"`
+	CreationDate time.Time `json:"creationDate"`
 }
 
 func (q *Queries) InsertOrder(ctx context.Context, arg InsertOrderParams) (Order, error) {
