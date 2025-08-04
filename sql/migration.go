@@ -7,13 +7,14 @@ import (
 	"log"
 )
 
-//go:embed migrations/migration-1.sql
-var Migration string
+var (
+	//go:embed migrations/migration-1.sql
+	migration1 string
+	//go:embed migrations/migration-2.sql
+	migration2 string
+)
 
-//go:embed migrations/migration-2.sql
-var Migration2 string
-
-var migrations = []string{Migration, Migration2}
+var migrations = []string{migration1, migration2}
 
 func Migrate(db *sql.DB) error {
 	for i, migration := range migrations {

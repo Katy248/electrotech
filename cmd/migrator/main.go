@@ -22,8 +22,6 @@ func main() {
 	}
 	fmt.Println("Starting migration to " + sqlConnectionString)
 
-	fmt.Println(migration.Migration)
-
 	db, err := sql.Open("sqlite", sqlConnectionString)
 	if err != nil {
 		log.Fatalf("Error opening database: %v", err)
