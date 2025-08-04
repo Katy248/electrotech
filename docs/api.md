@@ -186,7 +186,8 @@ Request
   "company_name": "Company name",
   "company_address": "Company address",
   "position_in_company": "123",
-  "company_inn": "123"
+  "company_inn": "123",
+  "company_okpo": "123"
 }
 ```
 
@@ -218,6 +219,7 @@ Response
   "companyAddress": "Company address",
   "positionInCompany": "123",
   "companyINN": "123",
+  "companyOKPO": "123",
   "allRequiredFields": true
 }
 ```

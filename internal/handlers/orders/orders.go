@@ -1,13 +1,14 @@
 package orders
 
 import (
+	userHandlers "electrotech/internal/handlers/user"
 	"electrotech/internal/repository/catalog"
 	"electrotech/internal/repository/orders"
 	"electrotech/internal/repository/users"
-	"log"
 	"net/http"
 	"time"
 
+	"github.com/charmbracelet/log"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,12 +19,6 @@ type CreateOrderRequest struct {
 type OrderProductRequest struct {
 	ProductId string `json:"id" binding:"required"`
 	Quantity  int    `json:"quantity" binding:"required,min=1"`
-}
-
-func checkUserHasCompanyData(user users.User) bool {
-	return user.CompanyName.Valid &&
-		user.CompanyAddress.Valid &&
-		user.PositionInCompany.Valid && user.CompanyInn.Valid
 }
 
 func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, catalogRepo *catalog.Repo) gin.HandlerFunc {
@@ -44,11 +39,12 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 		// Проверяем, существует ли пользователь
 		user, err := userRepo.GetById(c.Request.Context(), userID.(int64))
 		if err != nil {
+			log.Error("User not found", "error", err)
 			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 			return
 		}
 
-		if !checkUserHasCompanyData(user) {
+		if !userHandlers.CheckUserHasCompanyData(user) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "user has no company data"})
 			return
 		}
@@ -58,19 +54,19 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 		for _, p := range req.Products {
 			price, err := catalogRepo.GetProductPrice(p.ProductId)
 			if err == catalog.ErrNotFound {
-				log.Printf("Error getting product price: %v", err)
+				log.Error("Failed getting product price", "error", err)
 				c.JSON(http.StatusNotFound, gin.H{"error": "product not found"})
 				return
 
 			} else if err != nil {
-				log.Printf("Something bad with product product: %v", err)
+				log.Warn("Something bad with order item, skipping it", "item", p, "error", err)
 				continue
 
 			}
 
 			name, err := catalogRepo.GetProductName(p.ProductId)
 			if err != nil {
-				log.Printf("something bad with product name: %v", err)
+				log.Warn("Can't get product name", "productId", p.ProductId, "error", err)
 				continue
 			}
 
@@ -93,7 +89,7 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 			CreationDate: time.Now(),
 		})
 		if err != nil {
-			log.Printf("Error creating order: %v", err)
+			log.Error("Failed creating order", "error", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create order"})
 			return
 		}

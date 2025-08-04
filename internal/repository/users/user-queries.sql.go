@@ -76,6 +76,7 @@ SELECT
     company_name,
     company_inn,
     company_address,
+    company_okpo,
     position_in_company
 FROM
     users
@@ -87,6 +88,7 @@ type GetCompanyDataRow struct {
 	CompanyName       sql.NullString `json:"companyName"`
 	CompanyInn        sql.NullString `json:"companyInn"`
 	CompanyAddress    sql.NullString `json:"companyAddress"`
+	CompanyOkpo       sql.NullString `json:"companyOkpo"`
 	PositionInCompany sql.NullString `json:"positionInCompany"`
 }
 
@@ -97,6 +99,7 @@ func (q *Queries) GetCompanyData(ctx context.Context, email string) (GetCompanyD
 		&i.CompanyName,
 		&i.CompanyInn,
 		&i.CompanyAddress,
+		&i.CompanyOkpo,
 		&i.PositionInCompany,
 	)
 	return i, err
@@ -149,15 +152,17 @@ SET
     company_name = ?1,
     company_inn = ?2,
     company_address = ?3,
-    position_in_company = ?4
+    company_okpo = ?4,
+    position_in_company = ?5
 WHERE
-    email = ?5
+    email = ?6
 `
 
 type UpdateCompanyDataParams struct {
 	CompanyName       sql.NullString `json:"companyName"`
 	CompanyInn        sql.NullString `json:"companyInn"`
 	CompanyAddress    sql.NullString `json:"companyAddress"`
+	CompanyOkpo       sql.NullString `json:"companyOkpo"`
 	PositionInCompany sql.NullString `json:"positionInCompany"`
 	Email             string         `json:"email"`
 }
@@ -167,6 +172,7 @@ func (q *Queries) UpdateCompanyData(ctx context.Context, arg UpdateCompanyDataPa
 		arg.CompanyName,
 		arg.CompanyInn,
 		arg.CompanyAddress,
+		arg.CompanyOkpo,
 		arg.PositionInCompany,
 		arg.Email,
 	)

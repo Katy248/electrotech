@@ -1,7 +1,6 @@
 package user
 
 import (
-	"database/sql"
 	"electrotech/internal/handlers/auth"
 	"electrotech/internal/repository/users"
 	"log"
@@ -159,37 +158,6 @@ func UpdateUserData(repo *users.Queries) gin.HandlerFunc {
 	}
 }
 
-func UpdateCompanyData(repo *users.Queries) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var req UpdateCompanyDataRequest
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
-		if err != nil || user.Email == "" {
-			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
-			return
-		}
-
-		err = repo.UpdateCompanyData(c.Request.Context(), users.UpdateCompanyDataParams{
-			Email:             c.GetString("email"),
-			CompanyName:       sql.NullString{String: req.CompanyName, Valid: true},
-			CompanyInn:        sql.NullString{String: req.CompanyINN, Valid: true},
-			CompanyAddress:    sql.NullString{String: req.CompanyAddress, Valid: true},
-			PositionInCompany: sql.NullString{String: req.PositionInCompany, Valid: true},
-		})
-		if err != nil {
-			log.Printf("Error updating company data: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update company data"})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"message": "Company data updated successfully"})
-	}
-}
 func GetData(repo *users.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
@@ -207,38 +175,4 @@ func GetData(repo *users.Queries) gin.HandlerFunc {
 			"last_name":    user.LastName,
 		})
 	}
-}
-func GetCompanyData(repo *users.Queries) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
-		if err != nil || user.Email == "" {
-			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
-			return
-		}
-
-		c.JSON(http.StatusOK, NewCompanyData(user))
-	}
-}
-
-type CompanyData struct {
-	CompanyName       string `json:"companyName"`
-	CompanyINN        string `json:"companyINN"`
-	CompanyAddress    string `json:"companyAddress"`
-	PositionInCompany string `json:"positionInCompany"`
-
-	AllRequiredFields bool `json:"allRequiredFields"`
-}
-
-func NewCompanyData(u users.User) *CompanyData {
-	data := &CompanyData{
-		CompanyName:       u.CompanyName.String,
-		CompanyINN:        u.CompanyInn.String,
-		CompanyAddress:    u.CompanyAddress.String,
-		PositionInCompany: u.PositionInCompany.String,
-	}
-
-	data.AllRequiredFields = data.CompanyName != "" && data.CompanyINN != "" && data.CompanyAddress != "" && data.PositionInCompany != ""
-
-	return data
 }

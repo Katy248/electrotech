@@ -18,10 +18,3 @@ type UpdateUserDataRequest struct {
 	Surname   string `json:"surname" binding:"required"`
 	LastName  string `json:"last_name" binding:"required"`
 }
-
-type UpdateCompanyDataRequest struct {
-	CompanyName       string `json:"company_name" binding:"required"`
-	CompanyINN        string `json:"company_inn" binding:"required"`
-	CompanyAddress    string `json:"company_address" binding:"required"`
-	PositionInCompany string `json:"position_in_company" binding:"required"`
-}

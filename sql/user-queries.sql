@@ -75,6 +75,7 @@ SET
     company_name = @company_name,
     company_inn = @company_inn,
     company_address = @company_address,
+    company_okpo = @company_okpo,
     position_in_company = @position_in_company
 WHERE
     email = @email;
@@ -85,6 +86,7 @@ SELECT
     company_name,
     company_inn,
     company_address,
+    company_okpo,
     position_in_company
 FROM
     users
