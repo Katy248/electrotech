@@ -3,11 +3,12 @@ package parser
 import (
 	"electrotech/internal/models"
 	"fmt"
-	"log"
 	"math"
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/charmbracelet/log"
 )
 
 func (p *Parser) GetParameters() ([]models.Parameter, error) {
@@ -21,7 +22,7 @@ func (p *Parser) mapParameters() ([]models.Parameter, error) {
 		switch sourceParam.Type {
 		case propertyTypeHandbook:
 			values := variantsToValues(sourceParam.Variants)
-			log.Printf("Handbook parameter '%s' has %v", sourceParam.Name, values)
+			log.Infof("Handbook parameter '%s' has %v", sourceParam.Name, values)
 			handbook, err := models.NewListParameter(sourceParam.Name, values)
 			if err != nil {
 				return result, err

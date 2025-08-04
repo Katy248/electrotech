@@ -3,8 +3,9 @@ package parser
 import (
 	"electrotech/internal/models"
 	"fmt"
-	"log"
 	"strconv"
+
+	"github.com/charmbracelet/log"
 )
 
 func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, error) {
@@ -43,7 +44,7 @@ func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, 
 			}
 			if propertyFull.Type == propertyTypeHandbook {
 				if prop.Value == "" {
-					log.Printf("[WARNING] Handbook property value is empty for property id = %q  (%q)", prop.Id, propertyFull.Name)
+					log.Warn("Handbook property value is empty", "propertyId", prop.Id, "propertyName", propertyFull.Name)
 					p.Parameters = append(p.Parameters, models.ProductParameter{
 						Name:        propertyFull.Name,
 						Type:        models.ParameterTypeList,
@@ -74,7 +75,7 @@ func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, 
 					StringValue: prop.Value,
 				})
 			} else {
-				log.Printf("Unknown property type %q", propertyFull.Type)
+				log.Warn("Unknown property type", "type", propertyFull.Type)
 			}
 		}
 		products = append(products, p)

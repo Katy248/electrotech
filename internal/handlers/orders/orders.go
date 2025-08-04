@@ -26,12 +26,14 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 		// Получаем userID из контекста (предполагаем, что middleware аутентификации уже добавил его)
 		userID, exists := c.Get("user_id")
 		if !exists {
+			log.Error("User not authenticated")
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
 			return
 		}
 
 		var req CreateOrderRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
+			log.Error("Failed to bind request")
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -45,6 +47,7 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 		}
 
 		if !userHandlers.CheckUserHasCompanyData(user) {
+			log.Error("User has no required company data")
 			c.JSON(http.StatusBadRequest, gin.H{"error": "user has no company data"})
 			return
 		}
@@ -79,6 +82,7 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 		}
 
 		if len(products) == 0 {
+			log.Error("No products in order, counts only valid items", "products", products, "itemsInRequest", len(req.Products))
 			c.JSON(http.StatusBadRequest, gin.H{"error": "no products in order"})
 			return
 		}
@@ -98,7 +102,7 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 			p.OrderID = order.ID
 			err := orderRepo.AddOrderProduct(c.Request.Context(), p)
 			if err != nil {
-				log.Printf("Error adding product to order: %v", err)
+				log.Error("Failed adding product to order", "error", err)
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to add product to order"})
 				return
 			}
@@ -116,13 +120,14 @@ func GetUserOrdersHandler(orderRepo *orders.Queries, catalogRepo *catalog.Repo) 
 		// Получаем userID из контекста
 		userID, exists := c.Get("user_id")
 		if !exists {
+			log.Error("User not authenticated")
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
 			return
 		}
 
 		orders, err := orderRepo.GetOrders(c.Request.Context(), userID.(int64))
 		if err != nil {
-			log.Printf("Error getting user orders: %v", err)
+			log.Error("Failed getting user orders", "error", err, "userID", userID)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get orders"})
 			return
 		}
@@ -132,7 +137,7 @@ func GetUserOrdersHandler(orderRepo *orders.Queries, catalogRepo *catalog.Repo) 
 		for _, order := range orders {
 			products, err := orderRepo.GetOrderProducts(c.Request.Context(), order.ID)
 			if err != nil {
-				log.Printf("Error getting order: %v", err)
+				log.Error("Failed getting order", "error", err, "orderID", order.ID)
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get order"})
 				return
 			}
@@ -160,7 +165,7 @@ func newResponseOrder(catalogRepo *catalog.Repo, order orders.Order, products []
 			Price:    orderItem.ProductPrice,
 		}
 		if err != nil {
-			log.Printf("[WARNING] Error getting product: %v. It was probably deleted", err)
+			log.Error("Failed getting product. It was probably deleted, or added before second DB migration", "error", err, "productID", orderItem.ProductID)
 		} else {
 			item.ImagePath = product.ImagePath
 		}

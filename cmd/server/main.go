@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 
@@ -16,6 +15,7 @@ import (
 	usersRepository "electrotech/internal/repository/users"
 	"electrotech/storage"
 
+	"github.com/charmbracelet/log"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -28,12 +28,12 @@ const defaultPort = 8080
 func getPort() int {
 	var portStr = os.Getenv("PORT")
 	if portStr == "" {
-		log.Printf("[WARNING] PORT environment variable not set, fallback to default %d", defaultPort)
+		log.Warn("PORT environment variable not set, fallback to default", "default", defaultPort)
 		return defaultPort
 	}
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
-		log.Printf("[ERROR] Failed parse PORT environment variable (value %q): %v. Fallback to default %d", portStr, err, defaultPort)
+		log.Error("Failed parse PORT environment variable Fallback to default %d", "value", portStr, "error", err, "default", defaultPort)
 	}
 	return port
 }
@@ -44,6 +44,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error opening database: %v", err)
 	}
+
+	auth.Setup()
 
 	usersRepo := usersRepository.New(db)
 	catalogRepo, err := catalog.New()
