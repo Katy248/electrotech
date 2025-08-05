@@ -79,6 +79,7 @@ func newCompanyData(u users.User) *CompanyData {
 		CompanyINN:        u.CompanyInn.String,
 		CompanyAddress:    u.CompanyAddress.String,
 		PositionInCompany: u.PositionInCompany.String,
+		CompanyOKPO:       u.CompanyOkpo.String,
 	}
 
 	data.AllRequiredFields = CheckUserHasCompanyData(u)
