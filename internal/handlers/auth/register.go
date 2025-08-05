@@ -54,6 +54,19 @@ func FormatPhoneNumber(phone string) (string, error) {
 	return phone, nil
 }
 
+func GeneratePasswordHash(pass string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hash), nil
+}
+
+func CheckPasswordHash(pass, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(pass))
+	return err == nil
+}
+
 func RegisterHandler(repo *users.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req RegisterRequest
@@ -70,7 +83,7 @@ func RegisterHandler(repo *users.Queries) gin.HandlerFunc {
 		}
 
 		// Хешируем пароль
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+		hashedPassword, err := GeneratePasswordHash(req.Password)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash password"})
 			return
