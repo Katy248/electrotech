@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/root/electrotech
-ExecStart=go run cmd/server/main.go
+ExecStart=/usr/bin/electrotech-back
 Restart=always
 RestartSec=5
 
