@@ -21,6 +21,8 @@ Application requires two environment variables:
 
 - `DB_CONNECTION` - just path to sqlite DB, for example _"/tmp/electrotech.sqlite3"_
 - `DATA_DIR` path to directory with catalog data, leave just _"./example"_
+- `PORT` - HTTP port, default is _8080_
+- `JWT_SECRET` - secret for JWT token
 
 ## Contributing
 
