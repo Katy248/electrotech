@@ -111,7 +111,26 @@ func main() {
 
 	}
 
+	runServer(server)
+}
+
+func runServer(srv *gin.Engine) {
 	host := fmt.Sprintf(":%d", getPort())
 
-	server.Run(host)
+	tlsCert := os.Getenv("TLS_CERT")
+	tlsKey := os.Getenv("TLS_KEY")
+
+	var err error
+
+	if tlsCert != "" && tlsKey != "" {
+		err = srv.RunTLS(host, tlsCert, tlsKey)
+	} else {
+		log.Warn("Run insecure")
+		err = srv.Run(host)
+	}
+
+	if err != nil {
+		log.Error("Failed run server", "error", err)
+	}
+
 }

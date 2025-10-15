@@ -4,8 +4,8 @@ import (
 	_ "embed"
 	"flag"
 	"fmt"
-	"log"
 
+	"github.com/charmbracelet/log"
 	"github.com/joho/godotenv"
 
 	migration "electrotech/sql"
@@ -21,7 +21,9 @@ var (
 
 func main() {
 	flag.Parse()
-	godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		log.Error("Failed load .env", "error", err)
+	}
 
 	db, err := storage.New()
 	if err != nil {

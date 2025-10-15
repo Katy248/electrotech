@@ -33,7 +33,9 @@ func testGetNewCatalog(t *testing.T) *Repo {
 func TestNewCatalog(t *testing.T) {
 	currentDir, _ := os.Getwd()
 	t.Logf("Current dir: %s", currentDir)
-	os.Setenv("DATA_DIR", "../../../example")
+	if err := os.Setenv("DATA_DIR", "../../../example"); err != nil {
+		t.Errorf("Failed set env: %s", err)
+	}
 	_, err := New()
 	if err != nil {
 		t.Errorf("Failed create repository: %s", err)

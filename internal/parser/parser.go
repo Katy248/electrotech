@@ -66,7 +66,9 @@ func (p *Parser) parse() error {
 }
 
 func (p *Parser) GetProducts() ([]models.Product, error) {
-	p.parse()
+	if err := p.parse(); err != nil {
+		return nil, fmt.Errorf("failed parse data: %s", err)
+	}
 
 	products, err := mapProducts(p.offers, p.imports)
 	if err != nil {
