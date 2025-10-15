@@ -7,7 +7,6 @@ run:
 	sqlc generate
 	go run cmd/server/main.go
 
-install:
-	go build -o ./electrotech-back cmd/server/main.go
-	cp ./electrotech-back /usr/bin/
-	cp ./electrotech-back.service /lib/systemd/system/
+run:
+	docker build -t electrotech-back .
+	docker run -d -p 8080:8080 electrotech-back
