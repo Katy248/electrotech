@@ -3,7 +3,8 @@ package catalog
 import (
 	"electrotech/internal/parser"
 	"fmt"
-	"os"
+
+	"github.com/spf13/viper"
 )
 
 var (
@@ -18,7 +19,7 @@ type Repo struct {
 }
 
 func New() (*Repo, error) {
-	dataDir := os.Getenv("DATA_DIR")
+	dataDir := viper.GetString("data-dir")
 	if dataDir == "" {
 		return nil, ErrDataDirNotSpecified
 	}

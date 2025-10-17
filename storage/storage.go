@@ -3,18 +3,18 @@ package storage
 import (
 	"database/sql"
 	"fmt"
-	"os"
 
 	"github.com/charmbracelet/log"
 	migrate "github.com/rubenv/sql-migrate"
+	"github.com/spf13/viper"
 	_ "modernc.org/sqlite"
 )
 
 func New() (*sql.DB, error) {
-	sqlConnectionString := os.Getenv("DB_CONNECTION")
+	sqlConnectionString := viper.GetString("db-connection")
 
 	if sqlConnectionString == "" {
-		return nil, fmt.Errorf("DB_CONNECTION environment variable isn't set")
+		return nil, fmt.Errorf("db-connection value isn't set")
 	}
 
 	db, err := sql.Open("sqlite", sqlConnectionString)

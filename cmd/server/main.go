@@ -2,8 +2,7 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"strconv"
+	"strings"
 
 	"electrotech/internal/handlers/auth"
 	catalogHandlers "electrotech/internal/handlers/catalog"
@@ -19,21 +18,31 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 )
 
-func init() { godotenv.Load() }
+func init() {
+	godotenv.Load()
+	viper.SetConfigName("electrotech-back")
+	viper.SetEnvKeyReplacer(
+		strings.NewReplacer("-", "_", ".", "_"),
+	)
+	viper.AddConfigPath(".")
+	viper.AddConfigPath("/etc")
+	viper.AddConfigPath("/etc/electrotech")
+	viper.AutomaticEnv()
+	if err := viper.ReadInConfig(); err != nil {
+		log.Warn("Failed read config file", "error", err)
+	}
+}
 
-const defaultPort = 8080
+const DefaultPort = 8080
 
 func getPort() int {
-	var portStr = os.Getenv("PORT")
-	if portStr == "" {
-		log.Warn("PORT environment variable not set, fallback to default", "default", defaultPort)
-		return defaultPort
-	}
-	port, err := strconv.Atoi(portStr)
-	if err != nil {
-		log.Error("Failed parse PORT environment variable Fallback to default %d", "value", portStr, "error", err, "default", defaultPort)
+	var port = viper.GetInt("port")
+	if port == 0 {
+		log.Warn("PORT value is not set, fallback to default", "default", DefaultPort)
+		return DefaultPort
 	}
 	return port
 }
@@ -51,7 +60,7 @@ func main() {
 	catalogRepo, err := catalog.New()
 	ordersRepo := ordersRepository.New(db)
 
-	gin.SetMode(os.Getenv("GIN_MODE"))
+	gin.SetMode(viper.GetString("gin-mode"))
 	server := gin.Default()
 	// Enables cors
 	corsConf := cors.Config{
@@ -65,7 +74,7 @@ func main() {
 	{
 		api := server.Group("/api")
 		{
-			api.Static("/files", os.Getenv("DATA_DIR"))
+			api.Static("/files", viper.GetString("data-dir"))
 
 			api.GET("/filters", filter.GetFilters(catalogRepo))
 
@@ -108,7 +117,6 @@ func main() {
 				usersGroup.POST("/get-company-data", user.GetCompanyData(usersRepo))
 			}
 		}
-
 	}
 
 	runServer(server)
@@ -116,9 +124,10 @@ func main() {
 
 func runServer(srv *gin.Engine) {
 	host := fmt.Sprintf(":%d", getPort())
+	log.Info("Starting server", "host", host)
 
-	tlsCert := os.Getenv("TLS_CERT")
-	tlsKey := os.Getenv("TLS_KEY")
+	tlsCert := viper.GetString("tls-cert")
+	tlsKey := viper.GetString("tls-key")
 
 	var err error
 

@@ -2,12 +2,12 @@ package auth
 
 import (
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/charmbracelet/log"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -20,7 +20,7 @@ const (
 )
 
 func Setup() {
-	jwtSecret := os.Getenv("JWT_SECRET")
+	jwtSecret := viper.GetString("jwt-secret")
 	if jwtSecret == "" {
 		log.Fatalf("JWT_SECRET environment variable isn't set")
 	}
