@@ -3,10 +3,11 @@ package user
 import (
 	"electrotech/internal/handlers/auth"
 	"electrotech/internal/repository/users"
-	"log"
 	"net/http"
 
+	"github.com/charmbracelet/log"
 	"github.com/gin-gonic/gin"
+	gr "github.com/katy248/gravatar/pkg/url"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -82,11 +83,11 @@ func ChangeEmail(repo *users.Queries) gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, gin.H{"message": "email changed successfully"})
 
-		log.Printf("// TODO: should implement refresh tokens")
-		log.Printf("// TODO: should implement refresh tokens")
-		log.Printf("// TODO: should implement refresh tokens")
-		log.Printf("// TODO: should implement refresh tokens")
-		log.Printf("// TODO: should implement refresh tokens")
+		log.Warn("// TODO: should implement refresh tokens")
+		log.Warn("// TODO: should implement refresh tokens")
+		log.Warn("// TODO: should implement refresh tokens")
+		log.Warn("// TODO: should implement refresh tokens")
+		log.Warn("// TODO: should implement refresh tokens")
 	}
 }
 
@@ -101,14 +102,14 @@ func ChangePhoneNumber(repo *users.Queries) gin.HandlerFunc {
 
 		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
 		if err != nil || user.Email == "" {
-			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
+			log.Error("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 			return
 		}
 
 		phone, err := auth.FormatPhoneNumber(req.PhoneNumber)
 		if err != nil {
-			log.Printf("Error formatting phone number: %v", err)
+			log.Error("Error formatting phone number: %v", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid phone number"})
 			return
 		}
@@ -162,13 +163,14 @@ func GetData(repo *users.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
 		if err != nil || user.Email == "" {
-			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
+			log.Error("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
 			"email":        user.Email,
+			"avatarUrl":    gr.NewAvatarUrl(user.Email, gr.DefaultImage(gr.DefaultWavater)),
 			"phone_number": user.PhoneNumber,
 			"first_name":   user.FirstName,
 			"surname":      user.Surname,

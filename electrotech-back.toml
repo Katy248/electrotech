@@ -1,1 +1,6 @@
 gin-mode = "release"
+
+
+[email]
+sender-name = "shop-icentr.pro"
+sender-email = "noreply@shop-icentr.pro"

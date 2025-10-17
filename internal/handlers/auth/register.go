@@ -3,10 +3,10 @@ package auth
 import (
 	"electrotech/internal/repository/users"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
+	"github.com/charmbracelet/log"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
