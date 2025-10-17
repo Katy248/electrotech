@@ -10,19 +10,24 @@ func TestFormatPhoneNumber(t *testing.T) {
 	}{
 		{
 			input:    "+79991234567",
-			expected: "89991234567",
+			expected: "+79991234567",
 		},
 		{
 			input:         "79991234567",
 			shouldBeError: true,
 		},
 		{
-			input:         "32 9991234567",
+			input:         "1232 9991234567",
 			shouldBeError: true,
 		},
 		{
 			input:    "+7 (999) 123-45-67",
-			expected: "89991234567"},
+			expected: "+79991234567",
+		},
+		{
+			input:    "8 (999) 123-45-67",
+			expected: "+79991234567",
+		},
 		{
 			input:         "",
 			shouldBeError: true,

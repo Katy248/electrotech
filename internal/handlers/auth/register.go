@@ -22,7 +22,7 @@ type RegisterRequest struct {
 
 func FormatPhoneNumber(phone string) (string, error) {
 	if phone == "" {
-		return "", fmt.Errorf("phone number is required")
+		return "", fmt.Errorf("phone number is empty")
 
 	}
 	if len(phone) < 11 {
@@ -34,21 +34,17 @@ func FormatPhoneNumber(phone string) (string, error) {
 	phone = strings.ReplaceAll(phone, ")", "")
 	phone = strings.ReplaceAll(phone, " ", "")
 
-	if phone[0] == '+' && phone[1] == '7' {
-		phone = "8" + phone[2:]
+	if phone[0] == '8' {
+		phone = "+7" + phone[1:]
 	}
 
 	for index, ch := range phone {
-		if ch < '0' || ch > '9' {
+		if ch != '+' && ch < '0' || ch > '9' {
 			return phone, fmt.Errorf("invalid character %q at index %d", ch, index)
 		}
 	}
 
-	if phone[0] != '8' {
-		return phone, fmt.Errorf("invalid country code %d", phone[0])
-	}
-
-	if len(phone) != 11 {
+	if len(phone) != 12 {
 		return phone, fmt.Errorf("invalid phone number length %d", len(phone))
 	}
 	return phone, nil
