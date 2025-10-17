@@ -1,2 +1,0 @@
-ALTER TABLE order_products
-ADD COLUMN product_id VARCHAR(256) NOT NULL DEFAULT '';

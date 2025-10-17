@@ -1,3 +1,4 @@
+-- +migrate Up
 CREATE TABLE
     IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -9,6 +10,7 @@ CREATE TABLE
         password_hash VARCHAR(255) NOT NULL,
         -- Not necessary for viewing data
         company_name VARCHAR(255),
+        company_okpo VARCHAR(255),
         company_inn VARCHAR(255),
         company_address VARCHAR(255),
         position_in_company VARCHAR(255)
@@ -25,9 +27,17 @@ CREATE TABLE
 CREATE TABLE
     IF NOT EXISTS order_products (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_id VARCHAR(256) NOT NULL DEFAULT '',
         order_id INT NOT NULL,
         product_name VARCHAR(255) NOT NULL,
         quantity INT NOT NULL,
         product_price DECIMAL NOT NULL,
         FOREIGN KEY (order_id) REFERENCES orders (id)
     );
+
+-- +migrate Down
+DROP TABLE IF EXISTS users;
+
+DROP TABLE IF EXISTS orders;
+
+DROP TABLE IF EXISTS order_products;
