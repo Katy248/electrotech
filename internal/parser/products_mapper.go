@@ -44,7 +44,7 @@ func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, 
 			}
 			if propertyFull.Type == propertyTypeHandbook {
 				if prop.Value == "" {
-					log.Warn("Handbook property value is empty", "propertyId", prop.Id, "propertyName", propertyFull.Name)
+					log.Debug("Handbook property value is empty", "propertyId", prop.Id, "propertyName", propertyFull.Name)
 					p.Parameters = append(p.Parameters, models.ProductParameter{
 						Name:        propertyFull.Name,
 						Type:        models.ParameterTypeList,

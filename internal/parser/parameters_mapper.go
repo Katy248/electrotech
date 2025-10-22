@@ -22,7 +22,7 @@ func (p *Parser) mapParameters() ([]models.Parameter, error) {
 		switch sourceParam.Type {
 		case propertyTypeHandbook:
 			values := variantsToValues(sourceParam.Variants)
-			log.Info("Handbook parameter", "param", sourceParam.Name, "values", values)
+			log.Debug("Handbook parameter", "param", sourceParam.Name, "values", values)
 			handbook, err := models.NewListParameter(sourceParam.Name, values)
 			if err != nil {
 				return result, err
