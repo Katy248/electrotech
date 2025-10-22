@@ -29,6 +29,7 @@ func init() {
 		strings.NewReplacer("-", "_", ".", "_"),
 	)
 	viper.AddConfigPath(".")
+	viper.AddConfigPath("/app")
 	viper.AddConfigPath("/etc")
 	viper.AddConfigPath("/etc/electrotech")
 	viper.AutomaticEnv()
