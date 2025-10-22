@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
 	"electrotech/internal/handlers/auth"
@@ -132,7 +133,7 @@ func runServer(srv *gin.Engine) {
 	var err error
 
 	if tlsCert != "" && tlsKey != "" {
-		err = srv.RunTLS(host, tlsCert, tlsKey)
+		err = runSecure(srv, host, tlsCert, tlsKey)
 	} else {
 		log.Warn("Run insecure")
 		err = srv.Run(host)
@@ -142,4 +143,11 @@ func runServer(srv *gin.Engine) {
 		log.Error("Failed run server", "error", err)
 	}
 
+}
+
+func runSecure(srv *gin.Engine, host, cert, key string) error {
+	srv.GET("/.well-known/acme-challenge/CYrYCTl0gu0IVWsQefp7m_CrUww7cNXf12p8IMz0sUk", func(ctx *gin.Context) {
+		ctx.String(http.StatusOK, "CYrYCTl0gu0IVWsQefp7m_CrUww7cNXf12p8IMz0sUk.gp05os96QhdaYP8iPlcWow4JPYG8tW50-Pf3uzq5qiY")
+	})
+	return srv.RunTLS(host, cert, key)
 }
