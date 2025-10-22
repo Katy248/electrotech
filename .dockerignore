@@ -5,3 +5,6 @@ sqlc.yml
 *.service
 example/
 docs/
+*.sqlite3
+*.sqlite
+*.db
