@@ -9,4 +9,4 @@ run:
 
 run-docker:
 	docker build -t electrotech-back .
-	docker run -d -p 8080:8080 electrotech-back
+	docker run -d -p 8080:8080 --name electrotech electrotech-back
