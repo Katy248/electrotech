@@ -1,0 +1,5 @@
+Makefile
+*.md
+sqlc.yml
+*.sh
+*.service
