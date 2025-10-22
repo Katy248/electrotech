@@ -19,6 +19,7 @@ type Repo struct {
 }
 
 func New() (*Repo, error) {
+	viper.SetDefault("data-dir", "/data")
 	dataDir := viper.GetString("data-dir")
 	if dataDir == "" {
 		return nil, ErrDataDirNotSpecified
