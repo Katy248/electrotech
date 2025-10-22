@@ -7,8 +7,11 @@ run:
 	sqlc generate
 	go run cmd/server/main.go
 
+IMAGE := electrotech-back
+CONTAINER_NAME := electrotech
+
 run-docker:
-	docker stop electrotech || true
-	docker rm electrotech || true
-	docker build -t electrotech-back .
-	docker run -d -p 8080:8080 --name electrotech electrotech-back
+	docker stop $(CONTAINER_NAME) || true
+	docker rm $(CONTAINER_NAME) || true
+	docker build -t $(IMAGE) .
+	docker run -d -p 8080:8080 --name $(CONTAINER_NAME) $(IMAGE)
