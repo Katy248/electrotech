@@ -3,3 +3,4 @@ Makefile
 sqlc.yml
 *.sh
 *.service
+*.xml
