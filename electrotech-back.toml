@@ -1,6 +1,12 @@
 gin-mode = "release"
+jwt-secret = "234897593847690837456098734q89secret"
 
 
 [email]
 sender-name = "shop-icentr.pro"
 sender-email = "noreply@shop-icentr.pro"
+
+
+[ftp]
+enable = true
+port = 8021
