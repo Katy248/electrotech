@@ -198,7 +198,7 @@ func newFTPServer() (*ftp.Server, error) {
 		Perm:         ftp.NewSimplePerm(usr, usr),
 		RateLimit:    1_000_000,
 		PublicIP:     conf.PublicIP,
-		PassivePorts: "30000-40000",
+		PassivePorts: "30000-30020",
 	})
 	if err != nil {
 		return nil, err
