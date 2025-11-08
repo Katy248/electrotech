@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 
@@ -22,7 +23,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 	ftp "goftp.io/server/v2"
-	driver "goftp.io/server/v2/driver/file"
+	"goftp.io/server/v2/driver/file"
 )
 
 func init() {
@@ -123,10 +124,14 @@ func main() {
 			}
 		}
 	}
+	ftpServer, err := newFTPServer()
+	if err != nil {
+		log.Fatal("Failed create FTP server", "error", err)
+	}
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go func() { mustRun(runServer(server), &wg) }()
-	go func() { mustRun(runFTP(), &wg) }()
+	go func() { mustRun(runFTP(ftpServer), &wg) }()
 
 	wg.Wait()
 }
@@ -138,43 +143,62 @@ func mustRun(result error, wg *sync.WaitGroup) {
 	}
 }
 
-func runFTP() error {
+func newFTPServer() (*ftp.Server, error) {
+
 	var conf struct {
-		Enable bool
-		Port   int
+		Enable   bool
+		Port     int
+		Username string
+		Password string
 	}
 
 	conf.Port = viper.GetInt("ftp.port")
 	conf.Enable = viper.GetBool("ftp.enable")
+	conf.Username = viper.GetString("ftp.username")
+	conf.Password = viper.GetString("ftp.password")
 
 	if !conf.Enable {
-		return nil
+		return nil, nil
 	}
 	if conf.Port == 0 {
-		return fmt.Errorf("FTP port not specified")
+		return nil, fmt.Errorf("FTP port not specified")
+	}
+	if conf.Username == "" {
+		return nil, fmt.Errorf("FTP user name not specified")
+	}
+	if conf.Password == "" {
+		return nil, fmt.Errorf("FTP user password not specified")
+	}
+	if len(conf.Password) < 20 {
+		log.Warn("FTP user password length is less than 20 symbols, this can be security issue")
 	}
 
-	drv, err := driver.NewDriver(viper.GetString("data-dir"))
+	driver, err := file.NewDriver(viper.GetString("data-dir"))
 	if err != nil {
-		return fmt.Errorf("failed create driver for data directory: %s", err)
+		return nil, fmt.Errorf("failed create driver for data directory: %s", err)
 	}
+
+	usr := os.Getenv("USER")
 	srv, err := ftp.NewServer(&ftp.Options{
-		Port: conf.Port,
-		TLS:  true,
+		Driver: driver,
+		Port:   conf.Port,
 		Auth: &ftp.SimpleAuth{
 			Name:     "admin",
 			Password: "password",
 		},
-		Perm:   ftp.NewSimplePerm("root", "root"),
-		Driver: drv,
+		Perm:      ftp.NewSimplePerm(usr, usr),
+		RateLimit: 1_000_000,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
+	return srv, nil
+}
 
-	log.Info("Starting FTP server", "port", conf.Port)
+func runFTP(srv *ftp.Server) error {
+
 	if err := srv.ListenAndServe(); err != nil {
-		log.Error("Failed serve FTP", "data-dir", viper.GetString("data-dir"), "error", err)
+		log.Error("Failed serve FTP", "error", err)
 		return err
 	}
 	return nil

@@ -15,8 +15,9 @@ run-docker:
 	docker rm $(CONTAINER_NAME) || true
 	docker build -t $(IMAGE) .
 	docker run \
-		--volume ./example:/data\
+		--volume /var/data:/data\
 		--detach \
 		-p 8080:8080 \
 		-p 8021:8021 \
+		--env-file docker.env \
 		--name $(CONTAINER_NAME) $(IMAGE)
