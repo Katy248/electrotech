@@ -13,13 +13,14 @@ import (
 func New() (*sql.DB, error) {
 	sqlConnectionString := viper.GetString("db-connection")
 
+	log.Info("Init database storage", "conn", sqlConnectionString)
 	if sqlConnectionString == "" {
 		return nil, fmt.Errorf("db-connection value isn't set")
 	}
 
 	db, err := sql.Open("sqlite", sqlConnectionString)
 	if err != nil {
-		return nil, fmt.Errorf("error opening database: %v", err)
+		return nil, fmt.Errorf("error opening database from file %q: %v", sqlConnectionString, err)
 	}
 
 	if err := migrateDB(db); err != nil {

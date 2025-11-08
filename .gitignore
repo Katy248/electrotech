@@ -1,3 +1,5 @@
 *.key
 *.pem
 .env
+*.sqlite3
+*.sqlite

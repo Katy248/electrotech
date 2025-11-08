@@ -22,7 +22,7 @@ const (
 func Setup() {
 	jwtSecret := viper.GetString("jwt-secret")
 	if jwtSecret == "" {
-		log.Fatalf("JWT_SECRET environment variable isn't set")
+		log.Fatal("JWT_SECRET environment variable isn't set")
 	}
 	if len(jwtSecret) < 20 {
 		log.Warn("JWT_SECRET is less than 20 characters, this must be security issue")

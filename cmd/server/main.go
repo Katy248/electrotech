@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
+	"sync"
 
 	"electrotech/internal/handlers/auth"
 	catalogHandlers "electrotech/internal/handlers/catalog"
@@ -20,6 +22,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
+	ftp "goftp.io/server/v2"
+	"goftp.io/server/v2/driver/file"
 )
 
 func init() {
@@ -53,7 +57,7 @@ func main() {
 
 	db, err := storage.New()
 	if err != nil {
-		log.Fatalf("Error opening database: %v", err)
+		log.Fatal("Can't init storage", "error", err)
 	}
 
 	auth.Setup()
@@ -120,11 +124,87 @@ func main() {
 			}
 		}
 	}
+	ftpServer, err := newFTPServer()
+	if err != nil {
+		log.Fatal("Failed create FTP server", "error", err)
+	}
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() { mustRun(runServer(server), &wg) }()
+	go func() { mustRun(runFTP(ftpServer), &wg) }()
 
-	runServer(server)
+	wg.Wait()
 }
 
-func runServer(srv *gin.Engine) {
+func mustRun(result error, wg *sync.WaitGroup) {
+	defer wg.Done()
+	if result != nil {
+		log.Fatal("Failed run", "error", result)
+	}
+}
+
+func newFTPServer() (*ftp.Server, error) {
+
+	var conf struct {
+		Enable   bool
+		Port     int
+		Username string
+		Password string
+	}
+
+	conf.Port = viper.GetInt("ftp.port")
+	conf.Enable = viper.GetBool("ftp.enable")
+	conf.Username = viper.GetString("ftp.username")
+	conf.Password = viper.GetString("ftp.password")
+
+	if !conf.Enable {
+		return nil, nil
+	}
+	if conf.Port == 0 {
+		return nil, fmt.Errorf("FTP port not specified")
+	}
+	if conf.Username == "" {
+		return nil, fmt.Errorf("FTP user name not specified")
+	}
+	if conf.Password == "" {
+		return nil, fmt.Errorf("FTP user password not specified")
+	}
+	if len(conf.Password) < 20 {
+		log.Warn("FTP user password length is less than 20 symbols, this can be security issue")
+	}
+
+	driver, err := file.NewDriver(viper.GetString("data-dir"))
+	if err != nil {
+		return nil, fmt.Errorf("failed create driver for data directory: %s", err)
+	}
+
+	usr := os.Getenv("USER")
+	srv, err := ftp.NewServer(&ftp.Options{
+		Driver: driver,
+		Port:   conf.Port,
+		Auth: &ftp.SimpleAuth{
+			Name:     "admin",
+			Password: "password",
+		},
+		Perm:      ftp.NewSimplePerm(usr, usr),
+		RateLimit: 1_000_000,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return srv, nil
+}
+
+func runFTP(srv *ftp.Server) error {
+
+	if err := srv.ListenAndServe(); err != nil {
+		log.Error("Failed serve FTP", "error", err)
+		return err
+	}
+	return nil
+}
+
+func runServer(srv *gin.Engine) error {
 	host := fmt.Sprintf(":%d", getPort())
 	log.Info("Starting server", "host", host)
 
@@ -143,6 +223,8 @@ func runServer(srv *gin.Engine) {
 	if err != nil {
 		log.Error("Failed run server", "error", err)
 	}
+
+	return err
 
 }
 

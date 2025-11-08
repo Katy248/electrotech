@@ -8,3 +8,5 @@ docs/
 *.sqlite3
 *.sqlite
 *.db
+.zed/
+.env
