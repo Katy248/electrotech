@@ -15,8 +15,8 @@ run-docker:
 	docker rm $(CONTAINER_NAME) || true
 	docker build -t $(IMAGE) .
 	docker run \
-		--volume ./database.sqlite3:/database.sqlite3 \
 		--volume ./example:/data\
 		--detach \
 		-p 8080:8080 \
+		-p 8021:8021 \
 		--name $(CONTAINER_NAME) $(IMAGE)

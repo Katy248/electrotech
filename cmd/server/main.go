@@ -56,7 +56,7 @@ func main() {
 
 	db, err := storage.New()
 	if err != nil {
-		log.Fatalf("Error opening database: %v", err)
+		log.Fatal("Can't init storage", "error", err)
 	}
 
 	auth.Setup()
@@ -165,7 +165,7 @@ func runFTP() error {
 			Name:     "admin",
 			Password: "password",
 		},
-		Perm:   ftp.NewSimplePerm("admin", "admin"),
+		Perm:   ftp.NewSimplePerm("root", "root"),
 		Driver: drv,
 	})
 	if err != nil {
