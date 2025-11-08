@@ -20,5 +20,6 @@ run-docker:
 		--detach \
 		-p 8080:8080 \
 		-p 8021:8021 \
+		-p 30000-40000:30000-40000 \
 		--env-file docker.env \
 		--name $(CONTAINER_NAME) $(IMAGE)

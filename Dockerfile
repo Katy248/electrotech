@@ -4,6 +4,5 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN go build -o /app/srv ./cmd/server/main.go
-EXPOSE 8080
-EXPOSE 8021
+EXPOSE 8080 8021 30000-40000
 ENTRYPOINT ["/app/srv"]
