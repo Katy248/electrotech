@@ -183,8 +183,8 @@ func newFTPServer() (*ftp.Server, error) {
 		Driver: driver,
 		Port:   conf.Port,
 		Auth: &ftp.SimpleAuth{
-			Name:     "admin",
-			Password: "password",
+			Name:     conf.Username,
+			Password: conf.Password,
 		},
 		Perm:      ftp.NewSimplePerm(usr, usr),
 		RateLimit: 1_000_000,
