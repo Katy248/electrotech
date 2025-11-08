@@ -16,6 +16,7 @@ run-docker:
 	docker build -t $(IMAGE) .
 	docker run \
 		--volume /var/data:/data\
+		--volume /database.sqlite3:/database.sqlite3 \
 		--detach \
 		-p 8080:8080 \
 		-p 8021:8021 \
