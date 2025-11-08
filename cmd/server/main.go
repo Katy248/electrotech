@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"strings"
@@ -150,12 +151,14 @@ func newFTPServer() (*ftp.Server, error) {
 		Port     int
 		Username string
 		Password string
+		PublicIP string
 	}
 
 	conf.Port = viper.GetInt("ftp.port")
 	conf.Enable = viper.GetBool("ftp.enable")
 	conf.Username = viper.GetString("ftp.username")
 	conf.Password = viper.GetString("ftp.password")
+	conf.PublicIP= viper.GetString("ftp.public-ip")
 
 	if !conf.Enable {
 		return nil, nil
@@ -171,6 +174,12 @@ func newFTPServer() (*ftp.Server, error) {
 	}
 	if len(conf.Password) < 20 {
 		log.Warn("FTP user password length is less than 20 symbols, this can be security issue")
+	}
+	ip :=net.ParseIP(conf.PublicIP)
+	if conf.PublicIP == ""  {
+		return nil,fmt.Errorf("FTP's public IP not specified")
+	} else if ip.IsUnspecified() || ip.IsPrivate() {
+		return nil,fmt.Errorf("bad FTP's public IP specification")
 	}
 
 	driver, err := file.NewDriver(viper.GetString("data-dir"))
@@ -188,6 +197,7 @@ func newFTPServer() (*ftp.Server, error) {
 		},
 		Perm:      ftp.NewSimplePerm(usr, usr),
 		RateLimit: 1_000_000,
+		PublicIP: ,
 	})
 	if err != nil {
 		return nil, err
