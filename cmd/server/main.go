@@ -31,6 +31,8 @@ func init() {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Warn("Failed read config file", "error", err)
 	}
+	log.SetReportCaller(true)
+
 }
 
 func main() {
