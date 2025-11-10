@@ -10,28 +10,24 @@ import (
 	"github.com/spf13/viper"
 )
 
-var (
-	_secretKey = "" // В реальном приложении используйте безопасный ключ из конфига
-)
+func getSecretKey() string {
+	jwtSecret := viper.GetString("jwt-secret")
+	if jwtSecret == "" {
+		log.Fatal("jwt-secret isn't set")
+	}
+	if len(jwtSecret) < 20 {
+		log.Warn("jwt-secret is less than 20 characters, this must be security issue")
+	}
+	return jwtSecret
+}
 
 const (
 	TokenTTL        = time.Hour * 24
 	RefreshTokenTTL = TokenTTL * 2
 )
 
-func Setup() {
-	jwtSecret := viper.GetString("jwt-secret")
-	if jwtSecret == "" {
-		log.Fatal("JWT_SECRET environment variable isn't set")
-	}
-	if len(jwtSecret) < 20 {
-		log.Warn("JWT_SECRET is less than 20 characters, this must be security issue")
-	}
-	_secretKey = jwtSecret
-}
-
 func getKey() []byte {
-	return []byte(_secretKey)
+	return []byte(getSecretKey())
 }
 
 type Claims struct {
