@@ -9,7 +9,9 @@ import (
 	"electrotech/internal/repository/catalog"
 	ordersRepo "electrotech/internal/repository/orders"
 	"electrotech/internal/repository/users"
+	"electrotech/pkg/ginger"
 	"fmt"
+	"net/http"
 
 	"github.com/charmbracelet/log"
 	"github.com/gin-contrib/cors"
@@ -24,10 +26,16 @@ type HTTPServer struct {
 func NewHTTPServer(usersRepo *users.Queries, catalogRepo *catalog.Repo, ordersRepo *ordersRepo.Queries) *HTTPServer {
 
 	gin.SetMode(viper.GetString("gin-mode"))
+	inger := ginger.Default()
 	server := gin.Default()
+
 	corsConf := cors.Config{
-		AllowAllOrigins:  true,
-		AllowMethods:     []string{"POST", "GET", "OPTION", "DELETE", "PUT"},
+		AllowAllOrigins: true,
+		AllowMethods: []string{
+			http.MethodPost,
+			http.MethodGet,
+			http.MethodOptions,
+		},
 		AllowHeaders:     []string{"Authorization", "Content-Type", "Origin"},
 		AllowCredentials: true,
 	}
@@ -49,7 +57,7 @@ func NewHTTPServer(usersRepo *users.Queries, catalogRepo *catalog.Repo, ordersRe
 
 			{
 				authGroup := api.Group("/auth")
-				authGroup.POST("/login", auth.LoginHandler(usersRepo))
+				authGroup.POST("/login", inger.AsHandler(auth.LoginHandler(usersRepo)))
 				authGroup.POST("/register", auth.RegisterHandler(usersRepo))
 				authGroup.POST("/refresh", auth.Refresh(usersRepo))
 			}

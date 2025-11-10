@@ -2,6 +2,7 @@ package auth
 
 import (
 	"electrotech/internal/repository/users"
+	"electrotech/pkg/ginger"
 	"log"
 	"net/http"
 
@@ -23,37 +24,32 @@ type AuthResponse struct {
 	PhoneNumber  string `json:"phone_number"`
 }
 
-func LoginHandler(repo *users.Queries) gin.HandlerFunc {
-	return func(c *gin.Context) {
+func LoginHandler(repo *users.Queries) ginger.Handler {
+	return func(c *gin.Context) (any, error) {
 		var req LoginRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			log.Printf("Error binding request: %v", err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
+			return nil, ginger.BadRequest("can't bind body")
 		}
 
 		user, err := repo.GetByEmail(c.Request.Context(), req.Email)
 		if err != nil || user.Email == "" {
 			log.Printf("Error getting user by email '%s': %v", req.Email, err)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
-			return
+			return nil, ginger.Unauthorized("invalid credentials")
 		}
 
 		err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password))
 		if err != nil {
 			log.Printf("Error comparing password: %v", err)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
-			return
+			return nil, ginger.Unauthorized("invalid credentials")
 		}
 
 		response, err := getAuthResponse(user)
 		if err != nil {
-			log.Printf("Error generating auth response: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+			return nil, err
 		}
 
-		c.JSON(http.StatusOK, response)
+		return response, nil
 	}
 }
 
