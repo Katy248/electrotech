@@ -3,9 +3,12 @@ package catalog
 import (
 	"os"
 	"testing"
+
+	"github.com/spf13/viper"
 )
 
 func TestNewCatalogWithoutEnv(t *testing.T) {
+	viper.Set("data-dir", "")
 	_, err := New()
 	if err != ErrDataDirNotSpecified {
 		t.Errorf("Expected '%s' error but there is '%s'", ErrDataDirNotSpecified, err)
@@ -33,9 +36,7 @@ func testGetNewCatalog(t *testing.T) *Repo {
 func TestNewCatalog(t *testing.T) {
 	currentDir, _ := os.Getwd()
 	t.Logf("Current dir: %s", currentDir)
-	if err := os.Setenv("DATA_DIR", "../../../example"); err != nil {
-		t.Errorf("Failed set env: %s", err)
-	}
+	viper.Set("data-dir", "../../../example")
 	_, err := New()
 	if err != nil {
 		t.Errorf("Failed create repository: %s", err)
