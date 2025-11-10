@@ -24,6 +24,7 @@ func getSecretKey() string {
 const (
 	TokenTTL        = time.Hour * 24
 	RefreshTokenTTL = TokenTTL * 2
+	TokenIssuer     = "electrotech-back"
 )
 
 func getKey() []byte {
@@ -64,7 +65,9 @@ func GenerateToken(email string, userID int64) (string, error) {
 		Email: email,
 		Id:    userID,
 		StandardClaims: jwt.StandardClaims{
+			IssuedAt:  time.Now().Unix(),
 			ExpiresAt: expirationTime.Unix(),
+			Issuer:    TokenIssuer,
 		},
 	}
 
@@ -78,14 +81,17 @@ func GenerateRefreshToken(userID int64) (string, error) {
 	claims := &Claims{
 		Id: userID,
 		StandardClaims: jwt.StandardClaims{
+			IssuedAt:  time.Now().Unix(),
 			ExpiresAt: expirationTime.Unix(),
+			Issuer:    TokenIssuer,
+			NotBefore: time.Now().Add(TokenTTL).Unix(),
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(getKey())
-
 }
+
 func ValidateToken(tokenString string) (*Claims, error) {
 	claims := &Claims{}
 
