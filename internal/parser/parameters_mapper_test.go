@@ -15,7 +15,9 @@ func TestMapParameters(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	p.parse()
+	if err := p.parse(); err != nil {
+		t.Fatalf("Failed parse catalog: %s", err)
+	}
 
 	parameters, err := p.mapParameters()
 	if err != nil {

@@ -17,7 +17,9 @@ import (
 )
 
 func init() {
-	godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		log.Warn("Can't load .env file", "error", err)
+	}
 	viper.SetConfigName("electrotech-back")
 	viper.SetEnvKeyReplacer(
 		strings.NewReplacer("-", "_", ".", "_"),

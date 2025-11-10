@@ -12,7 +12,9 @@ import (
 )
 
 func (p *Parser) GetParameters() ([]models.Parameter, error) {
-	p.parse()
+	if err := p.parse(); err != nil {
+		return nil, fmt.Errorf("failed parse catalog: %s", err)
+	}
 	return p.mapParameters()
 }
 

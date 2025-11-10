@@ -15,7 +15,9 @@ func TestNewCatalogWithoutEnv(t *testing.T) {
 	}
 }
 func TestNewCatalogBadDir(t *testing.T) {
-	os.Setenv("DATA_DIR", "./not-exist")
+	if err := os.Setenv("DATA_DIR", "./not-exist"); err != nil {
+		t.Errorf("Failed set env variable: %s", err)
+	}
 	_, err := New()
 	if err == nil {
 		t.Error("There is not error, but shuld be, cause directory not exist")
@@ -25,7 +27,9 @@ func TestNewCatalogBadDir(t *testing.T) {
 func testGetNewCatalog(t *testing.T) *Repo {
 	currentDir, _ := os.Getwd()
 	t.Logf("Current dir: %s", currentDir)
-	os.Setenv("DATA_DIR", "../../../example")
+	if err := os.Setenv("DATA_DIR", "../../../example"); err != nil {
+		t.Fatalf("Failed set environment variable: %s", err)
+	}
 	catalog, err := New()
 	if err != nil {
 		t.Fatalf("Failed create repository: %s", err)
