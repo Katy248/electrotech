@@ -4,7 +4,6 @@ import (
 	"strings"
 	"sync"
 
-	"electrotech/internal/handlers/auth"
 	"electrotech/internal/repository/catalog"
 	ordersRepository "electrotech/internal/repository/orders"
 	usersRepository "electrotech/internal/repository/users"
@@ -40,8 +39,6 @@ func main() {
 	if err != nil {
 		log.Fatal("Can't init storage", "error", err)
 	}
-
-	auth.Setup()
 
 	usersRepo := usersRepository.New(db)
 	catalogRepo, err := catalog.New()
