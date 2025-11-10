@@ -43,7 +43,7 @@ func NewHTTPServer(usersRepo *users.Queries, catalogRepo *catalog.Repo, ordersRe
 			{
 				products := api.Group("/products")
 				products.GET("/all/:page", catalogHandlers.GetProducts(catalogRepo))
-				products.POST("/filter", catalogHandlers.GetProductsFilter(catalogRepo))
+				products.POST("/filter", catalogHandlers.GetProductsFiltered(catalogRepo))
 				products.GET("/:id", catalogHandlers.GetProduct(catalogRepo))
 			}
 

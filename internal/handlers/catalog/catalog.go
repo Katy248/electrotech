@@ -40,7 +40,7 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 		})
 	}
 }
-func GetProductsFilter(r *catalog.Repo) gin.HandlerFunc {
+func GetProductsFiltered(r *catalog.Repo) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var request Request
 		if err := ctx.ShouldBindJSON(&request); err != nil {
