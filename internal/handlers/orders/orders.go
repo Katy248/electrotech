@@ -128,7 +128,7 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 			orderModel.Sum += p.Sum
 		}
 
-		go sendEmail(&orderModel, userRepo)
+		go sendEmail(orderModel, userRepo)
 
 		c.JSON(http.StatusCreated, gin.H{
 			"message": "order created successfully",
@@ -225,7 +225,7 @@ type Product struct {
 	Sum      float64 `json:"sum"`
 }
 
-func sendEmail(order *Order, userRepos *users.Queries) {
+func sendEmail(order Order, userRepos *users.Queries) {
 
 	if !email.IsEnabled() {
 		return
@@ -245,7 +245,7 @@ func sendEmail(order *Order, userRepos *users.Queries) {
 
 }
 
-func buildMail(order *Order, user users.User) []byte {
+func buildMail(order Order, user users.User) []byte {
 
 	builder := strings.Builder{}
 
