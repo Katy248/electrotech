@@ -53,3 +53,8 @@ func Send(content []byte, to string) error {
 	}
 	return nil
 }
+
+func SendSelf(content []byte) error {
+	conf := getConfig()
+	return Send(content, conf.User)
+}

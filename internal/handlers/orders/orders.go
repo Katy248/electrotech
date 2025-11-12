@@ -238,9 +238,9 @@ func sendEmail(order *Order, userRepos *users.Queries) {
 		return
 	}
 
-	err = email.Send(buildMail(order, user), user.Email)
+	err = email.SendSelf(buildMail(order, user))
 	if err != nil {
-		log.Error("Failed send email", "to", user.Email, "error", err)
+		log.Error("Failed send email", "error", err)
 	}
 
 }
@@ -248,6 +248,8 @@ func sendEmail(order *Order, userRepos *users.Queries) {
 func buildMail(order *Order, user users.User) []byte {
 
 	builder := strings.Builder{}
+
+	builder.WriteString(fmt.Sprintf("Subject: New order №%d\n\n\n", order.ID))
 
 	builder.WriteString(fmt.Sprintf("# Заказ №%d\n\n", order.ID))
 	builder.WriteString(fmt.Sprintf("Сумма заказа: %.2f руб.\n\n", order.Sum))
