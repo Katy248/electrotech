@@ -4,6 +4,7 @@ import (
 	"strings"
 	"sync"
 
+	"electrotech/internal/email"
 	"electrotech/internal/repository/catalog"
 	ordersRepository "electrotech/internal/repository/orders"
 	usersRepository "electrotech/internal/repository/users"
@@ -40,6 +41,10 @@ func main() {
 	db, err := storage.New()
 	if err != nil {
 		log.Fatal("Can't init storage", "error", err)
+	}
+
+	if email.IsEnabled() {
+		log.Info("Mail system enabled")
 	}
 
 	usersRepo := usersRepository.New(db)

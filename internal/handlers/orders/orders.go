@@ -1,11 +1,14 @@
 package orders
 
 import (
+	"electrotech/internal/email"
 	userHandlers "electrotech/internal/handlers/user"
 	"electrotech/internal/repository/catalog"
 	"electrotech/internal/repository/orders"
 	"electrotech/internal/repository/users"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/log"
@@ -30,6 +33,8 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
 			return
 		}
+
+		orderModel := Order{}
 
 		var req CreateOrderRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -79,6 +84,14 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 				Price:       float64(price),
 				ProductID:   p.ProductId,
 			})
+
+			orderModel.Products = append(orderModel.Products, Product{
+				ID:       p.ProductId,
+				Quantity: int64(p.Quantity),
+				Price:    float64(price),
+				Name:     name,
+				Sum:      float64(price * float32(p.Quantity)),
+			})
 		}
 
 		if len(products) == 0 {
@@ -107,6 +120,15 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 				return
 			}
 		}
+
+		orderModel.ID = order.ID
+		orderModel.UserID = userID.(int64)
+		orderModel.CreatedAt = order.CreationDate
+		for _, p := range orderModel.Products {
+			orderModel.Sum += p.Sum
+		}
+
+		go sendEmail(&orderModel, userRepo)
 
 		c.JSON(http.StatusCreated, gin.H{
 			"message": "order created successfully",
@@ -186,4 +208,58 @@ type ResponseOrderProduct struct {
 	Quantity  int64   `json:"quantity"`
 	Price     float64 `json:"price"`
 	ImagePath string  `json:"imagePath"`
+}
+
+type Order struct {
+	ID        int64     `json:"id"`
+	CreatedAt time.Time `json:"createdAt"`
+	UserID    int64     `json:"userId"`
+	Products  []Product `json:"products"`
+	Sum       float64   `json:"sum"`
+}
+type Product struct {
+	ID       string  `json:"id"`
+	Name     string  `json:"name"`
+	Quantity int64   `json:"quantity"`
+	Price    float64 `json:"price"`
+	Sum      float64 `json:"sum"`
+}
+
+func sendEmail(order *Order, userRepos *users.Queries) {
+
+	if !email.IsEnabled() {
+		return
+	}
+
+	user, err := userRepos.GetById(nil, order.UserID)
+	if err != nil {
+		log.Error("Failed getting user", "error", err, "userID", order.UserID)
+		log.Error("Failed send email")
+		return
+	}
+
+	err = email.Send(buildMail(order, user), user.Email)
+	if err != nil {
+		log.Error("Failed send email", "to", user.Email, "error", err)
+	}
+
+}
+
+func buildMail(order *Order, user users.User) []byte {
+
+	builder := strings.Builder{}
+
+	builder.WriteString(fmt.Sprintf("# Заказ №%d\n\n", order.ID))
+	builder.WriteString(fmt.Sprintf("Сумма заказа: %.2f руб.\n\n", order.Sum))
+	builder.WriteString(fmt.Sprintf("Дата заказа: %s\n\n", order.CreatedAt.Format("2006-01-02 15:04:05")))
+	builder.WriteString(fmt.Sprintf("## Товары\n\n"))
+	for _, p := range order.Products {
+		builder.WriteString(fmt.Sprintf("- %s (%.2f) x %d = %f\n", p.Name, p.Price, p.Quantity, p.Sum))
+	}
+	builder.WriteString("## Заказчик")
+	builder.WriteString(fmt.Sprintf("%s %s %s\n\n", user.Surname, user.FirstName, user.LastName))
+	builder.WriteString(fmt.Sprintf("Почта: %s\n\n", user.Email))
+	builder.WriteString(fmt.Sprintf("Телефон: %s\n\n", user.PhoneNumber))
+
+	return []byte(builder.String())
 }
