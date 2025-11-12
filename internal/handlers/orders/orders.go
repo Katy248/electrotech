@@ -1,6 +1,7 @@
 package orders
 
 import (
+	"context"
 	"electrotech/internal/email"
 	userHandlers "electrotech/internal/handlers/user"
 	"electrotech/internal/repository/catalog"
@@ -231,7 +232,7 @@ func sendEmail(order Order, userRepos *users.Queries) {
 		return
 	}
 
-	user, err := userRepos.GetById(nil, order.UserID)
+	user, err := userRepos.GetById(context.TODO(), order.UserID)
 	if err != nil {
 		log.Error("Failed getting user", "error", err, "userID", order.UserID)
 		log.Error("Failed send email")
