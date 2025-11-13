@@ -38,7 +38,7 @@ func (c *Config) From() string {
 		name = "Electrotech info"
 	}
 
-	return fmt.Sprintf("%s <%s>", name, c.Addr())
+	return fmt.Sprintf("%s <%s>", name, c.User)
 }
 
 func getConfig() *Config {
