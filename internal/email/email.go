@@ -5,16 +5,17 @@ import (
 	"net/smtp"
 
 	"github.com/charmbracelet/log"
+	"github.com/google/uuid"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Host     string
-	Port     int
-	User     string
-	Password string
-	Enabled  bool
-
+	Host         string
+	Port         int
+	User         string
+	Password     string
+	Enabled      bool
+	InfoSender   string
 	infoReceiver string
 }
 
@@ -31,6 +32,15 @@ func (c *Config) InfoReceiver() string {
 	return c.infoReceiver
 }
 
+func (c *Config) From() string {
+	name := c.InfoSender
+	if name == "" {
+		name = "Electrotech info"
+	}
+
+	return fmt.Sprintf("%s <%s>", name, c.Addr())
+}
+
 func getConfig() *Config {
 	return &Config{
 		Enabled:      viper.GetBool("mail.enable"),
@@ -39,6 +49,7 @@ func getConfig() *Config {
 		Password:     viper.GetString("mail.password"),
 		Host:         viper.GetString("mail.host"),
 		infoReceiver: viper.GetString("mail.info-receiver"),
+		InfoSender:   viper.GetString("mail.info-sender"),
 	}
 }
 
@@ -62,7 +73,20 @@ func Send(conf *Config, content []byte, to string) error {
 	return nil
 }
 
-func SendInfo(content []byte) error {
+func SendInfo(content []byte, subject string) error {
 	conf := getConfig()
-	return Send(conf, content, conf.InfoReceiver())
+	body := append(buildHeaders(conf, subject), content...)
+	return Send(conf, body, conf.InfoReceiver())
+}
+
+func buildHeaders(conf *Config, subject string) []byte {
+	return []byte(fmt.Sprintf(`
+	Subject: %s
+	From: %s
+	Content-Type: text/html; charset="UTF-8"
+	MIME-Version: 1.0
+	Message-ID: <%s>
+
+
+	`, subject, conf.From(), uuid.New().String()))
 }

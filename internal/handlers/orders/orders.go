@@ -5,6 +5,7 @@ import (
 	"electrotech/internal/repository/catalog"
 	"electrotech/internal/repository/orders"
 	"electrotech/internal/repository/users"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -87,7 +88,6 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 				Quantity: int64(p.Quantity),
 				Price:    float64(price),
 				Name:     name,
-				Sum:      float64(price * float32(p.Quantity)),
 			})
 		}
 
@@ -121,9 +121,6 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 		orderModel.ID = order.ID
 		orderModel.UserID = userID.(int64)
 		orderModel.CreatedAt = order.CreationDate
-		for _, p := range orderModel.Products {
-			orderModel.Sum += p.Sum
-		}
 
 		go sendEmail(orderModel, userRepo)
 
@@ -212,12 +209,30 @@ type Order struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UserID    int64     `json:"userId"`
 	Products  []Product `json:"products"`
-	Sum       float64   `json:"sum"`
 }
 type Product struct {
 	ID       string  `json:"id"`
 	Name     string  `json:"name"`
 	Quantity int64   `json:"quantity"`
 	Price    float64 `json:"price"`
-	Sum      float64 `json:"sum"`
+}
+
+func (p *Product) Sum() float64 {
+	return float64(p.Quantity) * p.Price
+}
+
+func (o *Order) Sum() float64 {
+	sum := 0.0
+	for _, p := range o.Products {
+		sum += p.Sum()
+	}
+	return sum
+}
+
+func (p Product) FormatSum(currency string) string {
+	return fmt.Sprintf("%.2f %s", p.Sum(), currency)
+}
+
+func (o Order) FormatSum(currency string) string {
+	return fmt.Sprintf("%.2f %s", o.Sum(), currency)
 }
