@@ -43,8 +43,9 @@ func TestBuildMail(t *testing.T) {
 	}
 
 	file, _ := os.Create("test.html")
-	to := file
-	err := buildMail(order, user, to)
+	mail, err := buildMail(order, user)
+
+	file.Write(mail)
 	if err != nil {
 		t.Errorf("Failed build mail: %s", err)
 	}
