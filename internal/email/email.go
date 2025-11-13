@@ -5,6 +5,7 @@ import (
 	"net/smtp"
 
 	"github.com/charmbracelet/log"
+	e "github.com/jordan-wright/email"
 	"github.com/spf13/viper"
 )
 
@@ -58,31 +59,24 @@ func IsEnabled() bool {
 	return conf.Enabled
 }
 
-func Send(conf *Config, content []byte, to string) error {
-	if !conf.Enabled {
-		log.Error("Try to use mail system that not enabled")
-		return fmt.Errorf("mail system not enabled")
-	}
-
-	err := smtp.SendMail(conf.Addr(), conf.Auth(), conf.User, []string{to}, content)
-	if err != nil {
-		log.Error("Failed to send email", "error", err)
-		return err
-	}
-	return nil
-}
-
 func SendInfo(content []byte, subject string) error {
 	conf := getConfig()
-	body := append(buildHeaders(conf, subject), content...)
-	body = fmt.Appendf(body, "\r\n")
-	return Send(conf, body, conf.InfoReceiver())
-}
+	if !conf.Enabled {
+		return fmt.Errorf("mail system not enabled")
+	}
+	mail := e.NewEmail()
+	mail.From = conf.From()
+	mail.To = []string{conf.InfoReceiver()}
+	mail.Subject = subject
+	mail.HTML = content
 
-func buildHeaders(conf *Config, subject string) []byte {
-	return fmt.Appendf(nil,
-		"Subject: %s\r\nFrom: %s\r\nContent-Type: text/html; charset=\"UTF-8\";\r\nMIME-Version: 1.0;\r\n\r\n",
-		subject,
-		conf.From(),
+	err := mail.Send(
+		conf.Addr(),
+		conf.Auth(),
 	)
+	if err != nil {
+		log.Error("Failed send info email", "error", err, "mail", mail)
+		return fmt.Errorf("failed send email: %s", err)
+	}
+	return nil
 }
