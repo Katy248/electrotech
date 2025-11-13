@@ -5,7 +5,6 @@ import (
 	"net/smtp"
 
 	"github.com/charmbracelet/log"
-	"github.com/google/uuid"
 	"github.com/spf13/viper"
 )
 
@@ -76,14 +75,14 @@ func Send(conf *Config, content []byte, to string) error {
 func SendInfo(content []byte, subject string) error {
 	conf := getConfig()
 	body := append(buildHeaders(conf, subject), content...)
+	body = fmt.Appendf(body, "\r\n")
 	return Send(conf, body, conf.InfoReceiver())
 }
 
 func buildHeaders(conf *Config, subject string) []byte {
 	return fmt.Appendf(nil,
-		"Subject: %s\r\nFrom: %s\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nMIME-Version: 1.0\r\nMessage-ID: <%s>\r\n\r\n",
+		"Subject: %s\r\nFrom: %s\r\nContent-Type: text/html; charset=\"UTF-8\";\r\nMIME-Version: 1.0;\r\n\r\n",
 		subject,
 		conf.From(),
-		uuid.New().String(),
 	)
 }
