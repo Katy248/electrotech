@@ -1,7 +1,8 @@
 package auth
 
 import (
-	"electrotech/internal/repository/users"
+	"electrotech/internal/models"
+	"electrotech/storage"
 	"fmt"
 	"net/http"
 	"strings"
@@ -63,7 +64,7 @@ func CheckPasswordHash(pass, hash string) bool {
 	return err == nil
 }
 
-func RegisterHandler(repo *users.Queries) gin.HandlerFunc {
+func RegisterHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req RegisterRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -72,7 +73,7 @@ func RegisterHandler(repo *users.Queries) gin.HandlerFunc {
 		}
 
 		// Проверяем, существует ли пользователь с таким email
-		existingUser, err := repo.GetByEmail(c.Request.Context(), req.Email)
+		existingUser, err := getUserByEmail(req.Email)
 		if err == nil && existingUser.Email != "" {
 			c.JSON(http.StatusConflict, gin.H{"error": "user with this email already exists"})
 			return
@@ -93,7 +94,7 @@ func RegisterHandler(repo *users.Queries) gin.HandlerFunc {
 		}
 
 		// Создаем нового пользователя
-		err = repo.InsertNew(c.Request.Context(), users.InsertNewParams{
+		err = insertNewUser(models.User{
 			Email:        req.Email,
 			PasswordHash: string(hashedPassword),
 			FirstName:    req.FirstName,
@@ -110,4 +111,8 @@ func RegisterHandler(repo *users.Queries) gin.HandlerFunc {
 
 		c.JSON(http.StatusCreated, gin.H{"message": "user created successfully"})
 	}
+}
+func insertNewUser(u models.User) error {
+	storage.DB.Create(&u)
+	return nil
 }

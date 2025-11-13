@@ -24,19 +24,6 @@ func TestNewCatalogBadDir(t *testing.T) {
 	}
 }
 
-func testGetNewCatalog(t *testing.T) *Repo {
-	currentDir, _ := os.Getwd()
-	t.Logf("Current dir: %s", currentDir)
-	if err := os.Setenv("DATA_DIR", "../../../example"); err != nil {
-		t.Fatalf("Failed set environment variable: %s", err)
-	}
-	catalog, err := New()
-	if err != nil {
-		t.Fatalf("Failed create repository: %s", err)
-	}
-	return catalog
-}
-
 func TestNewCatalog(t *testing.T) {
 	currentDir, _ := os.Getwd()
 	t.Logf("Current dir: %s", currentDir)

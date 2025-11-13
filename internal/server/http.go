@@ -47,9 +47,9 @@ func NewHTTPServer(usersRepo *users.Queries, catalogRepo *catalog.Repo, ordersRe
 
 			{
 				authGroup := api.Group("/auth")
-				authGroup.POST("/login", auth.LoginHandler(usersRepo))
-				authGroup.POST("/register", auth.RegisterHandler(usersRepo))
-				authGroup.POST("/refresh", auth.Refresh(usersRepo))
+				authGroup.POST("/login", auth.LoginHandler())
+				authGroup.POST("/register", auth.RegisterHandler())
+				authGroup.POST("/refresh", auth.Refresh())
 			}
 
 			{

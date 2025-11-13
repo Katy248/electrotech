@@ -37,8 +37,8 @@ func init() {
 }
 
 func main() {
-
-	db, err := storage.New()
+	storage.Init()
+	db, err := storage.ConnectDB()
 	if err != nil {
 		log.Fatal("Can't init storage", "error", err)
 	}

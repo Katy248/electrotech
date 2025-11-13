@@ -7,27 +7,37 @@ import (
 	"github.com/charmbracelet/log"
 	migrate "github.com/rubenv/sql-migrate"
 	"github.com/spf13/viper"
-	_ "modernc.org/sqlite"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
-func New() (*sql.DB, error) {
-	sqlConnectionString := viper.GetString("db-connection")
+func ConnectDB() (*sql.DB, error) {
 
-	log.Info("Init database storage", "conn", sqlConnectionString)
-	if sqlConnectionString == "" {
-		return nil, fmt.Errorf("db-connection value isn't set")
-	}
-
-	db, err := sql.Open("sqlite", sqlConnectionString)
+	db, err := DB.DB()
 	if err != nil {
-		return nil, fmt.Errorf("error opening database from file %q: %v", sqlConnectionString, err)
+		return nil, fmt.Errorf("failed to get database connection: %s", err)
 	}
-
-	if err := migrateDB(db); err != nil {
-		return nil, fmt.Errorf("failed migrate database: %s", err)
-	}
-
 	return db, nil
+}
+
+var DB *gorm.DB
+
+func Init() {
+
+	sqlConnectionString := viper.GetString("db-connection")
+	var err error
+	DB, err = gorm.Open(sqlite.Open(sqlConnectionString), &gorm.Config{})
+	if err != nil {
+		log.Fatal("failed to connect database", "error", err)
+	}
+	db, err := DB.DB()
+	if err != nil {
+		log.Fatal("failed to get database connection", "error", err)
+	}
+	err = migrateDB(db)
+	if err != nil {
+		log.Fatal("failed to migrate database", "error", err)
+	}
 }
 
 func migrateDB(db *sql.DB) error {

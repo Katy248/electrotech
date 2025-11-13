@@ -28,7 +28,7 @@ func init() {
 
 func main() {
 
-	db, err := storage.New()
+	db, err := storage.ConnectDB()
 	if err != nil {
 		log.Fatal("Failed to connect to database", "error", err)
 	}

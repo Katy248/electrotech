@@ -1,7 +1,8 @@
 package auth
 
 import (
-	"electrotech/internal/repository/users"
+	"electrotech/internal/models"
+	"electrotech/storage"
 	"log"
 	"net/http"
 
@@ -23,7 +24,26 @@ type AuthResponse struct {
 	PhoneNumber  string `json:"phone_number"`
 }
 
-func LoginHandler(repo *users.Queries) gin.HandlerFunc {
+func getUserByEmail(email string) (*models.User, error) {
+	var user models.User
+	err := storage.DB.Where("email = ?", email).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+func getUserByID(id int64) (*models.User, error) {
+	var user models.User
+	err := storage.DB.Where("id = ?", id).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func LoginHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req LoginRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -32,7 +52,7 @@ func LoginHandler(repo *users.Queries) gin.HandlerFunc {
 			return
 		}
 
-		user, err := repo.GetByEmail(c.Request.Context(), req.Email)
+		user, err := getUserByEmail(req.Email)
 		if err != nil || user.Email == "" {
 			log.Printf("Error getting user by email '%s': %v", req.Email, err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
@@ -61,7 +81,7 @@ type RefreshRequest struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
-func Refresh(repo *users.Queries) gin.HandlerFunc {
+func Refresh() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req RefreshRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -76,7 +96,7 @@ func Refresh(repo *users.Queries) gin.HandlerFunc {
 			return
 		}
 
-		user, err := repo.GetById(c.Request.Context(), claimsUser.Id)
+		user, err := getUserByID(claimsUser.Id)
 		if err != nil {
 			log.Printf("Error getting user by id '%d': %v", claimsUser.Id, err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
@@ -93,7 +113,7 @@ func Refresh(repo *users.Queries) gin.HandlerFunc {
 		c.JSON(http.StatusOK, response)
 	}
 }
-func getAuthResponse(user users.User) (*AuthResponse, error) {
+func getAuthResponse(user *models.User) (*AuthResponse, error) {
 
 	token, err := GenerateToken(user.Email, user.ID)
 	if err != nil {

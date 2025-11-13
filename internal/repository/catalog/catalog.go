@@ -9,7 +9,7 @@ import (
 
 var (
 	ErrNotImplemented      = fmt.Errorf("this function is not implemented")
-	ErrDataDirNotSpecified = fmt.Errorf("environment variable DATA_DIR isn't specified")
+	ErrDataDirNotSpecified = fmt.Errorf("data-dir parameter isn't specified")
 )
 
 type Page int

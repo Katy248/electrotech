@@ -38,25 +38,6 @@ func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, 
 	return products, nil
 }
 
-func getPropertyVariantValue(valueId string, p property) (string, error) {
-	for _, v := range p.Variants {
-		if v.Id == valueId {
-			return v.Value, nil
-		}
-	}
-	return "", fmt.Errorf("there is no variant value with id = '%s'", valueId)
-
-}
-
-func getProperty(props []property, id string) (property, error) {
-	for _, prop := range props {
-		if prop.Id == id {
-			return prop, nil
-		}
-	}
-	return property{}, fmt.Errorf("there is no property with id = '%s'", id)
-}
-
 func getPrice(p product, offers *offersModel) (float32, error) {
 	o, err := getOffer(p, offers)
 	if err != nil {
