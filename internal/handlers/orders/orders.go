@@ -1,15 +1,11 @@
 package orders
 
 import (
-	"context"
-	"electrotech/internal/email"
 	userHandlers "electrotech/internal/handlers/user"
 	"electrotech/internal/repository/catalog"
 	"electrotech/internal/repository/orders"
 	"electrotech/internal/repository/users"
-	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/charmbracelet/log"
@@ -224,45 +220,4 @@ type Product struct {
 	Quantity int64   `json:"quantity"`
 	Price    float64 `json:"price"`
 	Sum      float64 `json:"sum"`
-}
-
-func sendEmail(order Order, userRepos *users.Queries) {
-
-	if !email.IsEnabled() {
-		return
-	}
-
-	user, err := userRepos.GetById(context.TODO(), order.UserID)
-	if err != nil {
-		log.Error("Failed getting user", "error", err, "userID", order.UserID)
-		log.Error("Failed send email")
-		return
-	}
-
-	err = email.SendSelf(buildMail(order, user))
-	if err != nil {
-		log.Error("Failed send email", "error", err)
-	}
-
-}
-
-func buildMail(order Order, user users.User) []byte {
-
-	builder := strings.Builder{}
-
-	builder.WriteString(fmt.Sprintf("Subject: New order №%d\n\n\n", order.ID))
-
-	builder.WriteString(fmt.Sprintf("# Заказ №%d\n\n", order.ID))
-	builder.WriteString(fmt.Sprintf("Сумма заказа: %.2f руб.\n\n", order.Sum))
-	builder.WriteString(fmt.Sprintf("Дата заказа: %s\n\n", order.CreatedAt.Format("2006-01-02 15:04:05")))
-	builder.WriteString(fmt.Sprintf("## Товары\n\n"))
-	for _, p := range order.Products {
-		builder.WriteString(fmt.Sprintf("- %s (%.2f) x %d = %f\n", p.Name, p.Price, p.Quantity, p.Sum))
-	}
-	builder.WriteString("## Заказчик")
-	builder.WriteString(fmt.Sprintf("%s %s %s\n\n", user.Surname, user.FirstName, user.LastName))
-	builder.WriteString(fmt.Sprintf("Почта: %s\n\n", user.Email))
-	builder.WriteString(fmt.Sprintf("Телефон: %s\n\n", user.PhoneNumber))
-
-	return []byte(builder.String())
 }

@@ -14,6 +14,8 @@ type Config struct {
 	User     string
 	Password string
 	Enabled  bool
+
+	infoReceiver string
 }
 
 func (c *Config) Addr() string {
@@ -22,14 +24,21 @@ func (c *Config) Addr() string {
 func (c *Config) Auth() smtp.Auth {
 	return smtp.PlainAuth("", c.User, c.Password, c.Host)
 }
+func (c *Config) InfoReceiver() string {
+	if c.infoReceiver == "" {
+		return c.User
+	}
+	return c.infoReceiver
+}
 
 func getConfig() *Config {
 	return &Config{
-		Enabled:  viper.GetBool("mail.enable"),
-		Port:     viper.GetInt("mail.port"),
-		User:     viper.GetString("mail.user"),
-		Password: viper.GetString("mail.password"),
-		Host:     viper.GetString("mail.host"),
+		Enabled:      viper.GetBool("mail.enable"),
+		Port:         viper.GetInt("mail.port"),
+		User:         viper.GetString("mail.user"),
+		Password:     viper.GetString("mail.password"),
+		Host:         viper.GetString("mail.host"),
+		infoReceiver: viper.GetString("mail.info-receiver"),
 	}
 }
 
@@ -39,8 +48,7 @@ func IsEnabled() bool {
 	return conf.Enabled
 }
 
-func Send(content []byte, to string) error {
-	conf := getConfig()
+func Send(conf *Config, content []byte, to string) error {
 	if !conf.Enabled {
 		log.Error("Try to use mail system that not enabled")
 		return fmt.Errorf("mail system not enabled")
@@ -54,7 +62,7 @@ func Send(content []byte, to string) error {
 	return nil
 }
 
-func SendSelf(content []byte) error {
+func SendInfo(content []byte) error {
 	conf := getConfig()
-	return Send(content, conf.User)
+	return Send(conf, content, conf.InfoReceiver())
 }
