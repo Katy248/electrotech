@@ -2,9 +2,10 @@ package auth
 
 import (
 	"electrotech/internal/models"
-	"electrotech/storage"
-	"log"
+	"electrotech/internal/users"
 	"net/http"
+
+	"github.com/charmbracelet/log"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -24,25 +25,6 @@ type AuthResponse struct {
 	PhoneNumber  string `json:"phone_number"`
 }
 
-func getUserByEmail(email string) (*models.User, error) {
-	var user models.User
-	err := storage.DB.Where("email = ?", email).First(&user).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return &user, nil
-}
-func getUserByID(id int64) (*models.User, error) {
-	var user models.User
-	err := storage.DB.Where("id = ?", id).First(&user).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return &user, nil
-}
-
 func LoginHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req LoginRequest
@@ -52,7 +34,7 @@ func LoginHandler() gin.HandlerFunc {
 			return
 		}
 
-		user, err := getUserByEmail(req.Email)
+		user, err := users.ByEmail(req.Email)
 		if err != nil || user.Email == "" {
 			log.Printf("Error getting user by email '%s': %v", req.Email, err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
@@ -96,7 +78,7 @@ func Refresh() gin.HandlerFunc {
 			return
 		}
 
-		user, err := getUserByID(claimsUser.Id)
+		user, err := users.ByID(claimsUser.Id)
 		if err != nil {
 			log.Printf("Error getting user by id '%d': %v", claimsUser.Id, err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})

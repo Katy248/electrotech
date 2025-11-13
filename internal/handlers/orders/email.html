@@ -57,18 +57,18 @@
             {{ end }}
         </ul>
         <h2> Заказчик </h2>
-        <h3><q>{{ .User.CompanyName.Value }}</q></h3>
+        <h3><q>{{ .User.CompanyName }}</q></h3>
         <p>
-            Адрес: {{ .User.CompanyAddress.Value }}
+            Адрес: {{ .User.CompanyAddress }}
         </p>
         <p>
-            ИНН: {{ .User.CompanyInn.Value }}
+            ИНН: {{ .User.CompanyInn }}
         </p>
         <p>
-            ОКПО: {{ .User.CompanyOkpo.Value }}
+            ОКПО: {{ .User.CompanyOkpo }}
         </p>
         <h3>Контакты</h3>
-        <p>{{ .User.Surname }} {{ .User.FirstName }} {{ .User.LastName }} - <em>{{ .User.PositionInCompany.Value }}</em>
+        <p>{{ .User.Surname }} {{ .User.FirstName }} {{ .User.LastName }} - <em>{{ .User.PositionInCompany}}</em>
         </p>
         <p>Почта: <a href="mailto:{{ .User.Email }}">{{ .User.Email }}</a></p>
         <p>Телефон: <a href="tel:{{ .User.PhoneNumber }}">{{ .User.PhoneNumber }}</a></p>

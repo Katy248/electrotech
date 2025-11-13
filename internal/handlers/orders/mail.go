@@ -2,9 +2,9 @@ package orders
 
 import (
 	"bytes"
-	"context"
 	"electrotech/internal/email"
-	"electrotech/internal/repository/users"
+	"electrotech/internal/models"
+	"electrotech/internal/users"
 	_ "embed"
 	"fmt"
 
@@ -14,19 +14,19 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-func sendEmail(order Order, userRepos *users.Queries) {
+func sendEmail(order Order) {
 
 	if !email.IsEnabled() {
 		return
 	}
 
-	user, err := userRepos.GetById(context.TODO(), order.UserID)
+	user, err := users.ByID(order.UserID)
 	if err != nil {
 		log.Error("Failed getting user", "error", err, "userID", order.UserID)
 		log.Error("Failed send email")
 		return
 	}
-	buff, err := buildMail(order, user)
+	buff, err := buildMail(order, *user)
 	if err != nil {
 		log.Error("Failed building mail", "error", err, "buffer", buff)
 		return
@@ -41,7 +41,7 @@ func sendEmail(order Order, userRepos *users.Queries) {
 //go:embed email.html
 var EmailTemplate string
 
-func buildMail(order Order, user users.User) ([]byte, error) {
+func buildMail(order Order, user models.User) ([]byte, error) {
 	template, err := tmpl.New("new-order-mail").Parse(EmailTemplate)
 
 	if err != nil {
@@ -50,7 +50,7 @@ func buildMail(order Order, user users.User) ([]byte, error) {
 	}
 	data := struct {
 		Order Order
-		User  users.User
+		User  models.User
 	}{
 		Order: order,
 		User:  user,

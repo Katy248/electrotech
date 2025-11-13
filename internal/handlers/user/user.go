@@ -2,7 +2,7 @@ package user
 
 import (
 	"electrotech/internal/handlers/auth"
-	"electrotech/internal/repository/users"
+	"electrotech/internal/users"
 	"net/http"
 
 	"github.com/charmbracelet/log"
@@ -11,7 +11,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func ChangePassword(repo *users.Queries) gin.HandlerFunc {
+func ChangePassword() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req ChangePasswordRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -20,7 +20,7 @@ func ChangePassword(repo *users.Queries) gin.HandlerFunc {
 			return
 		}
 
-		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
+		user, err := users.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
 			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
@@ -34,17 +34,14 @@ func ChangePassword(repo *users.Queries) gin.HandlerFunc {
 			return
 		}
 
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+		err = user.UpdatePassword(req.NewPassword)
+
 		if err != nil {
-			log.Printf("Error hashing password: %v", err)
+			log.Error("Error hashing password", "error", err, "password", req.NewPassword)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash password"})
 			return
 		}
-
-		err = repo.UpdatePassword(c.Request.Context(), users.UpdatePasswordParams{
-			Email:        c.GetString("email"),
-			PasswordHash: string(hashedPassword),
-		})
+		err = users.Update(user)
 		if err != nil {
 			log.Printf("Error updating password: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update password"})
@@ -55,7 +52,7 @@ func ChangePassword(repo *users.Queries) gin.HandlerFunc {
 	}
 }
 
-func ChangeEmail(repo *users.Queries) gin.HandlerFunc {
+func ChangeEmail() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req ChangeEmailRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -64,34 +61,26 @@ func ChangeEmail(repo *users.Queries) gin.HandlerFunc {
 			return
 		}
 
-		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
+		user, err := users.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
 			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 			return
 		}
 
-		err = repo.UpdateEmail(c.Request.Context(), users.UpdateEmailParams{
-			Email: req.Email,
-			ID:    user.ID,
-		})
+		user.Email = req.Email
+		err = users.Update(user)
 		if err != nil {
-			log.Printf("Error updating email: %v", err)
+			log.Error("Error updating email", "error", err, "new-email", req.Email)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update email"})
 			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{"message": "email changed successfully"})
-
-		log.Warn("// TODO: should implement refresh tokens")
-		log.Warn("// TODO: should implement refresh tokens")
-		log.Warn("// TODO: should implement refresh tokens")
-		log.Warn("// TODO: should implement refresh tokens")
-		log.Warn("// TODO: should implement refresh tokens")
 	}
 }
 
-func ChangePhoneNumber(repo *users.Queries) gin.HandlerFunc {
+func ChangePhoneNumber() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req ChangePhoneNumberRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -100,7 +89,7 @@ func ChangePhoneNumber(repo *users.Queries) gin.HandlerFunc {
 			return
 		}
 
-		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
+		user, err := users.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
 			log.Error("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
@@ -114,10 +103,9 @@ func ChangePhoneNumber(repo *users.Queries) gin.HandlerFunc {
 			return
 		}
 
-		err = repo.UpdatePhoneNumber(c.Request.Context(), users.UpdatePhoneNumberParams{
-			PhoneNumber: phone,
-			Email:       c.GetString("email"),
-		})
+		user.PhoneNumber = phone
+		err = users.Update(user)
+
 		if err != nil {
 			log.Printf("Error updating phone number: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update phone number"})
@@ -128,7 +116,7 @@ func ChangePhoneNumber(repo *users.Queries) gin.HandlerFunc {
 	}
 }
 
-func UpdateUserData(repo *users.Queries) gin.HandlerFunc {
+func UpdateUserData() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req UpdateUserDataRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -136,19 +124,16 @@ func UpdateUserData(repo *users.Queries) gin.HandlerFunc {
 			return
 		}
 
-		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
+		user, err := users.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
 			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 			return
 		}
-
-		err = repo.UpdateData(c.Request.Context(), users.UpdateDataParams{
-			Email:     c.GetString("email"),
-			FirstName: req.FirstName,
-			LastName:  req.LastName,
-			Surname:   req.Surname,
-		})
+		user.FirstName = req.FirstName
+		user.LastName = req.LastName
+		user.Surname = req.Surname
+		err = users.Update(user)
 		if err != nil {
 			log.Printf("Error updating user data: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user data"})
@@ -159,9 +144,9 @@ func UpdateUserData(repo *users.Queries) gin.HandlerFunc {
 	}
 }
 
-func GetData(repo *users.Queries) gin.HandlerFunc {
+func GetData() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
+		user, err := users.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
 			log.Error("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})

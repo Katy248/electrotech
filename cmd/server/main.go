@@ -7,7 +7,6 @@ import (
 	"electrotech/internal/email"
 	"electrotech/internal/repository/catalog"
 	ordersRepository "electrotech/internal/repository/orders"
-	usersRepository "electrotech/internal/repository/users"
 	"electrotech/internal/server"
 	"electrotech/storage"
 
@@ -47,14 +46,13 @@ func main() {
 		log.Info("Mail system enabled")
 	}
 
-	usersRepo := usersRepository.New(db)
 	catalogRepo, err := catalog.New()
 	if err != nil {
 		log.Fatalf("Error creating catalog repository: %v", err)
 	}
 	ordersRepo := ordersRepository.New(db)
 
-	srv := server.NewHTTPServer(usersRepo, catalogRepo, ordersRepo)
+	srv := server.NewHTTPServer(catalogRepo, ordersRepo)
 
 	var wg sync.WaitGroup
 	wg.Add(1)

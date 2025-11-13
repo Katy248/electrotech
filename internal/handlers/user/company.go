@@ -1,8 +1,8 @@
 package user
 
 import (
-	"database/sql"
-	"electrotech/internal/repository/users"
+	"electrotech/internal/models"
+	"electrotech/internal/users"
 	"log"
 	"net/http"
 
@@ -17,7 +17,7 @@ type UpdateCompanyDataRequest struct {
 	PositionInCompany string `json:"position_in_company" binding:"required"`
 }
 
-func UpdateCompanyData(repo *users.Queries) gin.HandlerFunc {
+func UpdateCompanyData() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req UpdateCompanyDataRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -25,21 +25,21 @@ func UpdateCompanyData(repo *users.Queries) gin.HandlerFunc {
 			return
 		}
 
-		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
+		user, err := users.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
 			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 			return
 		}
 
-		err = repo.UpdateCompanyData(c.Request.Context(), users.UpdateCompanyDataParams{
-			Email:             c.GetString("email"),
-			CompanyName:       sql.NullString{String: req.CompanyName, Valid: true},
-			CompanyInn:        sql.NullString{String: req.CompanyINN, Valid: true},
-			CompanyAddress:    sql.NullString{String: req.CompanyAddress, Valid: true},
-			CompanyOkpo:       sql.NullString{String: req.CompanyOKPO, Valid: true},
-			PositionInCompany: sql.NullString{String: req.PositionInCompany, Valid: true},
-		})
+		user.CompanyName = &req.CompanyName
+		user.CompanyInn = &req.CompanyINN
+		user.CompanyAddress = &req.CompanyAddress
+		user.PositionInCompany = &req.PositionInCompany
+		user.CompanyOkpo = &req.CompanyOKPO
+
+		err = users.Update(user)
+
 		if err != nil {
 			log.Printf("Error updating company data: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update company data"})
@@ -50,9 +50,9 @@ func UpdateCompanyData(repo *users.Queries) gin.HandlerFunc {
 	}
 }
 
-func GetCompanyData(repo *users.Queries) gin.HandlerFunc {
+func GetCompanyData() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user, err := repo.GetByEmail(c.Request.Context(), c.GetString("email"))
+		user, err := users.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
 			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
@@ -73,24 +73,16 @@ type CompanyData struct {
 	AllRequiredFields bool `json:"allRequiredFields"`
 }
 
-func newCompanyData(u users.User) *CompanyData {
+func newCompanyData(u *models.User) *CompanyData {
 	data := &CompanyData{
-		CompanyName:       u.CompanyName.String,
-		CompanyINN:        u.CompanyInn.String,
-		CompanyAddress:    u.CompanyAddress.String,
-		PositionInCompany: u.PositionInCompany.String,
-		CompanyOKPO:       u.CompanyOkpo.String,
+		CompanyName:       *u.CompanyName,
+		CompanyINN:        *u.CompanyInn,
+		CompanyAddress:    *u.CompanyAddress,
+		PositionInCompany: *u.PositionInCompany,
+		CompanyOKPO:       *u.CompanyOkpo,
 	}
 
-	data.AllRequiredFields = CheckUserHasCompanyData(u)
+	data.AllRequiredFields = u.CompanyData().DataFilled()
 
 	return data
-}
-
-func CheckUserHasCompanyData(user users.User) bool {
-	return user.CompanyName.Valid &&
-		user.CompanyAddress.Valid &&
-		user.PositionInCompany.Valid &&
-		user.CompanyInn.Valid &&
-		user.CompanyOkpo.Valid
 }

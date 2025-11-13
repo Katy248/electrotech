@@ -2,7 +2,7 @@ package auth
 
 import (
 	"electrotech/internal/models"
-	"electrotech/storage"
+	"electrotech/internal/users"
 	"fmt"
 	"net/http"
 	"strings"
@@ -73,7 +73,7 @@ func RegisterHandler() gin.HandlerFunc {
 		}
 
 		// Проверяем, существует ли пользователь с таким email
-		existingUser, err := getUserByEmail(req.Email)
+		existingUser, err := users.ByEmail(req.Email)
 		if err == nil && existingUser.Email != "" {
 			c.JSON(http.StatusConflict, gin.H{"error": "user with this email already exists"})
 			return
@@ -94,7 +94,7 @@ func RegisterHandler() gin.HandlerFunc {
 		}
 
 		// Создаем нового пользователя
-		err = insertNewUser(models.User{
+		err = users.InsertNew(models.User{
 			Email:        req.Email,
 			PasswordHash: string(hashedPassword),
 			FirstName:    req.FirstName,
@@ -103,16 +103,12 @@ func RegisterHandler() gin.HandlerFunc {
 			PhoneNumber:  phone,
 		})
 
-		log.Printf("Error creating user: %v", err)
 		if err != nil {
+			log.Printf("Error creating user: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create user"})
 			return
 		}
 
 		c.JSON(http.StatusCreated, gin.H{"message": "user created successfully"})
 	}
-}
-func insertNewUser(u models.User) error {
-	storage.DB.Create(&u)
-	return nil
 }

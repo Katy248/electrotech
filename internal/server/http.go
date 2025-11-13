@@ -7,7 +7,6 @@ import (
 	"electrotech/internal/handlers/user"
 	"electrotech/internal/repository/catalog"
 	ordersRepo "electrotech/internal/repository/orders"
-	"electrotech/internal/repository/users"
 	"fmt"
 
 	"github.com/charmbracelet/log"
@@ -20,7 +19,7 @@ type HTTPServer struct {
 	engine *gin.Engine
 }
 
-func NewHTTPServer(usersRepo *users.Queries, catalogRepo *catalog.Repo, ordersRepo *ordersRepo.Queries) *HTTPServer {
+func NewHTTPServer(catalogRepo *catalog.Repo, ordersRepo *ordersRepo.Queries) *HTTPServer {
 
 	gin.SetMode(viper.GetString("gin-mode"))
 	server := gin.Default()
@@ -32,46 +31,44 @@ func NewHTTPServer(usersRepo *users.Queries, catalogRepo *catalog.Repo, ordersRe
 	}
 	server.Use(cors.New(corsConf))
 
+	api := server.Group("/api")
 	{
-		api := server.Group("/api")
+		api.Static("/files", viper.GetString("data-dir"))
+
 		{
-			api.Static("/files", viper.GetString("data-dir"))
+			products := api.Group("/products")
 
-			{
-				products := api.Group("/products")
+			products.GET("/all/:page", catalogHandlers.GetProducts(catalogRepo))
+			products.POST("/filter/:page", catalogHandlers.GetProducts(catalogRepo))
+			products.GET("/:id", catalogHandlers.GetProduct(catalogRepo))
+		}
 
-				products.GET("/all/:page", catalogHandlers.GetProducts(catalogRepo))
-				products.POST("/filter/:page", catalogHandlers.GetProducts(catalogRepo))
-				products.GET("/:id", catalogHandlers.GetProduct(catalogRepo))
-			}
+		{
+			authGroup := api.Group("/auth")
+			authGroup.POST("/login", auth.LoginHandler())
+			authGroup.POST("/register", auth.RegisterHandler())
+			authGroup.POST("/refresh", auth.Refresh())
+		}
 
-			{
-				authGroup := api.Group("/auth")
-				authGroup.POST("/login", auth.LoginHandler())
-				authGroup.POST("/register", auth.RegisterHandler())
-				authGroup.POST("/refresh", auth.Refresh())
-			}
+		{
+			ordersGroup := api.Group("/orders")
+			ordersGroup.Use(auth.AuthMiddleware())
 
-			{
-				ordersGroup := api.Group("/orders")
-				ordersGroup.Use(auth.AuthMiddleware())
+			ordersGroup.POST("/create", orders.CreateOrderHandler(ordersRepo, catalogRepo))
+			ordersGroup.GET("/get", orders.GetUserOrdersHandler(ordersRepo, catalogRepo))
+		}
 
-				ordersGroup.POST("/create", orders.CreateOrderHandler(ordersRepo, usersRepo, catalogRepo))
-				ordersGroup.GET("/get", orders.GetUserOrdersHandler(ordersRepo, catalogRepo))
-			}
+		{
+			usersGroup := api.Group("/user")
+			usersGroup.Use(auth.AuthMiddleware())
 
-			{
-				usersGroup := api.Group("/user")
-				usersGroup.Use(auth.AuthMiddleware())
-
-				usersGroup.POST("/change-password", user.ChangePassword(usersRepo))
-				usersGroup.POST("/change-email", user.ChangeEmail(usersRepo))
-				usersGroup.POST("/change-phone", user.ChangePhoneNumber(usersRepo))
-				usersGroup.POST("/update-data", user.UpdateUserData(usersRepo))
-				usersGroup.POST("/get-data", user.GetData(usersRepo))
-				usersGroup.POST("/update-company-data", user.UpdateCompanyData(usersRepo))
-				usersGroup.POST("/get-company-data", user.GetCompanyData(usersRepo))
-			}
+			usersGroup.POST("/change-password", user.ChangePassword())
+			usersGroup.POST("/change-email", user.ChangeEmail())
+			usersGroup.POST("/change-phone", user.ChangePhoneNumber())
+			usersGroup.POST("/update-data", user.UpdateUserData())
+			usersGroup.POST("/get-data", user.GetData())
+			usersGroup.POST("/update-company-data", user.UpdateCompanyData())
+			usersGroup.POST("/get-company-data", user.GetCompanyData())
 		}
 	}
 	return &HTTPServer{engine: server}

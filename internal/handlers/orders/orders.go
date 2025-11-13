@@ -1,10 +1,9 @@
 package orders
 
 import (
-	userHandlers "electrotech/internal/handlers/user"
 	"electrotech/internal/repository/catalog"
 	"electrotech/internal/repository/orders"
-	"electrotech/internal/repository/users"
+	"electrotech/internal/users"
 	"fmt"
 	"net/http"
 	"time"
@@ -22,7 +21,7 @@ type OrderProductRequest struct {
 	Quantity  int    `json:"quantity" binding:"required,min=1"`
 }
 
-func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, catalogRepo *catalog.Repo) gin.HandlerFunc {
+func CreateOrderHandler(orderRepo *orders.Queries, catalogRepo *catalog.Repo) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Получаем userID из контекста (предполагаем, что middleware аутентификации уже добавил его)
 		userID, exists := c.Get("user_id")
@@ -42,14 +41,14 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 		}
 
 		// Проверяем, существует ли пользователь
-		user, err := userRepo.GetById(c.Request.Context(), userID.(int64))
+		user, err := users.ByID(userID.(int64))
 		if err != nil {
 			log.Error("User not found", "error", err)
 			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 			return
 		}
 
-		if !userHandlers.CheckUserHasCompanyData(user) {
+		if !user.CompanyData().DataFilled() {
 			log.Error("User has no required company data")
 			c.JSON(http.StatusBadRequest, gin.H{"error": "user has no company data"})
 			return
@@ -122,7 +121,7 @@ func CreateOrderHandler(orderRepo *orders.Queries, userRepo *users.Queries, cata
 		orderModel.UserID = userID.(int64)
 		orderModel.CreatedAt = order.CreationDate
 
-		go sendEmail(orderModel, userRepo)
+		go sendEmail(orderModel)
 
 		c.JSON(http.StatusCreated, gin.H{
 			"message": "order created successfully",

@@ -1,8 +1,8 @@
 package orders
 
 import (
-	"database/sql"
-	"electrotech/internal/repository/users"
+	"electrotech/internal/models"
+	"os"
 	"testing"
 	"time"
 )
@@ -27,25 +27,35 @@ func TestBuildMail(t *testing.T) {
 			},
 		},
 	}
-	user := users.User{
-		ID:                124225,
-		FirstName:         "Катерина",
-		LastName:          "Владимировна",
-		Email:             "katya@gmail.com",
-		Surname:           "Васильева",
-		PhoneNumber:       "+7436574398767695483",
-		CompanyName:       sql.NullString{String: "ООО Наебалово и партнёры", Valid: true},
-		CompanyAddress:    sql.NullString{String: "ул. Пушкина дом Колотушкина", Valid: true},
-		CompanyInn:        sql.NullString{String: "1234567890I", Valid: true},
-		CompanyOkpo:       sql.NullString{String: "1234567890O", Valid: true},
-		PositionInCompany: sql.NullString{String: "Младший менеджер", Valid: true},
+	user := models.User{
+		ID:          124225,
+		FirstName:   "Катерина",
+		LastName:    "Владимировна",
+		Email:       "katya@gmail.com",
+		Surname:     "Васильева",
+		PhoneNumber: "+7436574398767695483",
+	}
+	{
+		name := "ООО Наебалово и партнёры"
+		user.CompanyName = &name
+		addr := "ул. Пушкина дом Колотушкина"
+		user.CompanyAddress = &addr
+		inn := "1234567890I"
+		user.CompanyInn = &inn
+		okpo := "1234567890O"
+		user.CompanyOkpo = &okpo
+		pos := "Младший менеджер"
+		user.PositionInCompany = &pos
 	}
 
-	// file, _ := os.Create("test.html")
-	_, err := buildMail(order, user)
+	file, _ := os.Create("test.html")
+	mail, err := buildMail(order, user)
 
-	// file.Write(mail)
 	if err != nil {
 		t.Errorf("Failed build mail: %s", err)
+	}
+	_, err = file.Write(mail)
+	if err != nil {
+		t.Errorf("Failed write mail: %s", err)
 	}
 }
