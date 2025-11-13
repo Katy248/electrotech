@@ -36,7 +36,7 @@ func sendEmail(order Order, userRepos *users.Queries) {
 
 const mailTemplate = `
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
 	<meta charset="UTF-8">
 </head>
@@ -92,10 +92,10 @@ const mailTemplate = `
 
 
 <p>
-Адрес: {{ .User.CompanyAddress.Value }};
+Адрес: {{ .User.CompanyAddress.Value }}
 </p>
 <p>
-ИНН: {{ .User.CompanyInn.Value }};
+ИНН: {{ .User.CompanyInn.Value }}
 </p>
 <p>
 ОКПО: {{ .User.CompanyOkpo.Value }}
