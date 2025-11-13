@@ -3,9 +3,6 @@ package parser
 import (
 	"electrotech/internal/models"
 	"fmt"
-	"strconv"
-
-	"github.com/charmbracelet/log"
 )
 
 func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, error) {
@@ -36,48 +33,6 @@ func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, 
 		}
 		p.Count = count
 
-		// p.Parameters = make(map[string]string)
-		for _, prop := range xmlProduct.PropertyValues {
-			propertyFull, err := getProperty(imports.Classifier.Properties, prop.Id)
-			if err != nil {
-				return products, fmt.Errorf("failed get property id = '%s': %s", prop.Id, err)
-			}
-			if propertyFull.Type == propertyTypeHandbook {
-				if prop.Value == "" {
-					log.Debug("Handbook property value is empty", "propertyId", prop.Id, "propertyName", propertyFull.Name)
-					p.Parameters = append(p.Parameters, models.ProductParameter{
-						Name:        propertyFull.Name,
-						Type:        models.ParameterTypeList,
-						StringValue: "",
-					})
-					continue
-				}
-				val, err := getPropertyVariantValue(prop.Value, propertyFull)
-				if err != nil {
-					return products, fmt.Errorf("failed get property value id = '%s': %s", prop.Value, err)
-				}
-				p.Parameters = append(p.Parameters, models.ProductParameter{
-					Name:        propertyFull.Name,
-					Type:        models.ParameterTypeList,
-					StringValue: val,
-				})
-			} else if propertyFull.Type == propertyTypeNumber {
-				intVal, _ := strconv.ParseFloat(prop.Value, 64)
-				p.Parameters = append(p.Parameters, models.ProductParameter{
-					Name:        propertyFull.Name,
-					Type:        models.ParameterTypeNumber,
-					NumberValue: intVal,
-				})
-			} else if propertyFull.Type == propertyTypeString {
-				p.Parameters = append(p.Parameters, models.ProductParameter{
-					Name:        propertyFull.Name,
-					Type:        models.ParameterTypeList,
-					StringValue: prop.Value,
-				})
-			} else {
-				log.Warn("Unknown property type", "type", propertyFull.Type)
-			}
-		}
 		products = append(products, p)
 	}
 	return products, nil

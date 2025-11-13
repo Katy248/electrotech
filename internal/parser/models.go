@@ -41,7 +41,6 @@ type product struct {
 	Description    string          `xml:"Описание"`
 	Country        string          `xml:"Страна"`
 	Image          string          `xml:"Картинка"`
-	PropertyValues []propertyValue `xml:"ЗначенияСвойств>ЗначенияСвойства"`
 	ProductUnit    baseUnit
 }
 type group struct {
@@ -53,10 +52,6 @@ type classifier struct {
 	Properties []property `xml:"Свойства>Свойство"`
 }
 
-type propertyValue struct {
-	Id    string `xml:"Ид"`
-	Value string `xml:"Значение"`
-}
 type catalog struct {
 	ContainsOnlyChanges bool      `xml:"СодержитТолькоИзменения,attr"`
 	Products            []product `xml:"Товары>Товар"`

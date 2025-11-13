@@ -48,15 +48,6 @@ func TestParseImportsData(t *testing.T) {
 	if firstProduct.GroupIds[0] != "GroupId" {
 		t.Error("Groups failed to parse (should be 'GroupId')")
 	}
-	if len(firstProduct.PropertyValues) <= 0 {
-		t.Fatal("PropertyValues failed to parse (should be not zero items)")
-	}
-	if firstProduct.PropertyValues[0].Id != "PropValId" {
-		t.Error("PropertyValues failed to parse: Id should be 'PropValId'")
-	}
-	if firstProduct.PropertyValues[0].Value != "PropValVal" {
-		t.Error("PropertyValues failed to parse: Values should be 'PropValVal'")
-	}
 
 	for _, prop := range result.Classifier.Properties {
 		if prop.Type == propertyTypeHandbook {

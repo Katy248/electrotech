@@ -3,7 +3,6 @@ package orders
 import (
 	"database/sql"
 	"electrotech/internal/repository/users"
-	"os"
 	"testing"
 	"time"
 )
@@ -42,10 +41,10 @@ func TestBuildMail(t *testing.T) {
 		PositionInCompany: sql.NullString{String: "Младший менеджер", Valid: true},
 	}
 
-	file, _ := os.Create("test.html")
-	mail, err := buildMail(order, user)
+	// file, _ := os.Create("test.html")
+	_, err := buildMail(order, user)
 
-	file.Write(mail)
+	// file.Write(mail)
 	if err != nil {
 		t.Errorf("Failed build mail: %s", err)
 	}
