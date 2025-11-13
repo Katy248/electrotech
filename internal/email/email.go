@@ -80,13 +80,10 @@ func SendInfo(content []byte, subject string) error {
 }
 
 func buildHeaders(conf *Config, subject string) []byte {
-	return []byte(fmt.Sprintf(`
-	Subject: %s
-	From: %s
-	Content-Type: text/html; charset="UTF-8"
-	MIME-Version: 1.0
-	Message-ID: <%s>
-
-
-	`, subject, conf.From(), uuid.New().String()))
+	return fmt.Appendf(nil,
+		"Subject: %s\r\nFrom: %s\r\nContent-Type: text/html; charset=\"UTF-8\"\r\nMIME-Version: 1.0\r\nMessage-ID: <%s>\r\n\r\n",
+		subject,
+		conf.From(),
+		uuid.New().String(),
+	)
 }
