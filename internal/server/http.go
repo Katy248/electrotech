@@ -6,7 +6,6 @@ import (
 	"electrotech/internal/handlers/orders"
 	"electrotech/internal/handlers/user"
 	"electrotech/internal/repository/catalog"
-	ordersRepo "electrotech/internal/repository/orders"
 	"fmt"
 
 	"github.com/charmbracelet/log"
@@ -19,7 +18,7 @@ type HTTPServer struct {
 	engine *gin.Engine
 }
 
-func NewHTTPServer(catalogRepo *catalog.Repo, ordersRepo *ordersRepo.Queries) *HTTPServer {
+func NewHTTPServer(catalogRepo *catalog.Repo) *HTTPServer {
 
 	gin.SetMode(viper.GetString("gin-mode"))
 	server := gin.Default()
@@ -54,8 +53,8 @@ func NewHTTPServer(catalogRepo *catalog.Repo, ordersRepo *ordersRepo.Queries) *H
 			ordersGroup := api.Group("/orders")
 			ordersGroup.Use(auth.AuthMiddleware())
 
-			ordersGroup.POST("/create", orders.CreateOrderHandler(ordersRepo, catalogRepo))
-			ordersGroup.GET("/get", orders.GetUserOrdersHandler(ordersRepo, catalogRepo))
+			ordersGroup.POST("/create", orders.CreateOrderHandler(catalogRepo))
+			ordersGroup.GET("/get", orders.GetUserOrdersHandler(catalogRepo))
 		}
 
 		{

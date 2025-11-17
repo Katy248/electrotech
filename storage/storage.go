@@ -2,7 +2,6 @@ package storage
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/charmbracelet/log"
 	migrate "github.com/rubenv/sql-migrate"
@@ -10,15 +9,6 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
-
-func ConnectDB() (*sql.DB, error) {
-
-	db, err := DB.DB()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get database connection: %s", err)
-	}
-	return db, nil
-}
 
 var DB *gorm.DB
 

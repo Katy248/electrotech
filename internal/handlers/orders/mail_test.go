@@ -8,22 +8,23 @@ import (
 )
 
 func TestBuildMail(t *testing.T) {
-	order := Order{
-		ID:        21347328573298,
-		UserID:    23578904367968,
-		CreatedAt: time.Now(),
-		Products: []Product{
+	order := models.Order{
+		ID:           21347328573298,
+		UserID:       23578904367968,
+		CreationDate: time.Now(),
+		Products: []models.OrderProduct{
 			{
-				ID:       "1",
-				Name:     "Дилдо 20см",
-				Price:    1000,
-				Quantity: 120,
+				ID:           1,
+				ProductID:    "1",
+				ProductName:  "Дилдо 20см",
+				ProductPrice: 1000,
+				Quantity:     120,
 			},
 			{
-				ID:       "2",
-				Name:     "Анальная пробка",
-				Price:    2000,
-				Quantity: 100,
+				ProductID:    "2",
+				ProductName:  "Анальная пробка",
+				ProductPrice: 2000,
+				Quantity:     100,
 			},
 		},
 	}
@@ -47,9 +48,10 @@ func TestBuildMail(t *testing.T) {
 		pos := "Младший менеджер"
 		user.PositionInCompany = &pos
 	}
+	order.User = &user
 
 	file, _ := os.Create("test.html")
-	mail, err := buildMail(order, user)
+	mail, err := buildMail(order)
 
 	if err != nil {
 		t.Errorf("Failed build mail: %s", err)

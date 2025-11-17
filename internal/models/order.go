@@ -1,0 +1,58 @@
+package models
+
+import (
+	"fmt"
+	"time"
+)
+
+type Order struct {
+	ID           int64          `json:"id"`
+	UserID       int64          `json:"userId"`
+	CreationDate time.Time      `json:"creationDate"`
+	Products     []OrderProduct `json:"products"`
+	User         *User          `json:"user"`
+}
+
+func (o Order) Sum() float64 {
+	sum := 0.0
+	for _, p := range o.Products {
+		sum += p.Sum()
+	}
+	return sum
+}
+
+func NewOrder() *Order {
+	return &Order{
+		CreationDate: time.Now(),
+	}
+}
+
+func (o *Order) SetUser(u *User) error {
+	if u == nil {
+		return fmt.Errorf("user is nil")
+	}
+	if !u.CompanyData().DataFilled() {
+		return fmt.Errorf("user has no required company data filled")
+	}
+	o.UserID = u.ID
+	return nil
+}
+
+// TODO: Checking duplicates
+func (o *Order) AddProduct(op OrderProduct) {
+	op.OrderID = o.ID
+	o.Products = append(o.Products, op)
+}
+
+type OrderProduct struct {
+	ID           int64   `json:"id"`
+	OrderID      int64   `json:"orderId"`
+	ProductName  string  `json:"productName"`
+	Quantity     int64   `json:"quantity"`
+	ProductPrice float64 `json:"productPrice"`
+	ProductID    string  `json:"productId"`
+}
+
+func (p OrderProduct) Sum() float64 {
+	return float64(p.Quantity) * p.ProductPrice
+}

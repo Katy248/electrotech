@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"electrotech/internal/email"
 	"electrotech/internal/models"
-	"electrotech/internal/users"
 	_ "embed"
 	"fmt"
 
@@ -14,19 +13,13 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-func sendEmail(order Order) {
+func sendEmail(order models.Order) {
 
 	if !email.IsEnabled() {
 		return
 	}
 
-	user, err := users.ByID(order.UserID)
-	if err != nil {
-		log.Error("Failed getting user", "error", err, "userID", order.UserID)
-		log.Error("Failed send email")
-		return
-	}
-	buff, err := buildMail(order, *user)
+	buff, err := buildMail(order)
 	if err != nil {
 		log.Error("Failed building mail", "error", err, "buffer", buff)
 		return
@@ -41,22 +34,15 @@ func sendEmail(order Order) {
 //go:embed email.html
 var EmailTemplate string
 
-func buildMail(order Order, user models.User) ([]byte, error) {
+func buildMail(order models.Order) ([]byte, error) {
 	template, err := tmpl.New("new-order-mail").Parse(EmailTemplate)
 
 	if err != nil {
 		log.Error("Failed parsing mail template", "error", err)
 		return nil, fmt.Errorf("failed parse template: %s", err)
 	}
-	data := struct {
-		Order Order
-		User  models.User
-	}{
-		Order: order,
-		User:  user,
-	}
 	buff := &bytes.Buffer{}
-	err = template.Execute(buff, data)
+	err = template.Execute(buff, order)
 	if err != nil {
 		log.Error("Failed executing mail template", "error", err)
 		return buff.Bytes(), fmt.Errorf("failed execute template: %s", err)
