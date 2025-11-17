@@ -56,7 +56,7 @@ func main() {
 
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go func() { mustRun(srv.Run(), &wg) }()
+	go mustRun(srv.Run, &wg)
 	if viper.GetBool("ftp.enable") {
 
 		ftpServer, err := server.NewFTPServer()
@@ -64,15 +64,16 @@ func main() {
 			log.Fatal("Failed create FTP server", "error", err)
 		}
 		wg.Add(1)
-		go func() { mustRun(ftpServer.Run(), &wg) }()
+		go mustRun(ftpServer.Run, &wg)
 	}
 
 	wg.Wait()
 }
 
-func mustRun(result error, wg *sync.WaitGroup) {
+func mustRun(fn func() error, wg *sync.WaitGroup) {
 	defer wg.Done()
-	if result != nil {
-		log.Fatal("Failed run", "error", result)
+	err := fn()
+	if err != nil {
+		log.Fatal("Failed run", "error", err)
 	}
 }
