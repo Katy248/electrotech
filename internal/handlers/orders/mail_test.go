@@ -12,7 +12,7 @@ func TestBuildMail(t *testing.T) {
 		ID:           21347328573298,
 		UserID:       23578904367968,
 		CreationDate: time.Now(),
-		Products: []models.OrderProduct{
+		OrderProducts: []*models.OrderProduct{
 			{
 				ID:           1,
 				ProductID:    "1",

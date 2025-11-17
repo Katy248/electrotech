@@ -3,6 +3,7 @@ package auth
 import (
 	"electrotech/internal/models"
 	"electrotech/internal/repository/users"
+	"fmt"
 	"net/http"
 
 	"github.com/charmbracelet/log"
@@ -29,8 +30,8 @@ func LoginHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req LoginRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			log.Printf("Error binding request: %v", err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			log.Error("Error binding request body", "error", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("error binding request body: %v", err)})
 			return
 		}
 

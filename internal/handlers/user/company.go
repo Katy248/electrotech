@@ -1,7 +1,6 @@
 package user
 
 import (
-	"electrotech/internal/models"
 	"electrotech/internal/repository/users"
 	"log"
 	"net/http"
@@ -59,30 +58,6 @@ func GetCompanyData() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, newCompanyData(user))
+		c.JSON(http.StatusOK, user.CompanyData())
 	}
-}
-
-type CompanyData struct {
-	CompanyName       string `json:"companyName"`
-	CompanyINN        string `json:"companyINN"`
-	CompanyAddress    string `json:"companyAddress"`
-	CompanyOKPO       string `json:"companyOKPO"`
-	PositionInCompany string `json:"positionInCompany"`
-
-	AllRequiredFields bool `json:"allRequiredFields"`
-}
-
-func newCompanyData(u *models.User) *CompanyData {
-	data := &CompanyData{
-		CompanyName:       *u.CompanyName,
-		CompanyINN:        *u.CompanyInn,
-		CompanyAddress:    *u.CompanyAddress,
-		PositionInCompany: *u.PositionInCompany,
-		CompanyOKPO:       *u.CompanyOkpo,
-	}
-
-	data.AllRequiredFields = u.CompanyData().DataFilled()
-
-	return data
 }

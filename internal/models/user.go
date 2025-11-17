@@ -36,21 +36,31 @@ func (u *User) CheckPassword(password string) bool {
 }
 
 func (u *User) CompanyData() *CompanyData {
-	return &CompanyData{
-		Name:     *u.CompanyName,
-		INN:      *u.CompanyInn,
-		OKPO:     *u.CompanyOkpo,
-		Address:  *u.CompanyAddress,
-		Position: *u.PositionInCompany,
+	data := &CompanyData{
+		Name:     strValueOrEmpty(u.CompanyName),
+		INN:      strValueOrEmpty(u.CompanyInn),
+		Address:  strValueOrEmpty(u.CompanyAddress),
+		OKPO:     strValueOrEmpty(u.CompanyOkpo),
+		Position: strValueOrEmpty(u.PositionInCompany),
 	}
+	data.AllRequiredFields = data.DataFilled()
+	return data
+}
+func strValueOrEmpty(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }
 
 type CompanyData struct {
-	Name     string
-	INN      string
-	OKPO     string
-	Address  string
-	Position string
+	Name     string `json:"companyName"`
+	INN      string `json:"companyInn"`
+	OKPO     string `json:"companyOkpo"`
+	Address  string `json:"companyAddress"`
+	Position string `json:"positionInCompany"`
+
+	AllRequiredFields bool `json:"allRequiredFields"`
 }
 
 func (c *CompanyData) DataFilled() bool {
