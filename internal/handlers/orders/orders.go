@@ -2,9 +2,9 @@ package orders
 
 import (
 	"electrotech/internal/models"
-	"electrotech/internal/orders"
 	"electrotech/internal/repository/catalog"
-	"electrotech/internal/users"
+	"electrotech/internal/repository/orders"
+	"electrotech/internal/repository/users"
 	"net/http"
 
 	"github.com/charmbracelet/log"

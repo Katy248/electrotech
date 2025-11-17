@@ -2,7 +2,7 @@ package auth
 
 import (
 	"electrotech/internal/models"
-	"electrotech/internal/users"
+	"electrotech/internal/repository/users"
 	"fmt"
 	"net/http"
 	"strings"

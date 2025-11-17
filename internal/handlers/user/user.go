@@ -2,7 +2,7 @@ package user
 
 import (
 	"electrotech/internal/handlers/auth"
-	"electrotech/internal/users"
+	"electrotech/internal/repository/users"
 	"net/http"
 
 	"github.com/charmbracelet/log"

@@ -2,7 +2,7 @@ package user
 
 import (
 	"electrotech/internal/models"
-	"electrotech/internal/users"
+	"electrotech/internal/repository/users"
 	"log"
 	"net/http"
 
