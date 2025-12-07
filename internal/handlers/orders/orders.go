@@ -106,8 +106,7 @@ func GetUserOrdersHandler(catalogRepo *catalog.Repo) gin.HandlerFunc {
 			for _, p := range o.OrderProducts {
 				product, err := catalogRepo.GetProduct(p.ProductID)
 				if err != nil {
-					log.Error("Failed getting product", "error", err, "productID", p.ProductID)
-					c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get product"})
+					log.Warn("Failed getting product, skipping", "error", err, "productID", p.ProductID)
 					continue
 				}
 				p.ImagePath = product.ImagePath

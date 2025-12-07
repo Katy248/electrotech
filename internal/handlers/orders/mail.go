@@ -21,7 +21,7 @@ func sendEmail(order models.Order) {
 
 	buff, err := buildMail(order)
 	if err != nil {
-		log.Error("Failed building mail", "error", err, "buffer", buff)
+		log.Error("Failed building mail", "error", err, "buffer", string(buff))
 		return
 	}
 
