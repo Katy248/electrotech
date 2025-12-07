@@ -61,7 +61,7 @@ func getOffer(p product, off *offersModel) (*offer, error) {
 	return nil, fmt.Errorf("there is no offer for product id = '%s'", p.Id)
 }
 
-func getCount(p product, offers *offersModel) (int, error) {
+func getCount(p product, offers *offersModel) (float32, error) {
 	o, err := getOffer(p, offers)
 	if err != nil {
 		return 0, fmt.Errorf("failed get offer for product: %s", err)

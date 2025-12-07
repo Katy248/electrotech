@@ -7,6 +7,6 @@ type Product struct {
 	ImagePath     string  `json:"imagePath"`
 	Price         float32 `json:"price"`
 	ArticleNumber string  `json:"articleNumber"`
-	Count         int     `json:"count"`
+	Count         float32 `json:"count"`
 	Manufacturer  string  `json:"manufacturer"`
 }
