@@ -50,7 +50,7 @@ func (p *Parser) parse() error {
 	if p.imports == nil {
 		imp, err := p.parseImports()
 		if err != nil {
-			return err
+			return fmt.Errorf("failed parse imports: %s", err)
 		}
 		p.imports = imp
 	}
@@ -58,7 +58,7 @@ func (p *Parser) parse() error {
 	if p.offers == nil {
 		off, err := p.parseOffers()
 		if err != nil {
-			return err
+			return fmt.Errorf("failed parse offers: %s", err)
 		}
 		p.offers = off
 	}
@@ -67,7 +67,7 @@ func (p *Parser) parse() error {
 
 func (p *Parser) GetProducts() ([]models.Product, error) {
 	if err := p.parse(); err != nil {
-		return nil, fmt.Errorf("failed parse data: %s", err)
+		return nil, fmt.Errorf("failed parse xml data: %s", err)
 	}
 
 	products, err := mapProducts(p.offers, p.imports)

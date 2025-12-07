@@ -34,7 +34,7 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"code": http.StatusInternalServerError,
 			})
-			log.Printf("Error getting products: %v", err)
+			log.Error("Error getting products", "error", err)
 			return
 		}
 

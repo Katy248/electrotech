@@ -3,6 +3,7 @@ package catalog
 import (
 	"electrotech/internal/models"
 	"errors"
+	"fmt"
 )
 
 var (
@@ -12,7 +13,7 @@ var (
 func (r *Repo) GetProducts(p Page, filters ...FilterFunc) ([]models.Product, error) {
 	products, err := r.parser.GetProducts()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed get products: %s",err)
 	}
 
 	var filtered []models.Product
