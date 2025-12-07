@@ -32,16 +32,16 @@ const (
 )
 
 type product struct {
-	Id             string          `xml:"Ид"`
-	ArticleNumber  string          `xml:"Артикул"`
-	Code           string          `xml:"Код"`
-	Name           string          `xml:"Наименование"`
-	GroupIds       []string        `xml:"Группы>Ид"`
-	CategoryId     string          `xml:"Категория"`
-	Description    string          `xml:"Описание"`
-	Country        string          `xml:"Страна"`
-	Image          string          `xml:"Картинка"`
-	ProductUnit    baseUnit
+	Id            string   `xml:"Ид"`
+	ArticleNumber string   `xml:"Артикул"`
+	Code          string   `xml:"Код"`
+	Name          string   `xml:"Наименование"`
+	GroupIds      []string `xml:"Группы>Ид"`
+	CategoryId    string   `xml:"Категория"`
+	Description   string   `xml:"Описание"`
+	Country       string   `xml:"Страна"`
+	Image         string   `xml:"Картинка"`
+	ProductUnit   baseUnit
 }
 type group struct {
 	Id   string `xml:"Ид"`
@@ -69,7 +69,7 @@ type price struct {
 	Value        float32 `xml:"ЦенаЗаЕдиницу"`
 	Currency     string  `xml:"Валюта"`
 	Unit         string  `xml:"Единица"`
-	Ratio        int     `xml:"Коэффициент"`
+	Ratio        float32 `xml:"Коэффициент"`
 }
 
 type offer struct {
@@ -77,7 +77,7 @@ type offer struct {
 	Name          string `xml:"Наименование"`
 	Unit          baseUnit
 	ArticleNumber string  `xml:"Артикул"`
-	Count         int     `xml:"Количество"`
+	Count         float32 `xml:"Количество"`
 	Prices        []price `xml:"Цены>Цена"`
 }
 type priceType struct {
