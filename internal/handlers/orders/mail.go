@@ -44,7 +44,7 @@ func buildMail(order models.Order) ([]byte, error) {
 	buff := &bytes.Buffer{}
 	err = template.Execute(buff, order)
 	if err != nil {
-		log.Error("Failed executing mail template", "error", err, "order", order, "user", order.User)
+		log.Error("Failed executing mail template", "error", err, "order", order)
 		return buff.Bytes(), fmt.Errorf("failed execute template: %s", err)
 	}
 
