@@ -31,8 +31,10 @@ func Init() {
 }
 
 func migrateDB(db *sql.DB) error {
+	viper.SetDefault("migrations-dir", "./sql/migrations")
+	migrationsDir := viper.GetString("migrations-dir")
 	source := migrate.FileMigrationSource{
-		Dir: "./sql/migrations",
+		Dir: migrationsDir,
 	}
 	log.Debug("Migrating database...")
 	count, err := migrate.Exec(db, "sqlite3", source, migrate.Up)
