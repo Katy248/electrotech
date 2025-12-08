@@ -10,12 +10,12 @@ import (
 )
 
 func InsertNew(o *models.Order) error {
-	err := storage.DB.Create(&o).Error
+	err := storage.DB.Create(o).Error
 	return err
 }
 
 func New(user *models.User, products []models.OrderProduct) (*models.Order, error) {
-	o := models.Order{
+	o := &models.Order{
 		CreationDate: time.Now(),
 	}
 	if user == nil {
@@ -25,7 +25,7 @@ func New(user *models.User, products []models.OrderProduct) (*models.Order, erro
 	if err := o.SetUser(user); err != nil {
 		return nil, fmt.Errorf("failed set user: %s", err)
 	}
-	err := storage.DB.Create(&o).Error
+	err := storage.DB.Create(o).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed insert order: %s", err)
 	}
@@ -37,12 +37,12 @@ func New(user *models.User, products []models.OrderProduct) (*models.Order, erro
 			return nil, fmt.Errorf("failed save product: %s", err)
 		}
 	}
-	err = storage.DB.Save(&o).Error
+	err = storage.DB.Save(o).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed save order: %s", err)
 	}
 
-	return &o, nil
+	return o, nil
 }
 
 var getOrdersQuery = `

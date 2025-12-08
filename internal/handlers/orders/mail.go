@@ -35,6 +35,9 @@ func sendEmail(order models.Order) {
 var EmailTemplate string
 
 func buildMail(order models.Order) ([]byte, error) {
+	if order.User == nil {
+		return nil, fmt.Errorf("order.User value is nil")
+	}
 	template, err := tmpl.New("new-order-mail").Parse(EmailTemplate)
 
 	if err != nil {
