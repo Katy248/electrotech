@@ -23,12 +23,13 @@ func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, 
 		}
 		p.Manufacturer = manufacturer
 
-		price, currency, err := getPrice(xmlProduct, offers)
+		price, currency, currencySym, err := getPrice(xmlProduct, offers)
 		if err != nil {
 			return products, fmt.Errorf("failed get price for product: %s", err)
 		}
 		p.Price = price
-		p.CurrencySym = currency
+		p.Currency = currency
+		p.CurrencySym = currencySym
 
 		count, err := getCount(xmlProduct, offers)
 		if err != nil {
@@ -41,32 +42,33 @@ func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, 
 	return products, nil
 }
 
-func getPrice(p product, offers *offersModel) (float32, string, error) {
+func getPrice(p product, offers *offersModel) (price float32, currency string, currencySymbol string, err error) {
 	o, err := getOffer(p, offers)
 	if err != nil {
-		return 0, "$", fmt.Errorf("failed get offer for product: %s", err)
+		return 0, "", "", fmt.Errorf("failed get offer for product: %s", err)
 	}
 
 	if len(o.Prices) == 0 {
-		return 0, "$", fmt.Errorf("there is no prices specified for offer")
+		return 0, "", "", fmt.Errorf("there is no prices specified for offer")
 	}
 
-	return o.Prices[0].Value, getCurrencySym(o.Prices[0]), nil
+	currency, currencySym := getCurrency(o.Prices[0])
+	return o.Prices[0].Value, currency, currencySym, nil
 }
 
-func getCurrencySym(p price) string {
+func getCurrency(p price) (currency string, symbol string) {
 	switch p.Currency {
 	case "руб":
-		return models.CurrencyRUB
+		return models.CurrencyRUB, models.CurrencySymbolRUB
 	case "EUR":
-		return models.CurrencyEUR
+		return models.CurrencyEUR, models.CurrencySymbolEUR
 	case "USD":
-		return models.CurrencyUSD
+		return models.CurrencyUSD, models.CurrencySymbolUSD
 	case "ILS":
-		return models.CurrencyILS
+		return models.CurrencyILS, models.CurrencySymbolILS
 	default:
-		log.Warn("Unknown currency, fallback to default shekel symbol", "currency", p.Currency, "fallback to", models.CurrencyILS)
-		return models.CurrencyILS
+		log.Warn("Unknown currency, fallback to default shekel symbol", "currency", p.Currency, "fallback to", models.CurrencySymbolILS)
+		return models.CurrencyILS, models.CurrencySymbolILS
 	}
 }
 

@@ -10,11 +10,17 @@ type Product struct {
 	Count         float32 `json:"count"`
 	Manufacturer  string  `json:"manufacturer"`
 	CurrencySym   string  `json:"currencySym"`
+	Currency      string  `json:"currency"`
 }
 
 const (
-	CurrencyRUB = "₽"
-	CurrencyUSD = "$"
-	CurrencyEUR = "€"
-	CurrencyILS = "₪" // Israeli New Sheqel
+	CurrencySymbolRUB = "₽"
+	CurrencySymbolUSD = "$"
+	CurrencySymbolEUR = "€"
+	CurrencySymbolILS = "₪" // Israeli New Sheqel
+
+	CurrencyRUB = "RUB"
+	CurrencyUSD = "USD"
+	CurrencyEUR = "EUR"
+	CurrencyILS = "ILS"
 )
