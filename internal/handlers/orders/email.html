@@ -56,7 +56,7 @@
         </p>
         <h2> Товары </h2>
         <ul>
-            {{ range .Products }}
+            {{ range .OrderProducts }}
             <li>
                 <strong>{{ .ProductName }}</strong>
                 ({{ printf "%.2f" .ProductPrice }} руб.) x {{ .Quantity }} = {{ .Sum | printf "%.2f руб."}}
