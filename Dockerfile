@@ -7,6 +7,6 @@ ENV GOCACHE=/root/.cache/go-build
 RUN --mount=type=cache,target="/root/.cache/go-build" go build -o /app/srv ./cmd/server/main.go
 
 FROM alpine:latest
-COPY --from=builder /app/srv /bin/srv
+COPY --from=builder /app/srv /app/srv
 EXPOSE 8080 8021 30000-30020
-ENTRYPOINT ["/bin/srv"]
+ENTRYPOINT ["/app/srv"]
