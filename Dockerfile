@@ -7,6 +7,8 @@ ENV GOCACHE=/root/.cache/go-build
 RUN --mount=type=cache,target="/root/.cache/go-build" go build -o /app/srv ./cmd/server/main.go
 
 FROM ubuntu:latest AS server
+RUN sudo apt-get install -y ca-certificates
+
 WORKDIR /usr/bin
 
 COPY --from=builder /app/srv /usr/bin/srv
