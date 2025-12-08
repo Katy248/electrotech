@@ -10,3 +10,4 @@ docs/
 *.db
 .zed/
 .env
+.*/
