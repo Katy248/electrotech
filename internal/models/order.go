@@ -35,6 +35,7 @@ func (o *Order) SetUser(u *User) error {
 		return fmt.Errorf("user has no required company data filled")
 	}
 	o.UserID = u.ID
+	o.User = u
 	return nil
 }
 
