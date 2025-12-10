@@ -12,6 +12,7 @@ var (
 	ErrDataDirNotSpecified = fmt.Errorf("data-dir parameter isn't specified")
 )
 
+// From 0 to infinity
 type Page int
 
 type Repo struct {

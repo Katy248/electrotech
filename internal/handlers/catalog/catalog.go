@@ -16,6 +16,7 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 		if strings.Contains(ctx.Request.URL.String(), "filter") {
 			log.Warn("Deprecated url, should be removed", "url", ctx.Request.URL.String())
 		}
+		log.Warn("Deprecated url, will be removed sooner, move to new version", "url", ctx.Request.URL.String(), "newVersion", "/api/v2/products")
 		pageParam, _ := ctx.Params.Get("page")
 
 		page, err := strconv.Atoi(pageParam)
