@@ -107,7 +107,7 @@ func takeFirst(products []models.Product, nFirst int) []models.Product {
 	filtered := []models.Product{}
 
 	for i, p := range products {
-		if i > nFirst {
+		if i == nFirst {
 			break
 		}
 		filtered = append(filtered, p)
