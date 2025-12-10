@@ -90,7 +90,7 @@ func (r *Repo) GetProductsNew(p Page, filters ...FilterFunc) (*Products, error) 
 		Products: takeFirst(filtered, PageSize),
 		Pages:    pages,
 		Page:     int(p),
-		Total:    len(products),
+		Total:    len(filtered),
 	}, nil
 }
 
