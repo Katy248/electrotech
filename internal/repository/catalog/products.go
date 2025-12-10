@@ -78,10 +78,7 @@ func (r *Repo) GetProductsNew(p Page, filters ...FilterFunc) (*Products, error) 
 		return nil, nil
 	}
 
-	pages := len(filtered) / PageSize
-	if len(filtered)%PageSize != 0 {
-		pages++
-	}
+	pages := getPages(len(filtered), PageSize)
 
 	if int(p*PageSize) > len(filtered)-1 {
 		return nil, nil
@@ -97,10 +94,23 @@ func (r *Repo) GetProductsNew(p Page, filters ...FilterFunc) (*Products, error) 
 	}, nil
 }
 
+func getPages(productsCount int, pageSize int) int {
+	pages := productsCount / PageSize
+	if productsCount%PageSize != 0 {
+		pages++
+	}
+	return pages
+}
+
 func takeFirst(products []models.Product, nFirst int) []models.Product {
+
 	filtered := []models.Product{}
-	for i := 0; i < nFirst; i++ {
-		filtered = append(filtered, products[i])
+
+	for i, p := range products {
+		if i > nFirst {
+			break
+		}
+		filtered = append(filtered, p)
 	}
 	return filtered
 }
