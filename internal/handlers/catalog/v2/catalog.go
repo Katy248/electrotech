@@ -18,7 +18,7 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 			return
 		}
 
-		products, pages, err := r.GetProductsNew(
+		products, err := r.GetProductsNew(
 			catalog.Page(request.Page),
 		)
 
@@ -32,10 +32,12 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 
 		ctx.JSON(http.StatusOK, gin.H{
 			"code":     http.StatusOK,
-			"products": products,
-			"pages":    pages,
-			"page":     request.Page,
+			"products": products.Products,
+			"pages":    products.Pages,
+			"total":    products.Total,
+			"page":     products.Page,
 		})
+
 	}
 }
 

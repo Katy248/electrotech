@@ -45,10 +45,18 @@ func (r *Repo) GetProducts(p Page, filters ...FilterFunc) ([]models.Product, err
 
 	return takeFirst(filtered, PageSize), nil
 }
-func (r *Repo) GetProductsNew(p Page, filters ...FilterFunc) ([]models.Product, int, error) {
+
+type Products struct {
+	Products []models.Product
+	Page     int
+	Pages    int
+	Total    int
+}
+
+func (r *Repo) GetProductsNew(p Page, filters ...FilterFunc) (*Products, error) {
 	products, err := r.parser.GetProducts()
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed get products: %s", err)
+		return nil, fmt.Errorf("failed get products: %s", err)
 	}
 
 	var filtered []models.Product
@@ -66,7 +74,7 @@ func (r *Repo) GetProductsNew(p Page, filters ...FilterFunc) ([]models.Product, 
 	}
 
 	if len(filtered) == 0 {
-		return nil, 0, nil
+		return nil, nil
 	}
 
 	pages := len(filtered) / PageSize
@@ -75,17 +83,22 @@ func (r *Repo) GetProductsNew(p Page, filters ...FilterFunc) ([]models.Product, 
 	}
 
 	if int(p*PageSize) > len(filtered) {
-		return nil, 0, nil
+		return nil, nil
 	} else {
 		filtered = filtered[int(p*PageSize):]
 	}
 
-	return takeFirst(filtered, PageSize), pages, nil
+	return &Products{
+		Products: takeFirst(filtered, PageSize),
+		Pages:    pages,
+		Page:     int(p),
+		Total:    len(products),
+	}, nil
 }
 
-func takeFirst(products []models.Product, n int) []models.Product {
+func takeFirst(products []models.Product, nFirst int) []models.Product {
 	filtered := []models.Product{}
-	for i := 0; i < n; i++ {
+	for i := 0; i < nFirst; i++ {
 		filtered = append(filtered, products[i])
 	}
 	return filtered
