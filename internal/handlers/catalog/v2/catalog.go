@@ -18,8 +18,14 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 			return
 		}
 
+		filters := []catalog.FilterFunc{}
+
+		if request.Query != "" {
+			filters = append(filters, catalog.QueryFilter(request.Query))
+		}
+
 		products, err := r.GetProductsNew(
-			catalog.Page(request.Page),
+			catalog.Page(request.Page), filters...,
 		)
 
 		if err != nil {
@@ -42,5 +48,6 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 }
 
 type Request struct {
-	Page int `form:"page" binding:"gte=0"`
+	Page  int    `form:"page" binding:"gte=0"`
+	Query string `form:"query"`
 }

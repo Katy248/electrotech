@@ -4,6 +4,7 @@ import (
 	"electrotech/internal/models"
 	"errors"
 	"fmt"
+	"strings"
 )
 
 var (
@@ -105,6 +106,12 @@ func takeFirst(products []models.Product, nFirst int) []models.Product {
 }
 
 type FilterFunc func(p models.Product) bool
+
+func QueryFilter(query string) FilterFunc {
+	return func(p models.Product) bool {
+		return strings.Contains(p.Name, query) || strings.Contains(p.Description, query) || strings.Contains(p.Id, query) || strings.Contains(p.ArticleNumber, query) || strings.Contains(p.ImagePath, query) || strings.Contains(p.Manufacturer, query)
+	}
+}
 
 func (r *Repo) GetProduct(id string) (models.Product, error) {
 	products, err := r.parser.GetProducts()
