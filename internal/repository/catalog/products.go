@@ -83,7 +83,7 @@ func (r *Repo) GetProductsNew(p Page, filters ...FilterFunc) (*Products, error) 
 		pages++
 	}
 
-	if int(p*PageSize) > len(filtered) {
+	if int(p*PageSize) > len(filtered)-1 {
 		return nil, nil
 	} else {
 		filtered = filtered[int(p*PageSize):]
