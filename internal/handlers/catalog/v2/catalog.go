@@ -34,6 +34,7 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 			"code":     http.StatusOK,
 			"products": products,
 			"pages":    pages,
+			"page":     request.Page,
 		})
 	}
 }
