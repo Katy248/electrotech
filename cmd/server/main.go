@@ -1,40 +1,20 @@
 package main
 
 import (
-	"strings"
 	"sync"
 
+	"electrotech/internal/config"
 	"electrotech/internal/email"
 	"electrotech/internal/repository/catalog"
 	"electrotech/internal/server"
 	"electrotech/storage"
 
 	"github.com/charmbracelet/log"
-	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Warn("Can't load .env file", "error", err)
-	}
-	viper.SetConfigName("electrotech-back")
-	viper.SetEnvKeyReplacer(
-		strings.NewReplacer("-", "_", ".", "_"),
-	)
-	viper.AddConfigPath(".")
-	viper.AddConfigPath("/app")
-	viper.AddConfigPath("/etc")
-	viper.AddConfigPath("/etc/electrotech")
-	viper.AutomaticEnv()
-	if err := viper.ReadInConfig(); err != nil {
-		log.Warn("Failed read config file", "error", err)
-	}
-	log.SetReportCaller(true)
-
-}
-
 func main() {
+	config.Setup()
 	storage.Init()
 
 	if email.IsEnabled() {
