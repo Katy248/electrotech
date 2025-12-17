@@ -78,6 +78,8 @@ func (r *Repo) GetProductsNew(p Page, filters ...FilterFunc) (*Products, error) 
 		return nil, nil
 	}
 
+	total := len(filtered)
+
 	pages := getPages(len(filtered), PageSize)
 
 	if int(p*PageSize) > len(filtered)-1 {
@@ -90,7 +92,7 @@ func (r *Repo) GetProductsNew(p Page, filters ...FilterFunc) (*Products, error) 
 		Products: takeFirst(filtered, PageSize),
 		Pages:    pages,
 		Page:     int(p),
-		Total:    len(filtered),
+		Total:    total,
 	}, nil
 }
 
