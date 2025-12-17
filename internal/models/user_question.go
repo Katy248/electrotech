@@ -9,4 +9,5 @@ type UserQuestion struct {
 	Email        *string   `json:"email"`
 	Phone        *string   `json:"phone"`
 	Message      string    `json:"message"`
+	ClientIP     string    `json:"clientIp"`
 }

@@ -4,6 +4,7 @@ import (
 	"electrotech/internal/handlers/auth"
 	catalogHandlers "electrotech/internal/handlers/catalog"
 	v2 "electrotech/internal/handlers/catalog/v2"
+	"electrotech/internal/handlers/contact"
 	"electrotech/internal/handlers/orders"
 	"electrotech/internal/handlers/user"
 	"electrotech/internal/repository/catalog"
@@ -34,6 +35,7 @@ func NewHTTPServer(catalogRepo *catalog.Repo) *HTTPServer {
 	api := server.Group("/api")
 	{
 		api.Static("/files", viper.GetString("data-dir"))
+		api.POST("/contact-us", contact.ContactUsHandler())
 
 		api.GET("/v2/products", v2.GetProducts(catalogRepo))
 

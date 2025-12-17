@@ -11,6 +11,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 
 	_ "embed"
 	tmpl "html/template"
@@ -18,13 +19,41 @@ import (
 
 type Request struct {
 	Name    string `json:"name" binding:"required"`
-	Message string `json:"message"`
+	Message string `json:"message" binding:"required"`
 	Email   string `json:"email"`
 	Phone   string `json:"phone"`
 }
 
+func GetRequestTimeout() time.Duration {
+	viper.SetDefault("contact-us.request-timeout", time.Minute*10)
+	return viper.GetDuration("contact-us.request-timeout")
+}
+
+func checkRecentRequest(ip string) bool {
+	var records []*models.UserQuestion
+
+	dateAfter := time.Now().Add(-GetRequestTimeout())
+
+	if err := storage.DB.
+		Model(&models.UserQuestion{}).
+		Where("client_ip = ?", ip).
+		Where("DATETIME(creation_date) > DATETIME(?)", dateAfter).
+		Find(&records).Error; err != nil {
+		log.Error("Failed get recent requests", "error", err)
+		return true
+	}
+	return len(records) == 0
+}
+
 func ContactUsHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
+
+		ip := c.ClientIP()
+		if !checkRecentRequest(ip) {
+			log.Warn("Too many requests", "clientIP", ip, "timeout", GetRequestTimeout())
+			c.JSON(http.StatusTooManyRequests, gin.H{"error": "too many requests"})
+			return
+		}
 
 		var request Request
 		if err := c.ShouldBindJSON(&request); err != nil {
@@ -45,6 +74,7 @@ func ContactUsHandler() gin.HandlerFunc {
 			Email:        &request.Email,
 			Phone:        &request.Phone,
 			Message:      request.Message,
+			ClientIP:     ip,
 		}
 
 		err := storage.DB.Create(&dbRequest).Error
