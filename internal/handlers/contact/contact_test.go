@@ -12,7 +12,7 @@ const lorem = `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do e
 `
 
 func TestBuildEmail(t *testing.T) {
-	request := &models.Request{
+	request := &models.UserQuestion{
 		PersonName:   "John Doe",
 		ID:           123,
 		CreationDate: time.Now(),

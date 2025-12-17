@@ -15,7 +15,7 @@ import (
 
 func main() {
 	config.Setup()
-	storage.Init()
+	storage.Init(true)
 
 	if email.IsEnabled() {
 		log.Info("Mail system enabled")

@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type Request struct {
+type UserQuestion struct {
 	ID           int       `json:"id"`
 	CreationDate time.Time `json:"creationDate"`
 	PersonName   string    `json:"personName"`

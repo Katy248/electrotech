@@ -1,6 +1,6 @@
 -- +migrate Up
-CREATE TABLE requests (
-    id INT PRIMARY KEY AUTOINCREMENT,
+CREATE TABLE user_questions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     creation_date DATE NOT NULL,
     person_name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
@@ -9,4 +9,4 @@ CREATE TABLE requests (
 );
 
 -- +migrate Down
-DROP TABLE requests;
+DROP TABLE user_questions;

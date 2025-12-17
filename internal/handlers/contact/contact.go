@@ -39,7 +39,7 @@ func ContactUsHandler() gin.HandlerFunc {
 			return
 		}
 
-		dbRequest := models.Request{
+		dbRequest := models.UserQuestion{
 			CreationDate: time.Now(),
 			PersonName:   request.Name,
 			Email:        &request.Email,
@@ -61,8 +61,8 @@ func ContactUsHandler() gin.HandlerFunc {
 //go:embed email.html
 var EmailTemplate string
 
-func sendEmail(request *models.Request) {
-	content, err := buildEmail(request)
+func sendEmail(question *models.UserQuestion) {
+	content, err := buildEmail(question)
 	if err != nil {
 		log.Error("Failed build email", "error", err)
 		return
@@ -73,14 +73,14 @@ func sendEmail(request *models.Request) {
 	}
 }
 
-func buildEmail(request *models.Request) ([]byte, error) {
+func buildEmail(question *models.UserQuestion) ([]byte, error) {
 	template, err := tmpl.New("new-request-mail").Parse(EmailTemplate)
 	if err != nil {
 		log.Error("Failed create email template for new request", "error", err)
 		return nil, fmt.Errorf("failed create template: %s", err)
 	}
 	buff := &bytes.Buffer{}
-	err = template.Execute(buff, request)
+	err = template.Execute(buff, question)
 	if err != nil {
 		return nil, fmt.Errorf("failed execute template: %s", err)
 	}
