@@ -122,6 +122,11 @@ func QueryFilter(query string) FilterFunc {
 		return strings.Contains(p.Name, query) || strings.Contains(p.Description, query) || strings.Contains(p.Id, query) || strings.Contains(p.ArticleNumber, query) || strings.Contains(p.ImagePath, query) || strings.Contains(p.Manufacturer, query)
 	}
 }
+func OnlyAvailableFilter() FilterFunc {
+	return func(p models.Product) bool {
+		return p.Count > 0
+	}
+}
 
 func (r *Repo) GetProduct(id string) (models.Product, error) {
 	products, err := r.parser.GetProducts()

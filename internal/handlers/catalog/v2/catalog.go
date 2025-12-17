@@ -23,6 +23,9 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 		if request.Query != "" {
 			filters = append(filters, catalog.QueryFilter(request.Query))
 		}
+		if request.OnlyAvailable {
+			filters = append(filters, catalog.OnlyAvailableFilter())
+		}
 
 		products, err := r.GetProductsNew(
 			catalog.Page(request.Page), filters...,
@@ -48,6 +51,7 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 }
 
 type Request struct {
-	Page  int    `form:"page" binding:"gte=0"`
-	Query string `form:"query"`
+	Page          int    `form:"page" binding:"gte=0"`
+	Query         string `form:"query"`
+	OnlyAvailable bool   `form:"oa" binding:"default=false"`
 }
