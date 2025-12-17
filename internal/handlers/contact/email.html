@@ -11,11 +11,10 @@
             }
 
             main {
-                margin: 1rem;
-                padding: 2rem;
+                margin: 20px;
+                padding: 20px;
                 background-color: #fff;
-                border-radius: 10px;
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                border: #0081b6 1px solid;
             }
 
             h1,
@@ -43,8 +42,8 @@
     </head>
     <body>
         <main>
-            <p class="preview">Поступил новый запрос от пользователя</p>
-            <h1>Новый запрос от {{ .PersonName }}</h1>
+            <p class="preview">Поступил новый вопрос от пользователя</p>
+            <h1>Новый вопрос от {{ .PersonName }}</h1>
             {{ if .Email }}
             <p>Почта: <a href="mailto:{{ .Email }}">{{ .Email }}</a></p>
             {{ end }} {{ if .Phone }}
