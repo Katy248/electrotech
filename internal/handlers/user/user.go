@@ -1,7 +1,7 @@
 package user
 
 import (
-	"electrotech/internal/handlers/auth"
+	"electrotech"
 	"electrotech/internal/repository/users"
 	"net/http"
 
@@ -96,7 +96,7 @@ func ChangePhoneNumber() gin.HandlerFunc {
 			return
 		}
 
-		phone, err := auth.FormatPhoneNumber(req.PhoneNumber)
+		phone, err := electrotech.FormatPhoneNumber(req.PhoneNumber)
 		if err != nil {
 			log.Error("Error formatting phone number: %v", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid phone number"})

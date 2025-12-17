@@ -68,14 +68,9 @@ func ContactUsHandler() gin.HandlerFunc {
 			return
 		}
 
-		dbRequest := models.UserQuestion{
-			CreationDate: time.Now(),
-			PersonName:   request.Name,
-			Email:        &request.Email,
-			Phone:        &request.Phone,
-			Message:      request.Message,
-			ClientIP:     ip,
-		}
+		dbRequest := models.NewUserQuestion(
+			request.Name, request.Email, request.Phone, request.Message, ip,
+		)
 
 		err := storage.DB.Create(&dbRequest).Error
 		if err != nil {
@@ -84,7 +79,7 @@ func ContactUsHandler() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, gin.H{})
-		go sendEmail(&dbRequest)
+		go sendEmail(dbRequest)
 	}
 }
 
