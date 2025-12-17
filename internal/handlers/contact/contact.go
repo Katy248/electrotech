@@ -97,7 +97,7 @@ func sendEmail(question *models.UserQuestion) {
 		log.Error("Failed build email", "error", err)
 		return
 	}
-	err = email.SendInfo(content, "Новый запрос на контакты")
+	err = email.SendInfo(content, "Новый вопрос")
 	if err != nil {
 		log.Error("Failed send email", "error", err)
 	}
