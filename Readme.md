@@ -7,14 +7,12 @@
 **Requirements:**
 
 - golang
-- sqlc
 - sqlite3
 
 Run:
 
 ```bash
-sqlc generate
-go run cmd/server/main.go
+DEVEL=true go run cmd/server/main.go
 ```
 
 Application requires several environment variables:
@@ -23,6 +21,8 @@ Application requires several environment variables:
 - `DATA_DIR` path to directory with catalog data, default is `/data`. Fo development use `./example`
 - `PORT` - HTTP port, default is _8080_
 - `JWT_SECRET` - secret for JWT token
+
+It can be configured via `.env` file or `electrotech-back.toml` file (`electrotech-back.devel.toml` for development)
 
 ## Contributing
 

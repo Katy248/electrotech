@@ -1,6 +1,6 @@
 gin-mode = "release"
 jwt-secret = "234897593847690837456098734q89secret"
-
+contact-us.request-timeout = "6m"
 
 [email]
 sender-name = "shop-icentr.pro"
