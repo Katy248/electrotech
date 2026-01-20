@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -22,8 +23,11 @@ func getSecretKey() string {
 }
 
 const (
-	TokenTTL        = time.Hour * 24
-	RefreshTokenTTL = TokenTTL * 2
+	// Token time to live.
+	//
+	// TODO: make configurable
+	TokenTTL        = time.Hour * 2
+	RefreshTokenTTL = time.Hour * 48 // TODO: make configurable
 	TokenIssuer     = "electrotech-back"
 )
 
@@ -100,15 +104,15 @@ func ValidateToken(tokenString string) (*Claims, error) {
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parsing failed: %s", err)
 	}
 
 	if !token.Valid {
-		return nil, jwt.ErrSignatureInvalid
+		return nil, fmt.Errorf("token invalid: %s", jwt.ErrSignatureInvalid)
 	}
 
 	if err := claims.Valid(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("claims invalid: %s", err)
 	}
 
 	return claims, nil

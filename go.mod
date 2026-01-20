@@ -10,7 +10,7 @@ require (
 	github.com/gin-gonic/gin v1.10.1
 	github.com/joho/godotenv v1.5.1
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
-	github.com/katy248/gravatar v0.0.0-20240805091522-7ccd4f6bc428
+	github.com/katy248/gravatar v0.2.0
 	github.com/rubenv/sql-migrate v1.8.0
 	github.com/spf13/viper v1.21.0
 	goftp.io/server/v2 v2.0.2

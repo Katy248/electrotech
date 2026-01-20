@@ -21,7 +21,8 @@ type User struct {
 	PositionInCompany *string `json:"positionInCompany"`
 }
 
-func (u *User) UpdatePassword(password string) error {
+// Receives password string and sets PasswordHash to hash of input
+func (u *User) SetPassword(password string) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return fmt.Errorf("failed hash password: %s", err)
@@ -46,6 +47,8 @@ func (u *User) CompanyData() *CompanyData {
 	data.AllRequiredFields = data.DataFilled()
 	return data
 }
+
+// Utility func to work with nullable representation of sql strings
 func strValueOrEmpty(s *string) string {
 	if s == nil {
 		return ""

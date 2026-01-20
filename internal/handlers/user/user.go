@@ -7,7 +7,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/gin-gonic/gin"
-	gr "github.com/katy248/gravatar/pkg/url"
+	gr "github.com/katy248/gravatar"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -34,7 +34,7 @@ func ChangePassword() gin.HandlerFunc {
 			return
 		}
 
-		err = user.UpdatePassword(req.NewPassword)
+		err = user.SetPassword(req.NewPassword)
 
 		if err != nil {
 			log.Error("Error hashing password", "error", err, "password", req.NewPassword)

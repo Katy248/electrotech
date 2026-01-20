@@ -32,6 +32,13 @@ func NewHTTPServer(catalogRepo *catalog.Repo) *HTTPServer {
 	}
 	server.Use(cors.New(corsConf))
 
+	server.Use(func(ctx *gin.Context) {
+		fmt.Println(ctx.Request.Header)
+		ctx.Next()
+	})
+
+	server.GET("/")
+
 	api := server.Group("/api")
 	{
 		api.Static("/files", viper.GetString("data-dir"))

@@ -3,9 +3,11 @@ package users
 import (
 	"electrotech/internal/models"
 	"electrotech/storage"
+	"strings"
 )
 
 func ByEmail(email string) (*models.User, error) {
+	email = strings.ToLower(email)
 	var user models.User
 	err := storage.DB.Where("email = ?", email).First(&user).Error
 	if err != nil {
@@ -24,7 +26,12 @@ func ByID(id int64) (*models.User, error) {
 	return &user, nil
 }
 
-func InsertNew(u models.User) error {
+func normalizeEmail(u *models.User) {
+	u.Email = strings.ToLower(u.Email)
+}
+
+func InsertNew(u *models.User) error {
+	normalizeEmail(u)
 	err := storage.DB.Create(&u).Error
 	return err
 }

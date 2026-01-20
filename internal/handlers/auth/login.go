@@ -9,7 +9,6 @@ import (
 	"github.com/charmbracelet/log"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type LoginRequest struct {
@@ -30,28 +29,27 @@ func LoginHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req LoginRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			log.Error("Error binding request body", "error", err)
+			log.Error("Error binding login request body", "error", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("error binding request body: %v", err)})
 			return
 		}
 
 		user, err := users.ByEmail(req.Email)
 		if err != nil || user.Email == "" {
-			log.Printf("Error getting user by email '%s': %v", req.Email, err)
+			log.Errorf("Error getting user by email '%s': %v", req.Email, err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 			return
 		}
 
-		err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password))
-		if err != nil {
-			log.Printf("Error comparing password: %v", err)
+		if !user.CheckPassword(req.Password) {
+			log.Error("Passwords don't match", "userId", user.ID)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 			return
 		}
 
 		response, err := getAuthResponse(user)
 		if err != nil {
-			log.Printf("Error generating auth response: %v", err)
+			log.Errorf("Error generating auth response: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
@@ -68,7 +66,7 @@ func Refresh() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req RefreshRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			log.Printf("Error binding request: %v", err)
+			log.Errorf("Error binding request: %v", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -81,14 +79,14 @@ func Refresh() gin.HandlerFunc {
 
 		user, err := users.ByID(claimsUser.Id)
 		if err != nil {
-			log.Printf("Error getting user by id '%d': %v", claimsUser.Id, err)
+			log.Errorf("Error getting user by id '%d': %v", claimsUser.Id, err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
 
 		response, err := getAuthResponse(user)
 		if err != nil {
-			log.Printf("Error generating auth response: %v", err)
+			log.Errorf("Error generating auth response: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
@@ -100,12 +98,12 @@ func getAuthResponse(user *models.User) (*AuthResponse, error) {
 
 	token, err := GenerateToken(user.Email, user.ID)
 	if err != nil {
-		log.Printf("Error generating token: %v", err)
+		log.Errorf("Error generating token: %v", err)
 		return nil, err
 	}
 	refreshToken, err := GenerateRefreshToken(user.ID)
 	if err != nil {
-		log.Printf("Error generating refresh token: %v", err)
+		log.Errorf("Error generating refresh token: %v", err)
 		return nil, err
 	}
 
