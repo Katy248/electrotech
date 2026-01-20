@@ -37,6 +37,7 @@ func InsertNew(u *models.User) error {
 }
 
 func Update(u *models.User) error {
+	normalizeEmail(u)
 	err := storage.DB.Save(u).Error
 	return err
 }
