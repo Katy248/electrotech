@@ -42,6 +42,21 @@ func TestParseImportsData(t *testing.T) {
 		t.Error("Id failed to parse (should be 'RandomId')")
 	}
 
+	if len(result.Categories) < 1 {
+		t.Error("Categories failed to parse (should be not zero items)")
+	}
+
+	firstCategory := result.Categories[0]
+
+	expectedCategoryId := "b0627bbe-ceb3-11eb-a53c-f14c52115a4f"
+	expectedCategoryName := "<Без категории>"
+	if firstCategory.ID != expectedCategoryId {
+		t.Errorf("Category.Id failed to parse (should be '%s'), but was '%s'", expectedCategoryId, firstCategory.ID)
+	}
+	if firstCategory.Name != expectedCategoryName {
+		t.Errorf("Category.Name failed to parse (should be '%s') but was '%s'", expectedCategoryName, firstCategory.Name)
+	}
+
 	if len(firstProduct.GroupIds) <= 0 {
 		t.Fatal("Groups failed to parse (should be not zero items)")
 	}
@@ -154,10 +169,34 @@ var (
 
 	importsData = []byte(`
 	<КоммерческаяИнформация>
+	<Категории>
+		<Категория>
+			<Ид>b0627bbe-ceb3-11eb-a53c-f14c52115a4f</Ид>
+			<Наименование>&lt;Без категории&gt;</Наименование>
+			<Свойства>
+				<Ид>196f8eb6-7f84-11ed-a9dc-e0b9a548d6d8</Ид>
+				<Ид>31036664-469c-11f0-ad0f-000c292ac68f</Ид>
+				<Ид>12d51e24-469d-11f0-ad0f-000c292ac68f</Ид>
+				<Ид>41838cbb-469d-11f0-ad0f-000c292ac68f</Ид>
+				<Ид>b7f236e2-469e-11f0-ad0f-000c292ac68f</Ид>
+				<Ид>133a5a26-469f-11f0-ad0f-000c292ac68f</Ид>
+				<Ид>74d6567c-469f-11f0-ad0f-000c292ac68f</Ид>
+				<Ид>b86c05fe-46a0-11f0-ad0f-000c292ac68f</Ид>
+				<Ид>e7865f1a-46a0-11f0-ad0f-000c292ac68f</Ид>
+				<Ид>0abc3925-46a1-11f0-ad0f-000c292ac68f</Ид>
+				<Ид>7338a8d5-46a1-11f0-ad0f-000c292ac68f</Ид>
+				<Ид>9a965d49-46a1-11f0-ad0f-000c292ac68f</Ид>
+				<Ид>d9772f10-46a1-11f0-ad0f-000c292ac68f</Ид>
+				<Ид>2cc436e9-46a3-11f0-ad0f-000c292ac68f</Ид>
+				<Ид>ac448f94-46a3-11f0-ad0f-000c292ac68f</Ид>
+			</Свойства>
+		</Категория>
+	</Категории>
 		<Каталог СодержитТолькоИзменения="true">
 			<Товары>
 				<Товар>
 					<Ид>RandomId</Ид>
+					<Категория>b0627bbe-ceb3-11eb-a53c-f14c52115a4f</Категория>
 					<Группы>
 						<Ид>GroupId</Ид>
 					</Группы>

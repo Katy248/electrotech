@@ -23,6 +23,12 @@ func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, 
 		}
 		p.Manufacturer = manufacturer
 
+		category, err := getCategory(xmlProduct, imports)
+		if err != nil {
+			return nil, fmt.Errorf("failed get category for product: %s", err)
+		}
+		p.Category = category
+
 		price, currency, currencySym, err := getPrice(xmlProduct, offers)
 		if err != nil {
 			return products, fmt.Errorf("failed get price for product: %s", err)
@@ -40,6 +46,22 @@ func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, 
 		products = append(products, p)
 	}
 	return products, nil
+}
+
+func getCategory(p product, imports *importsModel) (models.Category, error) {
+	if p.CategoryId == "" {
+		return models.Category{}, fmt.Errorf("category ID is empty")
+	}
+
+	for _, i := range imports.Categories {
+		if i.ID == p.CategoryId {
+			return models.Category{
+				Name: i.Name,
+				Id:   i.ID,
+			}, nil
+		}
+	}
+	return models.Category{}, fmt.Errorf("no category with ID %q", p.CategoryId)
 }
 
 func getPrice(p product, offers *offersModel) (price float32, currency string, currencySymbol string, err error) {

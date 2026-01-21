@@ -11,6 +11,11 @@ type baseUnit struct {
 	InternationalAbbreviation string   `xml:"МеждународноеСокращение,attr"`
 }
 
+type category struct {
+	ID   string `xml:"Ид"`
+	Name string `xml:"Наименование"`
+}
+
 type property struct {
 	Id       string            `xml:"Ид"`
 	Name     string            `xml:"Наименование"`
@@ -59,6 +64,7 @@ type catalog struct {
 type importsModel struct {
 	Catalog    catalog    `xml:"Каталог"`
 	Classifier classifier `xml:"Классификатор"`
+	Categories []category `xml:"Категории>Категория"`
 }
 
 // offers
