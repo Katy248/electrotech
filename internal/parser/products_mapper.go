@@ -53,7 +53,7 @@ func getCategory(p product, imports *importsModel) (models.Category, error) {
 		return models.Category{}, fmt.Errorf("category ID is empty")
 	}
 
-	for _, i := range imports.Categories {
+	for _, i := range imports.Classifier.Categories {
 		if i.ID == p.CategoryId {
 			return models.Category{
 				Name: i.Name,

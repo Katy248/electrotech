@@ -55,6 +55,7 @@ type group struct {
 type classifier struct {
 	Groups     []group    `xml:"Группы>Группа"`
 	Properties []property `xml:"Свойства>Свойство"`
+	Categories []category `xml:"Категории>Категория"`
 }
 
 type catalog struct {
@@ -64,7 +65,6 @@ type catalog struct {
 type importsModel struct {
 	Catalog    catalog    `xml:"Каталог"`
 	Classifier classifier `xml:"Классификатор"`
-	Categories []category `xml:"Категории>Категория"`
 }
 
 // offers

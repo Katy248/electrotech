@@ -42,11 +42,11 @@ func TestParseImportsData(t *testing.T) {
 		t.Error("Id failed to parse (should be 'RandomId')")
 	}
 
-	if len(result.Categories) < 1 {
+	if len(result.Classifier.Categories) < 1 {
 		t.Error("Categories failed to parse (should be not zero items)")
 	}
 
-	firstCategory := result.Categories[0]
+	firstCategory := result.Classifier.Categories[0]
 
 	expectedCategoryId := "b0627bbe-ceb3-11eb-a53c-f14c52115a4f"
 	expectedCategoryName := "<Без категории>"
@@ -169,6 +169,7 @@ var (
 
 	importsData = []byte(`
 	<КоммерческаяИнформация>
+	<Классификатор>
 	<Категории>
 		<Категория>
 			<Ид>b0627bbe-ceb3-11eb-a53c-f14c52115a4f</Ид>
@@ -192,6 +193,7 @@ var (
 			</Свойства>
 		</Категория>
 	</Категории>
+	</Классификатор>
 		<Каталог СодержитТолькоИзменения="true">
 			<Товары>
 				<Товар>
