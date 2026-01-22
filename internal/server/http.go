@@ -27,7 +27,7 @@ func NewHTTPServer(catalogRepo *catalog.Repo) *HTTPServer {
 	corsConf := cors.Config{
 		AllowAllOrigins:  true,
 		AllowMethods:     []string{"POST", "GET", "OPTION", "DELETE", "PUT"},
-		AllowHeaders:     []string{"Authorization", "Content-Type", "Origin"},
+		AllowHeaders:     []string{"Authorization", "Content-Type", "Origin", "X-Requested-With"},
 		AllowCredentials: true,
 	}
 	server.Use(cors.New(corsConf))
