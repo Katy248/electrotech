@@ -10,7 +10,7 @@ RUN --mount=type=cache,target="/root/.cache/go-build" go build -o /app/srv ./cmd
 
 FROM scratch
 
-WORKDIR /usr/bin
+WORKDIR /bin
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app/srv ./
 
@@ -20,4 +20,4 @@ COPY --from=builder /app/sql/migrations /usr/share/srv/migrations
 COPY --from=builder /app/electrotech-back.toml /etc/electrotech-back.toml
 
 EXPOSE 8080 8021 30000-30020
-ENTRYPOINT ["/usr/bin/srv"]
+ENTRYPOINT ["/bin/srv"]
