@@ -5,8 +5,8 @@ import (
 	"electrotech/storage/migration"
 
 	"github.com/charmbracelet/log"
+	"github.com/glebarez/sqlite"
 	"github.com/spf13/viper"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
