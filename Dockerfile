@@ -12,7 +12,7 @@ FROM scratch
 
 WORKDIR /usr/bin
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /app/srv /usr/bin
+COPY --from=builder /app/srv ./
 
 ENV MIGRATIONS_DIR=/usr/share/srv/migrations
 COPY --from=builder /app/sql/migrations /usr/share/srv/migrations
