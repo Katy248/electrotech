@@ -8,7 +8,7 @@ ENV CGO_ENABLED=1
 ENV GOOS=linux
 RUN --mount=type=cache,target="/root/.cache/go-build" go build -o /app/srv ./cmd/server/main.go
 
-FROM scratch
+FROM alpine:latest
 
 WORKDIR /bin
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
