@@ -1,18 +1,30 @@
 package electrotech
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
 
+var ErrPhoneNumberInvalid = errors.New("invalid phone number")
+var ErrPhoneNumberEmpty = fmt.Errorf("%w: phone number is empty", ErrPhoneNumberInvalid)
+
+const PhoneNumberMinLength = 11
+const PhoneNumberFormattedLength = 12
+
 func FormatPhoneNumber(phone string) (string, error) {
 	if phone == "" {
-		return "", fmt.Errorf("phone number is empty")
+		return "", ErrPhoneNumberEmpty
+	}
 
+	if len(phone) < PhoneNumberMinLength {
+		return "", fmt.Errorf(
+			"%w: probably invalid phone number, length is less than 11 (%d)",
+			ErrPhoneNumberInvalid,
+			len(phone),
+		)
 	}
-	if len(phone) < 11 {
-		return "", fmt.Errorf("probably invalid phone number, length is less than 11 (%d)", len(phone))
-	}
+
 	phone = strings.TrimSpace(phone)
 	phone = strings.ReplaceAll(phone, "-", "")
 	phone = strings.ReplaceAll(phone, "(", "")
@@ -25,12 +37,13 @@ func FormatPhoneNumber(phone string) (string, error) {
 
 	for index, ch := range phone {
 		if ch != '+' && ch < '0' || ch > '9' {
-			return phone, fmt.Errorf("invalid character %q at index %d", ch, index)
+			return phone, fmt.Errorf("%w: invalid character %q at index %d", ErrPhoneNumberInvalid, ch, index)
 		}
 	}
 
-	if len(phone) != 12 {
-		return phone, fmt.Errorf("invalid phone number length %d", len(phone))
+	if len(phone) != PhoneNumberFormattedLength {
+		return phone, fmt.Errorf("%w: invalid phone number length %d", ErrPhoneNumberInvalid, len(phone))
 	}
+
 	return phone, nil
 }

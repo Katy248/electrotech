@@ -21,8 +21,8 @@ type HTTPServer struct {
 }
 
 func NewHTTPServer(catalogRepo *catalog.Repo) *HTTPServer {
-
 	gin.SetMode(viper.GetString("gin-mode"))
+
 	server := gin.Default()
 	corsConf := cors.Config{
 		AllowAllOrigins:  true,
@@ -33,7 +33,7 @@ func NewHTTPServer(catalogRepo *catalog.Repo) *HTTPServer {
 	server.Use(cors.New(corsConf))
 
 	server.Use(func(ctx *gin.Context) {
-		fmt.Println(ctx.Request.Header)
+		log.Info(ctx.Request.Header)
 		ctx.Next()
 	})
 
@@ -82,30 +82,33 @@ func NewHTTPServer(catalogRepo *catalog.Repo) *HTTPServer {
 			usersGroup.POST("/get-company-data", user.GetCompanyData())
 		}
 	}
+
 	return &HTTPServer{engine: server}
 }
 
 func (s *HTTPServer) Run() error {
-
 	host := fmt.Sprintf(":%d", getPort())
 	log.Info("Starting server", "host", host)
 
 	err := s.engine.Run(host)
-
 	if err != nil {
 		log.Error("Failed run server", "error", err)
+
+		return fmt.Errorf("run HTTP server: %w", err)
 	}
 
-	return err
+	return nil
 }
 
 const DefaultHTTPPort = 8080
 
 func getPort() int {
 	viper.SetDefault("port", DefaultHTTPPort)
+
 	var port = viper.GetInt("port")
 	if port == 0 {
 		log.Warn("PORT value is invalid, fallback to default", "default", DefaultHTTPPort)
 	}
+
 	return port
 }

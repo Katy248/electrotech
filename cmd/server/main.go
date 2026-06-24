@@ -1,3 +1,4 @@
+// Server executable
 package main
 
 import (
@@ -28,26 +29,28 @@ func main() {
 
 	srv := server.NewHTTPServer(catalogRepo)
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go mustRun(srv.Run, &wg)
-	if viper.GetBool("ftp.enable") {
+	var waitGroup sync.WaitGroup
 
+	waitGroup.Go(func() {
+		err := srv.Run()
+		if err != nil {
+			log.Error("Failed run", "error", err)
+		}
+	})
+
+	if viper.GetBool("ftp.enable") {
 		ftpServer, err := server.NewFTPServer()
 		if err != nil {
 			log.Fatal("Failed create FTP server", "error", err)
 		}
-		wg.Add(1)
-		go mustRun(ftpServer.Run, &wg)
+
+		waitGroup.Go(func() {
+			err := ftpServer.Run()
+			if err != nil {
+				log.Error("Failed run", "error", err)
+			}
+		})
 	}
 
-	wg.Wait()
-}
-
-func mustRun(fn func() error, wg *sync.WaitGroup) {
-	defer wg.Done()
-	err := fn()
-	if err != nil {
-		log.Fatal("Failed run", "error", err)
-	}
+	waitGroup.Wait()
 }

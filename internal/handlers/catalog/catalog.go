@@ -16,6 +16,7 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 		if strings.Contains(ctx.Request.URL.String(), "filter") {
 			log.Warn("Deprecated url, should be removed", "url", ctx.Request.URL.String())
 		}
+
 		log.Warn("Deprecated url, will be removed sooner, move to new version", "url", ctx.Request.URL.String(), "newVersion", "/api/v2/products")
 		pageParam, _ := ctx.Params.Get("page")
 
@@ -24,18 +25,19 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"code": http.StatusBadRequest,
 			})
+
 			return
 		}
 
 		products, err := r.GetProducts(
 			catalog.Page(page),
 		)
-
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"code": http.StatusInternalServerError,
 			})
 			log.Error("Error getting products", "error", err)
+
 			return
 		}
 
@@ -47,7 +49,7 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 }
 
 type Request struct {
-	Page int `json:"page" binding:"gte=0"`
+	Page int `binding:"gte=0" json:"page"`
 }
 
 type Response struct {

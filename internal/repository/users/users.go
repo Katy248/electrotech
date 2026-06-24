@@ -8,7 +8,9 @@ import (
 
 func ByEmail(email string) (*models.User, error) {
 	email = strings.ToLower(email)
+
 	var user models.User
+
 	err := storage.DB.Where("email = ?", email).First(&user).Error
 	if err != nil {
 		return nil, err
@@ -18,6 +20,7 @@ func ByEmail(email string) (*models.User, error) {
 }
 func ByID(id int64) (*models.User, error) {
 	var user models.User
+
 	err := storage.DB.Where("id = ?", id).First(&user).Error
 	if err != nil {
 		return nil, err
@@ -33,11 +36,13 @@ func normalizeEmail(u *models.User) {
 func InsertNew(u *models.User) error {
 	normalizeEmail(u)
 	err := storage.DB.Create(&u).Error
+
 	return err
 }
 
 func Update(u *models.User) error {
 	normalizeEmail(u)
 	err := storage.DB.Save(u).Error
+
 	return err
 }

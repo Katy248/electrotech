@@ -6,7 +6,6 @@ import (
 )
 
 func TestNewParser(t *testing.T) {
-
 	dir, _ := os.Getwd()
 	t.Logf("Current directory: %s", dir)
 
@@ -23,7 +22,6 @@ func TestNewParser(t *testing.T) {
 
 func TestParseImportsData(t *testing.T) {
 	result, err := parseImportsData(importsData)
-
 	if err != nil {
 		t.Error(err)
 	}
@@ -50,9 +48,11 @@ func TestParseImportsData(t *testing.T) {
 
 	expectedCategoryId := "b0627bbe-ceb3-11eb-a53c-f14c52115a4f"
 	expectedCategoryName := "<Без категории>"
+
 	if firstCategory.ID != expectedCategoryId {
 		t.Errorf("Category.Id failed to parse (should be '%s'), but was '%s'", expectedCategoryId, firstCategory.ID)
 	}
+
 	if firstCategory.Name != expectedCategoryName {
 		t.Errorf("Category.Name failed to parse (should be '%s') but was '%s'", expectedCategoryName, firstCategory.Name)
 	}
@@ -60,6 +60,7 @@ func TestParseImportsData(t *testing.T) {
 	if len(firstProduct.GroupIds) <= 0 {
 		t.Fatal("Groups failed to parse (should be not zero items)")
 	}
+
 	if firstProduct.GroupIds[0] != "GroupId" {
 		t.Error("Groups failed to parse (should be 'GroupId')")
 	}
@@ -71,11 +72,11 @@ func TestParseImportsData(t *testing.T) {
 			}
 		}
 	}
-
 }
 
 func TestParseOffersData(t *testing.T) {
 	data := offersData
+
 	result, err := parseOffersData(data)
 	if err != nil {
 		t.Error(err)
@@ -92,7 +93,6 @@ func TestParseOffersData(t *testing.T) {
 	if len(result.Package.PriceTypes) != 1 {
 		t.Fatalf("Failed to parse PriceTypes found %d, expected 1", len(result.Package.PriceTypes))
 	}
-
 }
 
 var (

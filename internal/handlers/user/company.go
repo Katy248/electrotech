@@ -9,11 +9,11 @@ import (
 )
 
 type UpdateCompanyDataRequest struct {
-	CompanyName       string `json:"company_name" binding:"required"`
-	CompanyINN        string `json:"company_inn" binding:"required"`
-	CompanyAddress    string `json:"company_address" binding:"required"`
-	CompanyOKPO       string `json:"company_okpo" binding:"required"`
-	PositionInCompany string `json:"position_in_company" binding:"required"`
+	CompanyName       string `binding:"required" json:"company_name"`
+	CompanyINN        string `binding:"required" json:"company_inn"`
+	CompanyAddress    string `binding:"required" json:"company_address"`
+	CompanyOKPO       string `binding:"required" json:"company_okpo"`
+	PositionInCompany string `binding:"required" json:"position_in_company"`
 }
 
 func UpdateCompanyData() gin.HandlerFunc {
@@ -21,6 +21,7 @@ func UpdateCompanyData() gin.HandlerFunc {
 		var req UpdateCompanyDataRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+
 			return
 		}
 
@@ -28,6 +29,7 @@ func UpdateCompanyData() gin.HandlerFunc {
 		if err != nil || user.Email == "" {
 			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+
 			return
 		}
 
@@ -38,10 +40,10 @@ func UpdateCompanyData() gin.HandlerFunc {
 		user.CompanyOkpo = &req.CompanyOKPO
 
 		err = users.Update(user)
-
 		if err != nil {
 			log.Printf("Error updating company data: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update company data"})
+
 			return
 		}
 
@@ -55,6 +57,7 @@ func GetCompanyData() gin.HandlerFunc {
 		if err != nil || user.Email == "" {
 			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+
 			return
 		}
 

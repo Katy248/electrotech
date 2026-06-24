@@ -1,0 +1,16 @@
+version: "2"
+
+linters:
+  default: all
+  disable:
+    # deprecated
+    - wsl
+    # temporary
+    - gochecknoglobals
+    # own style
+    - depguard
+    - revive
+    - varnamelen
+    - exhaustruct
+    - noinlineerr
+    - recvcheck

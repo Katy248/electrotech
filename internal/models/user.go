@@ -21,18 +21,21 @@ type User struct {
 	PositionInCompany *string `json:"positionInCompany"`
 }
 
-// Receives password string and sets PasswordHash to hash of input
+// SetPassword receives password string and sets [User.PasswordHash] to hash of input.
 func (u *User) SetPassword(password string) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return fmt.Errorf("failed hash password: %s", err)
+		return fmt.Errorf("failed hash password: %w", err)
 	}
+
 	u.PasswordHash = string(hashedPassword)
+
 	return nil
 }
 
 func (u *User) CheckPassword(password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password))
+
 	return err == nil
 }
 
@@ -45,14 +48,16 @@ func (u *User) CompanyData() *CompanyData {
 		Position: strValueOrEmpty(u.PositionInCompany),
 	}
 	data.AllRequiredFields = data.DataFilled()
+
 	return data
 }
 
-// Utility func to work with nullable representation of sql strings
+// Utility func to work with nullable representation of sql strings.
 func strValueOrEmpty(s *string) string {
 	if s == nil {
 		return ""
 	}
+
 	return *s
 }
 

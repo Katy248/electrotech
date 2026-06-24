@@ -12,8 +12,8 @@ import (
 )
 
 type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
+	Email    string `binding:"required,email" json:"email"`
+	Password string `binding:"required"       json:"password"`
 }
 type AuthResponse struct {
 	Token        string `json:"token"`
@@ -31,6 +31,7 @@ func LoginHandler() gin.HandlerFunc {
 		if err := c.ShouldBindJSON(&req); err != nil {
 			log.Error("Error binding login request body", "error", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("error binding request body: %v", err)})
+
 			return
 		}
 
@@ -38,12 +39,14 @@ func LoginHandler() gin.HandlerFunc {
 		if err != nil || user.Email == "" {
 			log.Errorf("Error getting user by email '%s': %v", req.Email, err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+
 			return
 		}
 
 		if !user.CheckPassword(req.Password) {
 			log.Error("Passwords don't match", "userId", user.ID)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+
 			return
 		}
 
@@ -51,6 +54,7 @@ func LoginHandler() gin.HandlerFunc {
 		if err != nil {
 			log.Errorf("Error generating auth response: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+
 			return
 		}
 
@@ -59,7 +63,7 @@ func LoginHandler() gin.HandlerFunc {
 }
 
 type RefreshRequest struct {
-	RefreshToken string `json:"refresh_token" binding:"required"`
+	RefreshToken string `binding:"required" json:"refresh_token"`
 }
 
 func Refresh() gin.HandlerFunc {
@@ -68,12 +72,14 @@ func Refresh() gin.HandlerFunc {
 		if err := c.ShouldBindJSON(&req); err != nil {
 			log.Errorf("Error binding request: %v", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+
 			return
 		}
 
 		claimsUser, err := ValidateToken(req.RefreshToken)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+
 			return
 		}
 
@@ -81,6 +87,7 @@ func Refresh() gin.HandlerFunc {
 		if err != nil {
 			log.Errorf("Error getting user by id '%d': %v", claimsUser.Id, err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+
 			return
 		}
 
@@ -88,6 +95,7 @@ func Refresh() gin.HandlerFunc {
 		if err != nil {
 			log.Errorf("Error generating auth response: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+
 			return
 		}
 
@@ -95,15 +103,17 @@ func Refresh() gin.HandlerFunc {
 	}
 }
 func getAuthResponse(user *models.User) (*AuthResponse, error) {
-
 	token, err := GenerateToken(user.Email, user.ID)
 	if err != nil {
 		log.Errorf("Error generating token: %v", err)
+
 		return nil, err
 	}
+
 	refreshToken, err := GenerateRefreshToken(user.ID)
 	if err != nil {
 		log.Errorf("Error generating refresh token: %v", err)
+
 		return nil, err
 	}
 

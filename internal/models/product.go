@@ -19,6 +19,8 @@ type Category struct {
 	Name string `json:"name"`
 }
 
+var NilCategory = Category{Id: "", Name: ""}
+
 const (
 	CurrencySymbolRUB = "₽"
 	CurrencySymbolUSD = "$"

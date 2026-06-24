@@ -3,36 +3,49 @@ package catalog
 import (
 	"electrotech/internal/models"
 	"electrotech/internal/repository/catalog"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 type GetProductRequest struct {
-	ID string `uri:"id" binding:"required"`
+	ID string `binding:"required" uri:"id"`
 }
 type GetProductResponse struct {
-	Code    int            `json:"code" binding:"required"`
-	Product models.Product `json:"product" binding:"required"`
+	Code    int            `binding:"required" json:"code"`
+	Product models.Product `binding:"required" json:"product"`
 }
 
 func GetProduct(repo *catalog.Repo) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
 		var request GetProductRequest
 		if err := ctx.ShouldBindUri(&request); err != nil {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "message": "Invalid request body"})
+			ctx.AbortWithStatusJSON(
+				http.StatusBadRequest,
+				gin.H{
+					"code":    http.StatusBadRequest,
+					"message": "Invalid request body",
+				})
+
 			return
 		}
 
 		product, err := repo.GetProduct(request.ID)
-
 		if err != nil {
-			if err == catalog.ErrNotFound {
+			if errors.Is(err, catalog.ErrNotFound) {
 				ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"code": http.StatusNotFound, "message": "Product not found"})
+
 				return
 			}
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"code": http.StatusInternalServerError, "message": "Internal server error"})
+
+			ctx.AbortWithStatusJSON(
+				http.StatusInternalServerError,
+				gin.H{
+					"code":    http.StatusInternalServerError,
+					"message": "Internal server error",
+				})
+
 			return
 		}
 

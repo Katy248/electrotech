@@ -15,6 +15,7 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"code": http.StatusBadRequest,
 			})
+
 			return
 		}
 
@@ -23,6 +24,7 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 		if request.Query != "" {
 			filters = append(filters, catalog.QueryFilter(request.Query))
 		}
+
 		if request.OnlyAvailable {
 			filters = append(filters, catalog.OnlyAvailableFilter())
 		}
@@ -30,12 +32,12 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 		products, err := r.GetProductsNew(
 			catalog.Page(request.Page), filters...,
 		)
-
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"code": http.StatusInternalServerError,
 			})
 			log.Error("Error getting products", "error", err)
+
 			return
 		}
 
@@ -46,12 +48,11 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 			"total":    products.Total,
 			"page":     products.Page,
 		})
-
 	}
 }
 
 type Request struct {
-	Page          int    `form:"page" binding:"gte=0"`
+	Page          int    `binding:"gte=0" form:"page"`
 	Query         string `form:"query"`
 	OnlyAvailable bool   `form:"oa"`
 }

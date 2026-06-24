@@ -49,6 +49,7 @@ func TestFormatPhoneNumber(t *testing.T) {
 		actual, err := FormatPhoneNumber(test.input)
 		if test.shouldBeError && err == nil {
 			t.Errorf("FormatPhoneNumber(%q) returned no error, but should have", test.input)
+
 			break
 		}
 

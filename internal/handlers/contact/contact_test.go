@@ -28,5 +28,6 @@ func TestBuildEmail(t *testing.T) {
 	if err != nil {
 		t.Errorf("buildEmail failed: %v", err)
 	}
+
 	os.WriteFile("test.html", email, 0666)
 }

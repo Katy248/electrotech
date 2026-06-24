@@ -17,16 +17,20 @@ func SQLConnection() *sql.DB {
 	if err != nil {
 		log.Fatal("failed to get database connection", "error", err)
 	}
+
 	return db
 }
 
 func Init(automigrate bool) {
 	sqlConnectionString := viper.GetString("db-connection")
+
 	var err error
+
 	DB, err = gorm.Open(sqlite.Open(sqlConnectionString), &gorm.Config{})
 	if err != nil {
 		log.Fatal("failed to connect database", "error", err)
 	}
+
 	if automigrate {
 		log.Debug("Auto-migrating database")
 		migrateDB()
@@ -34,6 +38,7 @@ func Init(automigrate bool) {
 }
 func GetMigrationsDir() string {
 	viper.SetDefault("migrations-dir", "./sql/migrations")
+
 	return viper.GetString("migrations-dir")
 }
 

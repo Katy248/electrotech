@@ -11,21 +11,25 @@ import (
 	"github.com/spf13/viper"
 )
 
+const StrongSecretMinLength = 20
+
 func getSecretKey() string {
 	jwtSecret := viper.GetString("jwt-secret")
 	if jwtSecret == "" {
 		log.Fatal("jwt-secret isn't set")
 	}
-	if len(jwtSecret) < 20 {
+
+	if len(jwtSecret) < StrongSecretMinLength {
 		log.Warn("jwt-secret is less than 20 characters, this must be security issue")
 	}
+
 	return jwtSecret
 }
 
 const (
-	// Token time to live.
+	// TokenTTL - token time to live.
 	//
-	// TODO: make configurable
+	// TODO: make configurable.
 	TokenTTL        = time.Hour * 2
 	RefreshTokenTTL = time.Hour * 48 // TODO: make configurable
 	TokenIssuer     = "electrotech-back"
@@ -36,9 +40,10 @@ func getKey() []byte {
 }
 
 type Claims struct {
+	jwt.StandardClaims
+
 	Email string `json:"email"`
 	Id    int64  `json:"user_id"`
-	jwt.StandardClaims
 }
 
 func AuthMiddleware() gin.HandlerFunc {
@@ -46,6 +51,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "authorization header required"})
+
 			return
 		}
 
@@ -53,6 +59,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		if err != nil {
 			log.Error("Failed to validate token", "error", err)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+
 			return
 		}
 
@@ -76,7 +83,13 @@ func GenerateToken(email string, userID int64) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(getKey())
+
+	tokenString, err := token.SignedString(getKey())
+	if err != nil {
+		return "", fmt.Errorf("sign token string: %w", err)
+	}
+
+	return tokenString, nil
 }
 
 func GenerateRefreshToken(userID int64) (string, error) {
@@ -93,26 +106,31 @@ func GenerateRefreshToken(userID int64) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(getKey())
+
+	tokenString, err := token.SignedString(getKey())
+	if err != nil {
+		return "", fmt.Errorf("sign token string: %w", err)
+	}
+
+	return tokenString, nil
 }
 
 func ValidateToken(tokenString string) (*Claims, error) {
 	claims := &Claims{}
 
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (any, error) {
 		return getKey(), nil
 	})
-
 	if err != nil {
-		return nil, fmt.Errorf("parsing failed: %s", err)
+		return nil, fmt.Errorf("parsing failed: %w", err)
 	}
 
 	if !token.Valid {
-		return nil, fmt.Errorf("token invalid: %s", jwt.ErrSignatureInvalid)
+		return nil, fmt.Errorf("token invalid: %w", jwt.ErrSignatureInvalid)
 	}
 
 	if err := claims.Valid(); err != nil {
-		return nil, fmt.Errorf("claims invalid: %s", err)
+		return nil, fmt.Errorf("claims invalid: %w", err)
 	}
 
 	return claims, nil

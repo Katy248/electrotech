@@ -10,10 +10,13 @@ import (
 )
 
 func Setup() {
-	if err := godotenv.Load(); err != nil {
+	err := godotenv.Load()
+	if err != nil {
 		log.Warn("Can't load .env file", "error", err)
 	}
+
 	viper.RegisterAlias("devel", "development")
+
 	if os.Getenv("DEVEL") != "" {
 		log.Warn("Development mode enabled")
 		viper.Set("devel", true)
@@ -21,6 +24,7 @@ func Setup() {
 	} else {
 		viper.SetConfigName("electrotech-back")
 	}
+
 	viper.SetEnvKeyReplacer(
 		strings.NewReplacer("-", "_", ".", "_"),
 	)
@@ -29,13 +33,15 @@ func Setup() {
 	viper.AddConfigPath("/etc")
 	viper.AddConfigPath("/etc/electrotech")
 	viper.AutomaticEnv()
-	if err := viper.ReadInConfig(); err != nil {
+
+	err = viper.ReadInConfig()
+	if err != nil {
 		log.Warn("Failed read config file", "error", err)
 	}
 
 	if viper.GetBool("devel") {
 		log.SetLevel(log.DebugLevel)
 	}
-	log.SetReportCaller(true)
 
+	log.SetReportCaller(true)
 }

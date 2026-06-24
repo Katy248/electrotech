@@ -1,24 +1,16 @@
 package models
 
 import (
-	"fmt"
+	"errors"
 	"time"
 )
 
 type Order struct {
-	ID            int64           `json:"id" gorm:"primaryKey"`
+	ID            int64           `gorm:"primaryKey"   json:"id"`
 	UserID        int64           `json:"userId"`
 	CreationDate  time.Time       `json:"creationDate"`
 	OrderProducts []*OrderProduct `json:"products"`
 	User          *User           `json:"user"`
-}
-
-func (o Order) Sum() float64 {
-	sum := 0.0
-	for _, p := range o.OrderProducts {
-		sum += p.Sum()
-	}
-	return sum
 }
 
 func NewOrder() *Order {
@@ -27,19 +19,37 @@ func NewOrder() *Order {
 	}
 }
 
+func (o Order) Sum() float64 {
+	sum := 0.0
+	for _, p := range o.OrderProducts {
+		sum += p.Sum()
+	}
+
+	return sum
+}
+
+var ErrUserIsNil = errors.New("user is nil")
+
+var ErrCompanyDataNotFilled = errors.New("user has no required company data filled")
+
 func (o *Order) SetUser(u *User) error {
 	if u == nil {
-		return fmt.Errorf("user is nil")
+		return ErrUserIsNil
 	}
+
 	if !u.CompanyData().DataFilled() {
-		return fmt.Errorf("user has no required company data filled")
+		return ErrCompanyDataNotFilled
 	}
+
 	o.UserID = u.ID
 	o.User = u
+
 	return nil
 }
 
-// TODO: Checking duplicates
+// AddProduct adds a product to the order.
+//
+// TODO: Checking duplicates.
 func (o *Order) AddProduct(op OrderProduct) {
 	op.OrderID = o.ID
 	op.Order = *o

@@ -1,6 +1,7 @@
 package email
 
 import (
+	"errors"
 	"fmt"
 	"net/smtp"
 
@@ -29,6 +30,7 @@ func (c *Config) InfoReceiver() string {
 	if c.infoReceiver == "" {
 		return c.User
 	}
+
 	return c.infoReceiver
 }
 
@@ -59,11 +61,14 @@ func IsEnabled() bool {
 	return conf.Enabled
 }
 
+var ErrMailSystemNotEnabled = errors.New("mail system not enabled")
+
 func SendInfo(content []byte, subject string) error {
 	conf := getConfig()
 	if !conf.Enabled {
-		return fmt.Errorf("mail system not enabled")
+		return ErrMailSystemNotEnabled
 	}
+
 	mail := e.NewEmail()
 	mail.From = conf.From()
 	mail.To = []string{conf.InfoReceiver()}
@@ -76,7 +81,9 @@ func SendInfo(content []byte, subject string) error {
 	)
 	if err != nil {
 		log.Error("Failed send info email", "error", err, "mail", mail)
-		return fmt.Errorf("failed send email: %s", err)
+
+		return fmt.Errorf("failed send email: %w", err)
 	}
+
 	return nil
 }

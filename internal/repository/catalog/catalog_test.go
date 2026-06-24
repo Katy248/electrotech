@@ -1,6 +1,8 @@
-package catalog
+package catalog_test
 
 import (
+	"electrotech/internal/repository/catalog"
+	"errors"
 	"os"
 	"testing"
 
@@ -8,27 +10,31 @@ import (
 )
 
 func TestNewCatalogWithoutEnv(t *testing.T) {
+	t.Parallel()
 	viper.Set("data-dir", "")
-	_, err := New()
-	if err != ErrDataDirNotSpecified {
-		t.Errorf("Expected '%s' error but there is '%s'", ErrDataDirNotSpecified, err)
+
+	_, err := catalog.New()
+	if !errors.Is(err, catalog.ErrDataDirNotSpecified) {
+		t.Errorf("Expected '%s' error but there is '%s'", catalog.ErrDataDirNotSpecified, err)
 	}
 }
 func TestNewCatalogBadDir(t *testing.T) {
-	if err := os.Setenv("DATA_DIR", "./not-exist"); err != nil {
-		t.Errorf("Failed set env variable: %s", err)
-	}
-	_, err := New()
+	t.Setenv("DATA_DIR", "./not-exist")
+
+	_, err := catalog.New()
 	if err == nil {
 		t.Error("There is not error, but shuld be, cause directory not exist")
 	}
 }
 
 func TestNewCatalog(t *testing.T) {
+	t.Parallel()
+
 	currentDir, _ := os.Getwd()
 	t.Logf("Current dir: %s", currentDir)
 	viper.Set("data-dir", "../../../example")
-	_, err := New()
+
+	_, err := catalog.New()
 	if err != nil {
 		t.Errorf("Failed create repository: %s", err)
 	}

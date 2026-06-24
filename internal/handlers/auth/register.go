@@ -12,12 +12,12 @@ import (
 )
 
 type RegisterRequest struct {
-	Email       string `json:"email" binding:"required,email"`
-	Password    string `json:"password" binding:"required,min=8"`
-	FirstName   string `json:"first_name" binding:"required"`
-	Surname     string `json:"surname" binding:"required"`
+	Email       string `binding:"required,email" json:"email"`
+	Password    string `binding:"required,min=8" json:"password"`
+	FirstName   string `binding:"required"       json:"first_name"`
+	Surname     string `binding:"required"       json:"surname"`
 	LastName    string `json:"last_name"`
-	PhoneNumber string `json:"phone_number" binding:"required"`
+	PhoneNumber string `binding:"required"       json:"phone_number"`
 }
 
 func RegisterHandler() gin.HandlerFunc {
@@ -25,6 +25,7 @@ func RegisterHandler() gin.HandlerFunc {
 		var req RegisterRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+
 			return
 		}
 
@@ -35,6 +36,7 @@ func RegisterHandler() gin.HandlerFunc {
 		if err == nil && existingUser.Email != "" {
 			log.Error("Attempt to create user with email already taken", "email", req.Email)
 			c.JSON(http.StatusConflict, gin.H{"error": "user with this email already exists"})
+
 			return
 		}
 
@@ -42,6 +44,7 @@ func RegisterHandler() gin.HandlerFunc {
 		if err != nil {
 			log.Errorf("Error formatting phone number (is is probably invalid): %v", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid phone number"})
+
 			return
 		}
 
@@ -55,15 +58,16 @@ func RegisterHandler() gin.HandlerFunc {
 		if err := user.SetPassword(req.Password); err != nil {
 			log.Error("Failed set (hash) user password")
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash password"})
+
 			return
 		}
 
 		// Создаем нового пользователя
 		err = users.InsertNew(user)
-
 		if err != nil {
 			log.Errorf("Error creating user: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create user"})
+
 			return
 		}
 

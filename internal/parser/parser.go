@@ -21,13 +21,14 @@ var (
 )
 
 func NewParser(directory string) (*Parser, error) {
-
 	if !fileExists(getOffersFilepath(directory)) {
 		return nil, ErrOffersFileNotFound
 	}
+
 	if !fileExists(getImportsFilepath(directory)) {
 		return nil, ErrImportsFileNotFound
 	}
+
 	return &Parser{dir: directory}, nil
 }
 
@@ -43,6 +44,7 @@ func fileExists(filename string) bool {
 	if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {
 		return false
 	}
+
 	return true
 }
 
@@ -50,29 +52,32 @@ func (p *Parser) parse() error {
 	if p.imports == nil {
 		imp, err := p.parseImports()
 		if err != nil {
-			return fmt.Errorf("failed parse imports: %s", err)
+			return fmt.Errorf("failed parse imports: %w", err)
 		}
+
 		p.imports = imp
 	}
 
 	if p.offers == nil {
 		off, err := p.parseOffers()
 		if err != nil {
-			return fmt.Errorf("failed parse offers: %s", err)
+			return fmt.Errorf("failed parse offers: %w", err)
 		}
+
 		p.offers = off
 	}
+
 	return nil
 }
 
 func (p *Parser) GetProducts() ([]models.Product, error) {
 	if err := p.parse(); err != nil {
-		return nil, fmt.Errorf("failed parse xml data: %s", err)
+		return nil, fmt.Errorf("failed parse xml data: %w", err)
 	}
 
 	products, err := mapProducts(p.offers, p.imports)
 	if err != nil {
-		return nil, fmt.Errorf("failed map xml data: %s", err)
+		return nil, fmt.Errorf("failed map xml data: %w", err)
 	}
 
 	return products, nil
@@ -80,6 +85,7 @@ func (p *Parser) GetProducts() ([]models.Product, error) {
 
 func getDataFromFile(filepath string) ([]byte, error) {
 	data, err := os.ReadFile(filepath)
+
 	return data, err
 }
 
@@ -103,6 +109,7 @@ func (p *Parser) parseOffers() (*offersModel, error) {
 
 func parseImportsData(data []byte) (*importsModel, error) {
 	var model importsModel
+
 	err := xml.Unmarshal(data, &model)
 
 	return &model, err
@@ -110,6 +117,7 @@ func parseImportsData(data []byte) (*importsModel, error) {
 
 func parseOffersData(data []byte) (*offersModel, error) {
 	var model offersModel
+
 	err := xml.Unmarshal(data, &model)
 
 	return &model, err

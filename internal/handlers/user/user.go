@@ -17,6 +17,7 @@ func ChangePassword() gin.HandlerFunc {
 		if err := c.ShouldBindJSON(&req); err != nil {
 			log.Printf("Error binding request: %v", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+
 			return
 		}
 
@@ -24,6 +25,7 @@ func ChangePassword() gin.HandlerFunc {
 		if err != nil || user.Email == "" {
 			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+
 			return
 		}
 
@@ -31,20 +33,23 @@ func ChangePassword() gin.HandlerFunc {
 		if err != nil {
 			log.Printf("Error comparing password: %v", err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+
 			return
 		}
 
 		err = user.SetPassword(req.NewPassword)
-
 		if err != nil {
 			log.Error("Error hashing password", "error", err, "password", req.NewPassword)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash password"})
+
 			return
 		}
+
 		err = users.Update(user)
 		if err != nil {
 			log.Printf("Error updating password: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update password"})
+
 			return
 		}
 
@@ -58,6 +63,7 @@ func ChangeEmail() gin.HandlerFunc {
 		if err := c.ShouldBindJSON(&req); err != nil {
 			log.Printf("Error binding request: %v", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+
 			return
 		}
 
@@ -65,14 +71,17 @@ func ChangeEmail() gin.HandlerFunc {
 		if err != nil || user.Email == "" {
 			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+
 			return
 		}
 
 		user.Email = req.Email
+
 		err = users.Update(user)
 		if err != nil {
 			log.Error("Error updating email", "error", err, "new-email", req.Email)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update email"})
+
 			return
 		}
 
@@ -86,6 +95,7 @@ func ChangePhoneNumber() gin.HandlerFunc {
 		if err := c.ShouldBindJSON(&req); err != nil {
 			log.Printf("Error binding request: %v", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+
 			return
 		}
 
@@ -93,6 +103,7 @@ func ChangePhoneNumber() gin.HandlerFunc {
 		if err != nil || user.Email == "" {
 			log.Error("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+
 			return
 		}
 
@@ -100,15 +111,17 @@ func ChangePhoneNumber() gin.HandlerFunc {
 		if err != nil {
 			log.Error("Error formatting phone number: %v", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid phone number"})
+
 			return
 		}
 
 		user.PhoneNumber = phone
-		err = users.Update(user)
 
+		err = users.Update(user)
 		if err != nil {
 			log.Printf("Error updating phone number: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update phone number"})
+
 			return
 		}
 
@@ -121,6 +134,7 @@ func UpdateUserData() gin.HandlerFunc {
 		var req UpdateUserDataRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+
 			return
 		}
 
@@ -128,15 +142,19 @@ func UpdateUserData() gin.HandlerFunc {
 		if err != nil || user.Email == "" {
 			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+
 			return
 		}
+
 		user.FirstName = req.FirstName
 		user.LastName = req.LastName
 		user.Surname = req.Surname
+
 		err = users.Update(user)
 		if err != nil {
 			log.Printf("Error updating user data: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user data"})
+
 			return
 		}
 
@@ -150,6 +168,7 @@ func GetData() gin.HandlerFunc {
 		if err != nil || user.Email == "" {
 			log.Error("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+
 			return
 		}
 

@@ -18,7 +18,6 @@ type UserQuestion struct {
 }
 
 func NewUserQuestion(name, email, phone, message, ip string) *UserQuestion {
-
 	if phone != "" {
 		formatted, err := electrotech.FormatPhoneNumber(phone)
 		if err != nil {
@@ -27,6 +26,7 @@ func NewUserQuestion(name, email, phone, message, ip string) *UserQuestion {
 			phone = formatted
 		}
 	}
+
 	return &UserQuestion{
 		CreationDate: time.Now(),
 
@@ -42,5 +42,6 @@ func strToPointer(str string) *string {
 	if str == "" {
 		return nil
 	}
+
 	return &str
 }
