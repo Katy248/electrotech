@@ -16,7 +16,7 @@ func ChangePassword() gin.HandlerFunc {
 		var req ChangePasswordRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			log.Printf("Error binding request: %v", err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, electrotech.Error(err))
 
 			return
 		}
@@ -24,7 +24,7 @@ func ChangePassword() gin.HandlerFunc {
 		user, err := users.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
 			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+			c.JSON(http.StatusUnauthorized, electrotech.ErrorStr("invalid credentials"))
 
 			return
 		}
@@ -32,7 +32,7 @@ func ChangePassword() gin.HandlerFunc {
 		err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.OldPassword))
 		if err != nil {
 			log.Printf("Error comparing password: %v", err)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+			c.JSON(http.StatusUnauthorized, electrotech.Error(err))
 
 			return
 		}
@@ -40,7 +40,7 @@ func ChangePassword() gin.HandlerFunc {
 		err = user.SetPassword(req.NewPassword)
 		if err != nil {
 			log.Error("Error hashing password", "error", err, "password", req.NewPassword)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash password"})
+			c.JSON(http.StatusInternalServerError, electrotech.ErrorStr("failed to hash password"))
 
 			return
 		}
@@ -48,12 +48,12 @@ func ChangePassword() gin.HandlerFunc {
 		err = users.Update(user)
 		if err != nil {
 			log.Printf("Error updating password: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update password"})
+			c.JSON(http.StatusInternalServerError, electrotech.ErrorStr("failed to update password"))
 
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": "password changed successfully"})
+		c.Status(http.StatusOK)
 	}
 }
 
@@ -62,7 +62,7 @@ func ChangeEmail() gin.HandlerFunc {
 		var req ChangeEmailRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			log.Printf("Error binding request: %v", err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, electrotech.Error(err))
 
 			return
 		}
@@ -70,7 +70,7 @@ func ChangeEmail() gin.HandlerFunc {
 		user, err := users.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
 			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+			c.JSON(http.StatusUnauthorized, electrotech.ErrorStr("invalid credentials"))
 
 			return
 		}
@@ -80,12 +80,12 @@ func ChangeEmail() gin.HandlerFunc {
 		err = users.Update(user)
 		if err != nil {
 			log.Error("Error updating email", "error", err, "new-email", req.Email)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update email"})
+			c.JSON(http.StatusInternalServerError, electrotech.ErrorStr("failed to update email"))
 
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": "email changed successfully"})
+		c.Status(http.StatusOK)
 	}
 }
 
@@ -94,7 +94,7 @@ func ChangePhoneNumber() gin.HandlerFunc {
 		var req ChangePhoneNumberRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			log.Printf("Error binding request: %v", err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, electrotech.Error(err))
 
 			return
 		}
@@ -102,7 +102,7 @@ func ChangePhoneNumber() gin.HandlerFunc {
 		user, err := users.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
 			log.Error("Error getting user by email '%s': %v", c.GetString("email"), err)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+			c.JSON(http.StatusUnauthorized, electrotech.ErrorStr("invalid credentials"))
 
 			return
 		}
@@ -110,7 +110,7 @@ func ChangePhoneNumber() gin.HandlerFunc {
 		phone, err := electrotech.FormatPhoneNumber(req.PhoneNumber)
 		if err != nil {
 			log.Error("Error formatting phone number: %v", err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid phone number"})
+			c.JSON(http.StatusBadRequest, electrotech.Error(err))
 
 			return
 		}
@@ -120,12 +120,12 @@ func ChangePhoneNumber() gin.HandlerFunc {
 		err = users.Update(user)
 		if err != nil {
 			log.Printf("Error updating phone number: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update phone number"})
+			c.JSON(http.StatusInternalServerError, electrotech.ErrorStr("failed to update phone number"))
 
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": "phone number changed successfully"})
+		c.Status(http.StatusOK)
 	}
 }
 
@@ -133,7 +133,7 @@ func UpdateUserData() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req UpdateUserDataRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, electrotech.Error(err))
 
 			return
 		}
@@ -141,7 +141,7 @@ func UpdateUserData() gin.HandlerFunc {
 		user, err := users.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
 			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+			c.JSON(http.StatusUnauthorized, electrotech.ErrorStr("invalid credentials"))
 
 			return
 		}
@@ -153,12 +153,12 @@ func UpdateUserData() gin.HandlerFunc {
 		err = users.Update(user)
 		if err != nil {
 			log.Printf("Error updating user data: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user data"})
+			c.JSON(http.StatusInternalServerError, electrotech.ErrorStr("failed to update user data"))
 
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": "User data updated successfully"})
+		c.Status(http.StatusOK)
 	}
 }
 
@@ -167,7 +167,7 @@ func GetData() gin.HandlerFunc {
 		user, err := users.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
 			log.Error("Error getting user by email '%s': %v", c.GetString("email"), err)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+			c.JSON(http.StatusUnauthorized, electrotech.ErrorStr("invalid credentials"))
 
 			return
 		}

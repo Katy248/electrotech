@@ -6,6 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
+
+	"github.com/charmbracelet/log"
 )
 
 type Parser struct {
@@ -48,6 +51,18 @@ func fileExists(filename string) bool {
 	return true
 }
 
+func (p *Parser) GetProducts() ([]models.Product, error) {
+	if err := p.parse(); err != nil {
+		return nil, fmt.Errorf("failed parse xml data: %w", err)
+	}
+
+	products, err := mapProducts(p.offers, p.imports)
+	if err != nil {
+		return nil, fmt.Errorf("failed map xml data: %w", err)
+	}
+
+	return products, nil
+}
 func (p *Parser) parse() error {
 	if p.imports == nil {
 		imp, err := p.parseImports()
@@ -70,23 +85,27 @@ func (p *Parser) parse() error {
 	return nil
 }
 
-func (p *Parser) GetProducts() ([]models.Product, error) {
-	if err := p.parse(); err != nil {
-		return nil, fmt.Errorf("failed parse xml data: %w", err)
-	}
-
-	products, err := mapProducts(p.offers, p.imports)
-	if err != nil {
-		return nil, fmt.Errorf("failed map xml data: %w", err)
-	}
-
-	return products, nil
-}
+const RootDir = "."
 
 func getDataFromFile(filepath string) ([]byte, error) {
-	data, err := os.ReadFile(filepath)
+	filepath = path.Clean(filepath)
 
-	return data, err
+	root, err := os.OpenRoot(RootDir)
+	if err != nil {
+		return nil, fmt.Errorf("open root %q: %w", RootDir, err)
+	}
+	defer func() {
+		if err := root.Close(); err != nil {
+			log.Error("Failed close root dir", "dir", RootDir, "error", err)
+		}
+	}()
+
+	data, err := root.ReadFile(filepath)
+	if err != nil {
+		return nil, fmt.Errorf("read file %q: %w", filepath, err)
+	}
+
+	return data, nil
 }
 
 func (p *Parser) parseImports() (*importsModel, error) {
@@ -111,14 +130,20 @@ func parseImportsData(data []byte) (*importsModel, error) {
 	var model importsModel
 
 	err := xml.Unmarshal(data, &model)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal xml: %w", err)
+	}
 
-	return &model, err
+	return &model, nil
 }
 
 func parseOffersData(data []byte) (*offersModel, error) {
 	var model offersModel
 
 	err := xml.Unmarshal(data, &model)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal xml: %w", err)
+	}
 
-	return &model, err
+	return &model, nil
 }

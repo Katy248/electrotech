@@ -8,6 +8,8 @@ import (
 )
 
 func TestBuildMail(t *testing.T) {
+	t.Parallel()
+
 	order := models.Order{
 		ID:           21347328573298,
 		UserID:       23578904367968,

@@ -66,13 +66,16 @@ func up() {
 		log.Error("Migration UP failed", "error", err)
 	}
 }
+
+const ThirdArgIndex = 2
+
 func down(set *flag.FlagSet) {
 	migrationsCount := 1
 
-	if set.NArg() >= 3 {
+	if set.NArg() >= ThirdArgIndex+1 {
 		var err error
 
-		migrationsCount, err = strconv.Atoi(set.Arg(2))
+		migrationsCount, err = strconv.Atoi(set.Arg(ThirdArgIndex))
 		if err != nil {
 			log.Error("Bad argument for down command, must be integer value", "error", err)
 			os.Exit(1)

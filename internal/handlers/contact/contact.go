@@ -2,6 +2,7 @@ package contact
 
 import (
 	"bytes"
+	"electrotech"
 	"electrotech/internal/email"
 	"electrotech/internal/models"
 	"electrotech/storage"
@@ -24,8 +25,10 @@ type Request struct {
 	Phone   string `json:"phone"`
 }
 
+const DefautlRequestTimeout = time.Minute * 10
+
 func GetRequestTimeout() time.Duration {
-	viper.SetDefault("contact-us.request-timeout", time.Minute*10)
+	viper.SetDefault("contact-us.request-timeout", DefautlRequestTimeout)
 
 	return viper.GetDuration("contact-us.request-timeout")
 }
@@ -54,21 +57,21 @@ func ContactUsHandler() gin.HandlerFunc {
 		ip := c.ClientIP()
 		if !checkRecentRequest(ip) {
 			log.Warn("Too many requests", "clientIP", ip, "timeout", GetRequestTimeout())
-			c.JSON(http.StatusTooManyRequests, gin.H{"error": "too many requests"})
+			c.JSON(http.StatusTooManyRequests, electrotech.ErrorStr("too many requests"))
 
 			return
 		}
 
 		var request Request
 		if err := c.ShouldBindJSON(&request); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, electrotech.Error(err))
 			log.Error("Bad request", "error", err)
 
 			return
 		}
 
 		if request.Email == "" && request.Phone == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "email or phone is required"})
+			c.JSON(http.StatusBadRequest, electrotech.ErrorStr("email or phone is required"))
 			log.Error("Bad request", "error", "email or phone is required")
 
 			return
@@ -80,7 +83,7 @@ func ContactUsHandler() gin.HandlerFunc {
 
 		err := storage.DB.Create(&dbRequest).Error
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, electrotech.Error(err))
 			log.Error("Failed create request", "error", err)
 		}
 

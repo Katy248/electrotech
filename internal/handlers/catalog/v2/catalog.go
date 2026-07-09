@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"electrotech"
 	"electrotech/internal/repository/catalog"
 	"net/http"
 
@@ -12,9 +13,7 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var request Request
 		if err := ctx.ShouldBind(&request); err != nil {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"code": http.StatusBadRequest,
-			})
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, electrotech.Error(err))
 
 			return
 		}

@@ -1,6 +1,7 @@
 package user
 
 import (
+	"electrotech"
 	"electrotech/internal/repository/users"
 	"log"
 	"net/http"
@@ -20,7 +21,7 @@ func UpdateCompanyData() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req UpdateCompanyDataRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, electrotech.Error(err))
 
 			return
 		}
@@ -28,7 +29,7 @@ func UpdateCompanyData() gin.HandlerFunc {
 		user, err := users.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
 			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+			c.JSON(http.StatusUnauthorized, electrotech.ErrorStr("invalid credentials"))
 
 			return
 		}
@@ -42,7 +43,7 @@ func UpdateCompanyData() gin.HandlerFunc {
 		err = users.Update(user)
 		if err != nil {
 			log.Printf("Error updating company data: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update company data"})
+			c.JSON(http.StatusInternalServerError, electrotech.ErrorStr("failed to update company data"))
 
 			return
 		}
@@ -56,7 +57,7 @@ func GetCompanyData() gin.HandlerFunc {
 		user, err := users.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
 			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+			c.JSON(http.StatusUnauthorized, electrotech.ErrorStr("invalid credentials"))
 
 			return
 		}

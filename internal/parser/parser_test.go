@@ -6,6 +6,8 @@ import (
 )
 
 func TestNewParser(t *testing.T) {
+	t.Parallel()
+
 	dir, _ := os.Getwd()
 	t.Logf("Current directory: %s", dir)
 
@@ -21,6 +23,8 @@ func TestNewParser(t *testing.T) {
 }
 
 func TestParseImportsData(t *testing.T) {
+	t.Parallel()
+
 	result, err := parseImportsData(importsData)
 	if err != nil {
 		t.Error(err)
@@ -30,7 +34,7 @@ func TestParseImportsData(t *testing.T) {
 		t.Error("ContainsOnlyChanges (xml attribute 'СодержитТолькоИзменения') failed to parse (should be true)")
 	}
 
-	if len(result.Catalog.Products) <= 0 {
+	if len(result.Catalog.Products) == 0 {
 		t.Fatal("Products failed to parse (should be not zero items)")
 	}
 
@@ -57,7 +61,7 @@ func TestParseImportsData(t *testing.T) {
 		t.Errorf("Category.Name failed to parse (should be '%s') but was '%s'", expectedCategoryName, firstCategory.Name)
 	}
 
-	if len(firstProduct.GroupIds) <= 0 {
+	if len(firstProduct.GroupIds) == 0 {
 		t.Fatal("Groups failed to parse (should be not zero items)")
 	}
 
@@ -67,7 +71,7 @@ func TestParseImportsData(t *testing.T) {
 
 	for _, prop := range result.Classifier.Properties {
 		if prop.Type == propertyTypeHandbook {
-			if len(prop.Variants) <= 0 {
+			if len(prop.Variants) == 0 {
 				t.Errorf("Property %s of type handbook but has no variants", prop.Name)
 			}
 		}
@@ -75,6 +79,8 @@ func TestParseImportsData(t *testing.T) {
 }
 
 func TestParseOffersData(t *testing.T) {
+	t.Parallel()
+
 	data := offersData
 
 	result, err := parseOffersData(data)
@@ -98,7 +104,12 @@ func TestParseOffersData(t *testing.T) {
 var (
 	offersData = []byte(`
 	<?xml version="1.0" encoding="UTF-8"?>
-	<КоммерческаяИнформация xmlns="urn:1C.ru:commerceml_210" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ВерсияСхемы="2.08" ДатаФормирования="2025-06-24T21:54:40">
+	<КоммерческаяИнформация
+		xmlns="urn:1C.ru:commerceml_210"
+		xmlns:xs="http://www.w3.org/2001/XMLSchema"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		ВерсияСхемы="2.08"
+		ДатаФормирования="2025-06-24T21:54:40">
 		<ПакетПредложений СодержитТолькоИзменения="true">
 			<ТипыЦен>
 				<ТипЦены>

@@ -45,7 +45,6 @@ func NewHTTPServer(catalogRepo *catalog.Repo) *HTTPServer {
 		api.POST("/contact-us", contact.ContactUsHandler())
 
 		api.GET("/v2/products", v2.GetProducts(catalogRepo))
-
 		{
 			products := api.Group("/products")
 
@@ -53,26 +52,21 @@ func NewHTTPServer(catalogRepo *catalog.Repo) *HTTPServer {
 			products.POST("/filter/:page", catalogHandlers.GetProducts(catalogRepo))
 			products.GET("/:id", catalogHandlers.GetProduct(catalogRepo))
 		}
-
 		{
 			authGroup := api.Group("/auth")
 			authGroup.POST("/login", auth.LoginHandler())
 			authGroup.POST("/register", auth.RegisterHandler())
 			authGroup.POST("/refresh", auth.Refresh())
 		}
-
 		{
 			ordersGroup := api.Group("/orders")
 			ordersGroup.Use(auth.AuthMiddleware())
-
 			ordersGroup.POST("/create", orders.CreateOrderHandler(catalogRepo))
 			ordersGroup.GET("/get", orders.GetUserOrdersHandler(catalogRepo))
 		}
-
 		{
 			usersGroup := api.Group("/user")
 			usersGroup.Use(auth.AuthMiddleware())
-
 			usersGroup.POST("/change-password", user.ChangePassword())
 			usersGroup.POST("/change-email", user.ChangeEmail())
 			usersGroup.POST("/change-phone", user.ChangePhoneNumber())

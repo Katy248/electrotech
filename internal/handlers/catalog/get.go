@@ -1,6 +1,7 @@
 package catalog
 
 import (
+	"electrotech"
 	"electrotech/internal/models"
 	"electrotech/internal/repository/catalog"
 	"errors"
@@ -21,12 +22,7 @@ func GetProduct(repo *catalog.Repo) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var request GetProductRequest
 		if err := ctx.ShouldBindUri(&request); err != nil {
-			ctx.AbortWithStatusJSON(
-				http.StatusBadRequest,
-				gin.H{
-					"code":    http.StatusBadRequest,
-					"message": "Invalid request body",
-				})
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, electrotech.Error(err))
 
 			return
 		}
@@ -34,7 +30,7 @@ func GetProduct(repo *catalog.Repo) gin.HandlerFunc {
 		product, err := repo.GetProduct(request.ID)
 		if err != nil {
 			if errors.Is(err, catalog.ErrNotFound) {
-				ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"code": http.StatusNotFound, "message": "Product not found"})
+				ctx.AbortWithStatusJSON(http.StatusNotFound, electrotech.Error(err))
 
 				return
 			}

@@ -3,6 +3,8 @@ package catalog
 import "testing"
 
 func TestGetPages(t *testing.T) {
+	t.Parallel()
+
 	if result := getPages(10, 10); result != 1 {
 		t.Errorf("Expected 1, got %d", result)
 	}

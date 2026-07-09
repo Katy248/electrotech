@@ -19,7 +19,7 @@ func Up(db *sql.DB, migrationsDir string) error {
 
 	count, err := migrate.Exec(db, "sqlite3", source, migrate.Up)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed execute: %w", err)
 	}
 
 	log.Info("Database migrated", "migrations", count)
@@ -36,7 +36,7 @@ func DownBy(db *sql.DB, migrationsDir string, migrationsCount int) error {
 
 	count, err := migrate.ExecMax(db, "sqlite3", source, migrate.Down, migrationsCount)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed execute: %w", err)
 	}
 
 	log.Info("Database migrated", "migrations", count)

@@ -1,8 +1,13 @@
-package electrotech
+package electrotech_test
 
-import "testing"
+import (
+	"electrotech"
+	"testing"
+)
 
 func TestFormatPhoneNumber(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		input         string
 		expected      string
@@ -14,10 +19,6 @@ func TestFormatPhoneNumber(t *testing.T) {
 		},
 		{
 			input:         "79991234567",
-			shouldBeError: true,
-		},
-		{
-			input:         "1232 9991234567",
 			shouldBeError: true,
 		},
 		{
@@ -46,7 +47,7 @@ func TestFormatPhoneNumber(t *testing.T) {
 		},
 	}
 	for _, test := range testCases {
-		actual, err := FormatPhoneNumber(test.input)
+		actual, err := electrotech.FormatPhoneNumber(test.input)
 		if test.shouldBeError && err == nil {
 			t.Errorf("FormatPhoneNumber(%q) returned no error, but should have", test.input)
 

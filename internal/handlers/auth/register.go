@@ -24,7 +24,7 @@ func RegisterHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req RegisterRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, electrotech.Error(err))
 
 			return
 		}
@@ -35,7 +35,7 @@ func RegisterHandler() gin.HandlerFunc {
 		existingUser, err := users.ByEmail(req.Email)
 		if err == nil && existingUser.Email != "" {
 			log.Error("Attempt to create user with email already taken", "email", req.Email)
-			c.JSON(http.StatusConflict, gin.H{"error": "user with this email already exists"})
+			c.JSON(http.StatusConflict, electrotech.Error(err))
 
 			return
 		}
@@ -43,7 +43,7 @@ func RegisterHandler() gin.HandlerFunc {
 		phone, err := electrotech.FormatPhoneNumber(req.PhoneNumber)
 		if err != nil {
 			log.Errorf("Error formatting phone number (is is probably invalid): %v", err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid phone number"})
+			c.JSON(http.StatusBadRequest, electrotech.Error(err))
 
 			return
 		}
@@ -57,7 +57,7 @@ func RegisterHandler() gin.HandlerFunc {
 		}
 		if err := user.SetPassword(req.Password); err != nil {
 			log.Error("Failed set (hash) user password")
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash password"})
+			c.JSON(http.StatusInternalServerError, electrotech.ErrorStr("failed set password"))
 
 			return
 		}
@@ -66,11 +66,11 @@ func RegisterHandler() gin.HandlerFunc {
 		err = users.InsertNew(user)
 		if err != nil {
 			log.Errorf("Error creating user: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create user"})
+			c.JSON(http.StatusInternalServerError, electrotech.Error(err))
 
 			return
 		}
 
-		c.JSON(http.StatusCreated, gin.H{"message": "user created successfully"})
+		c.Status(http.StatusCreated)
 	}
 }

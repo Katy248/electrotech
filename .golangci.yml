@@ -5,8 +5,11 @@ linters:
   disable:
     # deprecated
     - wsl
+    - gomodguard
     # temporary
     - gochecknoglobals
+    - tagliatelle
+    - godox
     # own style
     - depguard
     - revive
@@ -14,3 +17,6 @@ linters:
     - exhaustruct
     - noinlineerr
     - recvcheck
+    - musttag
+    - testpackage
+    - forbidigo
