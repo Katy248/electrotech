@@ -1,83 +1,40 @@
 package email
 
 import (
+	"electrotech/internal/config"
 	"errors"
 	"fmt"
-	"net/smtp"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 	e "github.com/jordan-wright/email"
-	"github.com/spf13/viper"
 )
 
-type Config struct {
-	Host         string
-	Port         int
-	User         string
-	Password     string
-	Enabled      bool
-	InfoSender   string
-	infoReceiver string
+type Service struct {
+	Config *config.EmailConfig
 }
 
-func (c *Config) Addr() string {
-	return fmt.Sprintf("%s:%d", c.Host, c.Port)
-}
-func (c *Config) Auth() smtp.Auth {
-	return smtp.PlainAuth("", c.User, c.Password, c.Host)
-}
-func (c *Config) InfoReceiver() string {
-	if c.infoReceiver == "" {
-		return c.User
+func NewEmailService(config *config.Config) *Service {
+	return &Service{
+		Config: &config.Email,
 	}
-
-	return c.infoReceiver
-}
-
-func (c *Config) From() string {
-	name := c.InfoSender
-	if name == "" {
-		name = "Electrotech info"
-	}
-
-	return fmt.Sprintf("%s <%s>", name, c.User)
-}
-
-func getConfig() *Config {
-	return &Config{
-		Enabled:      viper.GetBool("mail.enable"),
-		Port:         viper.GetInt("mail.port"),
-		User:         viper.GetString("mail.user"),
-		Password:     viper.GetString("mail.password"),
-		Host:         viper.GetString("mail.host"),
-		infoReceiver: viper.GetString("mail.info-receiver"),
-		InfoSender:   viper.GetString("mail.info-sender"),
-	}
-}
-
-func IsEnabled() bool {
-	conf := getConfig()
-
-	return conf.Enabled
 }
 
 var ErrMailSystemNotEnabled = errors.New("mail system not enabled")
 
-func SendInfo(content []byte, subject string) error {
-	conf := getConfig()
-	if !conf.Enabled {
+func (s *Service) SendInfo(content []byte, subject string) error {
+	if !s.Config.Enabled {
 		return ErrMailSystemNotEnabled
 	}
 
 	mail := e.NewEmail()
-	mail.From = conf.From()
-	mail.To = []string{conf.InfoReceiver()}
+	mail.From = s.Config.From()
+	mail.To = []string{s.Config.InfoReceiver()}
 	mail.Subject = subject
 	mail.HTML = content
 
 	err := mail.Send(
-		conf.Addr(),
-		conf.Auth(),
+		s.Config.Addr(),
+		s.Config.Auth(),
 	)
 	if err != nil {
 		log.Error("Failed send info email", "error", err, "mail", mail)

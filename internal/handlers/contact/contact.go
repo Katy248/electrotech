@@ -3,20 +3,35 @@ package contact
 import (
 	"bytes"
 	"electrotech"
-	"electrotech/internal/email"
 	"electrotech/internal/models"
 	"electrotech/storage"
 	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 
 	_ "embed"
 	tmpl "html/template"
 )
+
+type EmailService interface {
+	SendInfo(content []byte, subject string) error
+}
+
+type ContactUsHandler struct {
+	emailService EmailService
+	logger       *log.Logger
+}
+
+func NewContactUsHandler(emailService EmailService, logger *log.Logger) *ContactUsHandler {
+	return &ContactUsHandler{
+		emailService: emailService,
+		logger:       logger,
+	}
+}
 
 type Request struct {
 	Name    string `binding:"required" json:"name"`
@@ -33,29 +48,10 @@ func GetRequestTimeout() time.Duration {
 	return viper.GetDuration("contact-us.request-timeout")
 }
 
-func checkRecentRequest(ip string) bool {
-	var records []*models.UserQuestion
-
-	dateAfter := time.Now().Add(-GetRequestTimeout())
-
-	err := storage.DB.
-		Model(&models.UserQuestion{}).
-		Where("client_ip = ?", ip).
-		Where("DATETIME(creation_date) > DATETIME(?)", dateAfter).
-		Find(&records).Error
-	if err != nil {
-		log.Error("Failed get recent requests", "error", err)
-
-		return true
-	}
-
-	return len(records) == 0
-}
-
-func ContactUsHandler() gin.HandlerFunc {
+func (h *ContactUsHandler) HandleContactUs() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ip := c.ClientIP()
-		if !checkRecentRequest(ip) {
+		if !h.checkRecentRequest(ip) {
 			log.Warn("Too many requests", "clientIP", ip, "timeout", GetRequestTimeout())
 			c.JSON(http.StatusTooManyRequests, electrotech.ErrorStr("too many requests"))
 
@@ -89,31 +85,31 @@ func ContactUsHandler() gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, gin.H{})
 
-		go sendEmail(dbRequest)
+		go h.sendEmail(dbRequest)
 	}
 }
 
 //go:embed email.html
 var EmailTemplate string
 
-func sendEmail(question *models.UserQuestion) {
-	content, err := buildEmail(question)
+func (h *ContactUsHandler) sendEmail(question *models.UserQuestion) {
+	content, err := h.buildEmail(question)
 	if err != nil {
-		log.Error("Failed build email", "error", err)
+		h.logger.Error("Failed build email", "error", err)
 
 		return
 	}
 
-	err = email.SendInfo(content, "Новый вопрос")
+	err = h.emailService.SendInfo(content, "Новый вопрос")
 	if err != nil {
-		log.Error("Failed send email", "error", err)
+		h.logger.Error("Failed send email", "error", err)
 	}
 }
 
-func buildEmail(question *models.UserQuestion) ([]byte, error) {
+func (h *ContactUsHandler) buildEmail(question *models.UserQuestion) ([]byte, error) {
 	template, err := tmpl.New("new-request-mail").Parse(EmailTemplate)
 	if err != nil {
-		log.Error("Failed create email template for new request", "error", err)
+		h.logger.Error("Failed create email template for new request", "error", err)
 
 		return nil, fmt.Errorf("failed create template: %w", err)
 	}
@@ -126,4 +122,23 @@ func buildEmail(question *models.UserQuestion) ([]byte, error) {
 	}
 
 	return buff.Bytes(), nil
+}
+
+func (h *ContactUsHandler) checkRecentRequest(ip string) bool {
+	var records []*models.UserQuestion
+
+	dateAfter := time.Now().Add(-GetRequestTimeout())
+
+	err := storage.DB.
+		Model(new(models.UserQuestion)).
+		Where("client_ip = ?", ip).
+		Where("DATETIME(creation_date) > DATETIME(?)", dateAfter).
+		Find(&records).Error
+	if err != nil {
+		h.logger.Error("Failed get recent requests", "error", err)
+
+		return true
+	}
+
+	return len(records) == 0
 }

@@ -8,9 +8,27 @@ import (
 	"electrotech/internal/repository/users"
 	"net/http"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 	"github.com/gin-gonic/gin"
 )
+
+type EmailService interface {
+	SendInfo(content []byte, subject string) error
+}
+
+type Handler struct {
+	logger       *log.Logger
+	catalogRepo  *catalog.Repo
+	EmailService EmailService
+}
+
+func NewHandler(logger *log.Logger, catalogRepo *catalog.Repo, emailService EmailService) *Handler {
+	return &Handler{
+		logger:       logger,
+		catalogRepo:  catalogRepo,
+		EmailService: emailService,
+	}
+}
 
 type CreateOrderRequest struct {
 	Products []OrderProductRequest `binding:"required,min=1" json:"products"`
@@ -21,12 +39,12 @@ type OrderProductRequest struct {
 	Quantity  int    `binding:"required,min=1" json:"quantity"`
 }
 
-func CreateOrderHandler(catalogRepo *catalog.Repo) gin.HandlerFunc {
+func (h *Handler) HandleCreateOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Получаем userID из контекста (предполагаем, что middleware аутентификации уже добавил его)
 		userID, exists := c.Get("user_id")
 		if !exists {
-			log.Error("User not authenticated")
+			h.logger.Error("User not authenticated")
 			c.JSON(http.StatusUnauthorized, electrotech.ErrorStr("user not authenticated"))
 
 			return
@@ -34,7 +52,7 @@ func CreateOrderHandler(catalogRepo *catalog.Repo) gin.HandlerFunc {
 
 		var req CreateOrderRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			log.Error("Failed to bind request")
+			h.logger.Error("Failed to bind request")
 			c.JSON(http.StatusBadRequest, electrotech.Error(err))
 
 			return
@@ -42,7 +60,7 @@ func CreateOrderHandler(catalogRepo *catalog.Repo) gin.HandlerFunc {
 
 		intUserID, ok := userID.(int64)
 		if !ok {
-			log.Error("Bad user ID specified", "userID", userID)
+			h.logger.Error("Bad user ID specified", "userID", userID)
 			c.JSON(http.StatusNotFound, electrotech.ErrorStr("user not found"))
 
 			return
@@ -50,7 +68,7 @@ func CreateOrderHandler(catalogRepo *catalog.Repo) gin.HandlerFunc {
 
 		user, err := users.ByID(intUserID)
 		if err != nil {
-			log.Error("User not found", "error", err)
+			h.logger.Error("User not found", "error", err)
 			c.JSON(http.StatusNotFound, electrotech.ErrorStr("user not found"))
 
 			return
@@ -59,9 +77,9 @@ func CreateOrderHandler(catalogRepo *catalog.Repo) gin.HandlerFunc {
 		products := []models.OrderProduct{}
 
 		for _, p := range req.Products {
-			product, err := catalogRepo.GetProduct(p.ProductId)
+			product, err := h.catalogRepo.GetProduct(p.ProductId)
 			if err != nil {
-				log.Error("Failed getting product price, product not found", "productId", p.ProductId, "error", err)
+				h.logger.Error("Failed getting product price, product not found", "productId", p.ProductId, "error", err)
 				c.JSON(http.StatusNotFound, electrotech.ErrorStr("product not found"))
 
 				return
@@ -79,33 +97,26 @@ func CreateOrderHandler(catalogRepo *catalog.Repo) gin.HandlerFunc {
 
 		order, err := orders.New(user, products)
 		if err != nil {
-			log.Error("Failed creating order", "error", err)
+			h.logger.Error("Failed creating order", "error", err)
 			c.JSON(http.StatusInternalServerError, electrotech.ErrorStr("failed to create order"))
 
 			return
 		}
 
-		// if err := order.SetUser(user); err != nil {
-		// 	log.Error("Can't set user as order creator", "user", user, "error", err)
-		// 	c.JSON(http.StatusBadRequest, gin.H{"error": "user can't create orders"})
-		// 	return
-		// }
-
-		go sendEmail(*order)
+		go h.sendEmail(*order)
 
 		c.JSON(http.StatusCreated, gin.H{
-			"message": "order created successfully",
 			"orderId": order.ID,
 		})
 	}
 }
 
-func GetUserOrdersHandler(catalogRepo *catalog.Repo) gin.HandlerFunc {
+func (h *Handler) HandleGetUserOrders() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Получаем userID из контекста
 		userID, exists := c.Get("user_id")
 		if !exists {
-			log.Error("User not authenticated")
+			h.logger.Error("User not authenticated")
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
 
 			return
@@ -120,7 +131,7 @@ func GetUserOrdersHandler(catalogRepo *catalog.Repo) gin.HandlerFunc {
 
 		orders, err := orders.GetOrders(intUserID)
 		if err != nil {
-			log.Error("Failed getting user orders", "error", err, "userID", userID)
+			h.logger.Error("Failed getting user orders", "error", err, "userID", userID)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get orders"})
 
 			return
@@ -128,9 +139,9 @@ func GetUserOrdersHandler(catalogRepo *catalog.Repo) gin.HandlerFunc {
 
 		for _, o := range orders {
 			for _, p := range o.OrderProducts {
-				product, err := catalogRepo.GetProduct(p.ProductID)
+				product, err := h.catalogRepo.GetProduct(p.ProductID)
 				if err != nil {
-					log.Warn("Failed getting product, skipping", "error", err, "productID", p.ProductID)
+					h.logger.Warn("Failed getting product, skipping", "error", err, "productID", p.ProductID)
 
 					continue
 				}

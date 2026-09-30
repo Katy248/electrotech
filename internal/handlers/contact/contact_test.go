@@ -5,6 +5,8 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"charm.land/log/v2"
 )
 
 const lorem = `Lorem ipsum dolor sit amet,
@@ -35,7 +37,9 @@ func TestBuildEmail(t *testing.T) {
 	request.Email = &mailAddr
 	request.Phone = &phone
 
-	email, err := buildEmail(request)
+	handler := NewContactUsHandler(nil, log.New(os.Stderr))
+
+	email, err := handler.buildEmail(request)
 	if err != nil {
 		t.Errorf("buildEmail failed: %v", err)
 	}

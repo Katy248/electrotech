@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 )
 
 func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, error) {

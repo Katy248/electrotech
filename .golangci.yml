@@ -6,15 +6,20 @@ linters:
     # deprecated
     - wsl
     - gomodguard
+    - exhaustruct
+
     # temporary
     - gochecknoglobals
     - tagliatelle
     - godox
+    - funlen
+    - exhaustruct_v5
+    - cyclop
+
     # own style
     - depguard
     - revive
     - varnamelen
-    - exhaustruct
     - noinlineerr
     - recvcheck
     - musttag

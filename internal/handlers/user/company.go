@@ -17,7 +17,7 @@ type UpdateCompanyDataRequest struct {
 	PositionInCompany string `binding:"required" json:"position_in_company"`
 }
 
-func UpdateCompanyData() gin.HandlerFunc {
+func (h *Handler) HandleUpdateCompanyData() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req UpdateCompanyDataRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -52,7 +52,7 @@ func UpdateCompanyData() gin.HandlerFunc {
 	}
 }
 
-func GetCompanyData() gin.HandlerFunc {
+func (h *Handler) HandleGetCompanyData() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := users.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {

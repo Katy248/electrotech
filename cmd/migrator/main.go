@@ -2,7 +2,6 @@
 package main
 
 import (
-	"electrotech/internal/config"
 	"electrotech/storage"
 	"electrotech/storage/migration"
 	"flag"
@@ -11,8 +10,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/charmbracelet/lipgloss"
-	logger "github.com/charmbracelet/log"
+	"charm.land/lipgloss/v2"
+	logger "charm.land/log/v2"
 	migrate "github.com/rubenv/sql-migrate"
 	"github.com/spf13/viper"
 )
@@ -22,8 +21,7 @@ var (
 )
 
 func main() {
-	config.Setup()
-
+	// config.Setup()
 	flagset := flag.NewFlagSet("migrator", flag.ExitOnError)
 
 	debug := flagset.Bool("d", false, "Enable debug mode")

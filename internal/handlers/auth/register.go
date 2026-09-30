@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 	"github.com/gin-gonic/gin"
 )
 
@@ -48,7 +48,7 @@ func RegisterHandler() gin.HandlerFunc {
 			return
 		}
 
-		user := &models.User{
+		user := &models.User{ //nolint:exhaustruct_v5
 			Email:       req.Email,
 			FirstName:   req.FirstName,
 			Surname:     req.Surname,

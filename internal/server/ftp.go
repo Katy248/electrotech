@@ -6,7 +6,7 @@ import (
 	"net"
 	"os"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 	"github.com/spf13/viper"
 	ftp "goftp.io/server/v2"
 	"goftp.io/server/v2/driver/file"

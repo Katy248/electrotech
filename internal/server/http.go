@@ -1,6 +1,7 @@
 package server
 
 import (
+	"electrotech/internal/config"
 	"electrotech/internal/handlers/auth"
 	catalogHandlers "electrotech/internal/handlers/catalog"
 	v2 "electrotech/internal/handlers/catalog/v2"
@@ -10,7 +11,7 @@ import (
 	"electrotech/internal/repository/catalog"
 	"fmt"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
@@ -20,8 +21,14 @@ type HTTPServer struct {
 	engine *gin.Engine
 }
 
-func NewHTTPServer(catalogRepo *catalog.Repo) *HTTPServer {
-	gin.SetMode(viper.GetString("gin-mode"))
+func NewHTTPServer(
+	config *config.Config,
+	catalogRepo *catalog.Repo,
+	contactHandler *contact.ContactUsHandler,
+	ordersHandler *orders.Handler,
+	userHandler *user.Handler,
+) *HTTPServer {
+	gin.SetMode(config.GinMode)
 
 	server := gin.Default()
 	corsConf := cors.Config{
@@ -37,12 +44,10 @@ func NewHTTPServer(catalogRepo *catalog.Repo) *HTTPServer {
 		ctx.Next()
 	})
 
-	server.GET("/")
-
 	api := server.Group("/api")
 	{
-		api.Static("/files", viper.GetString("data-dir"))
-		api.POST("/contact-us", contact.ContactUsHandler())
+		api.Static("/files", config.Catalog.DataDir)
+		api.POST("/contact-us", contactHandler.HandleContactUs())
 
 		api.GET("/v2/products", v2.GetProducts(catalogRepo))
 		{
@@ -61,19 +66,19 @@ func NewHTTPServer(catalogRepo *catalog.Repo) *HTTPServer {
 		{
 			ordersGroup := api.Group("/orders")
 			ordersGroup.Use(auth.AuthMiddleware())
-			ordersGroup.POST("/create", orders.CreateOrderHandler(catalogRepo))
-			ordersGroup.GET("/get", orders.GetUserOrdersHandler(catalogRepo))
+			ordersGroup.POST("/create", ordersHandler.HandleCreateOrder())
+			ordersGroup.GET("/get", ordersHandler.HandleGetUserOrders())
 		}
 		{
 			usersGroup := api.Group("/user")
 			usersGroup.Use(auth.AuthMiddleware())
-			usersGroup.POST("/change-password", user.ChangePassword())
-			usersGroup.POST("/change-email", user.ChangeEmail())
-			usersGroup.POST("/change-phone", user.ChangePhoneNumber())
-			usersGroup.POST("/update-data", user.UpdateUserData())
-			usersGroup.POST("/get-data", user.GetData())
-			usersGroup.POST("/update-company-data", user.UpdateCompanyData())
-			usersGroup.POST("/get-company-data", user.GetCompanyData())
+			usersGroup.POST("/change-password", userHandler.HandleChangePassword())
+			usersGroup.POST("/change-email", userHandler.HandleChangeEmail())
+			usersGroup.POST("/change-phone", userHandler.HandleChangePhoneNumber())
+			usersGroup.POST("/update-data", userHandler.HandleUpdateUserData())
+			usersGroup.POST("/get-data", userHandler.HandleGetData())
+			usersGroup.POST("/update-company-data", userHandler.HandleUpdateCompanyData())
+			usersGroup.POST("/get-company-data", userHandler.HandleGetCompanyData())
 		}
 	}
 

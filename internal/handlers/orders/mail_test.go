@@ -5,24 +5,26 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"charm.land/log/v2"
 )
 
 func TestBuildMail(t *testing.T) {
 	t.Parallel()
 
-	order := models.Order{
+	order := models.Order{ //nolint:exhaustruct_v5
 		ID:           21347328573298,
 		UserID:       23578904367968,
 		CreationDate: time.Now(),
 		OrderProducts: []*models.OrderProduct{
-			{
+			{ //nolint:exhaustruct_v5
 				ID:           1,
 				ProductID:    "1",
 				ProductName:  "Дилдо 20см",
 				ProductPrice: 1000,
 				Quantity:     120,
 			},
-			{
+			{ //nolint:exhaustruct_v5
 				ProductID:    "2",
 				ProductName:  "Анальная пробка",
 				ProductPrice: 2000,
@@ -30,7 +32,7 @@ func TestBuildMail(t *testing.T) {
 			},
 		},
 	}
-	user := models.User{
+	user := models.User{ //nolint:exhaustruct_v5
 		ID:          124225,
 		FirstName:   "Катерина",
 		LastName:    "Владимировна",
@@ -55,7 +57,11 @@ func TestBuildMail(t *testing.T) {
 
 	file, _ := os.Create("test.html")
 
-	mail, err := buildMail(order)
+	handler := &Handler{ //nolint:exhaustruct_v5
+		logger: log.New(os.Stdout),
+	}
+
+	mail, err := handler.buildMail(order)
 	if err != nil {
 		t.Errorf("Failed build mail: %s", err)
 	}

@@ -1,1 +1,2 @@
 contact-us.request-timeout = "10s"
+catalog.data-dir = "./example"

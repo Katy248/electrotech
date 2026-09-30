@@ -5,13 +5,13 @@ import (
 	"electrotech/internal/repository/users"
 	"net/http"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 	"github.com/gin-gonic/gin"
 	gr "github.com/katy248/gravatar"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func ChangePassword() gin.HandlerFunc {
+func (h *Handler) HandleChangePassword() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req ChangePasswordRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -57,7 +57,7 @@ func ChangePassword() gin.HandlerFunc {
 	}
 }
 
-func ChangeEmail() gin.HandlerFunc {
+func (h *Handler) HandleChangeEmail() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req ChangeEmailRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -89,7 +89,7 @@ func ChangeEmail() gin.HandlerFunc {
 	}
 }
 
-func ChangePhoneNumber() gin.HandlerFunc {
+func (h *Handler) HandleChangePhoneNumber() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req ChangePhoneNumberRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -129,7 +129,7 @@ func ChangePhoneNumber() gin.HandlerFunc {
 	}
 }
 
-func UpdateUserData() gin.HandlerFunc {
+func (h *Handler) HandleUpdateUserData() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req UpdateUserDataRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -162,7 +162,7 @@ func UpdateUserData() gin.HandlerFunc {
 	}
 }
 
-func GetData() gin.HandlerFunc {
+func (h *Handler) HandleGetData() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := users.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {

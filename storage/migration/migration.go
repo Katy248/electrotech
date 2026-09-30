@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	logger "github.com/charmbracelet/log"
+	logger "charm.land/log/v2"
 	migrate "github.com/rubenv/sql-migrate"
 )
 

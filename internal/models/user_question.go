@@ -4,7 +4,7 @@ import (
 	"electrotech"
 	"time"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 )
 
 type UserQuestion struct {
@@ -27,7 +27,7 @@ func NewUserQuestion(name, email, phone, message, ip string) *UserQuestion {
 		}
 	}
 
-	return &UserQuestion{
+	return &UserQuestion{ //nolint:exhaustruct_v5
 		CreationDate: time.Now(),
 
 		PersonName: name,

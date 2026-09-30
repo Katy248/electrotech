@@ -2,7 +2,6 @@ package orders
 
 import (
 	"bytes"
-	"electrotech/internal/email"
 	"electrotech/internal/models"
 	_ "embed"
 	"errors"
@@ -10,25 +9,21 @@ import (
 
 	tmpl "html/template"
 
+	"charm.land/log/v2"
 	"github.com/aymerick/douceur/inliner"
-	"github.com/charmbracelet/log"
 )
 
-func sendEmail(order models.Order) {
-	if !email.IsEnabled() {
-		return
-	}
-
-	buff, err := buildMail(order)
+func (h *Handler) sendEmail(order models.Order) {
+	buff, err := h.buildMail(order)
 	if err != nil {
-		log.Error("Failed building mail", "error", err, "buffer", string(buff))
+		h.logger.Error("Failed building mail", "error", err, "buffer", string(buff))
 
 		return
 	}
 
-	err = email.SendInfo(buff, fmt.Sprintf("New Order #%d", order.ID))
+	err = h.EmailService.SendInfo(buff, fmt.Sprintf("New Order #%d", order.ID))
 	if err != nil {
-		log.Error("Failed send email", "error", err)
+		h.logger.Error("Failed send email", "error", err)
 	}
 }
 
@@ -37,14 +32,14 @@ var ErrOrderUserIsNil = errors.New("order user is nil")
 //go:embed email.html
 var EmailTemplate string
 
-func buildMail(order models.Order) ([]byte, error) {
+func (h *Handler) buildMail(order models.Order) ([]byte, error) {
 	if order.User == nil {
 		return nil, ErrOrderUserIsNil
 	}
 
 	template, err := tmpl.New("new-order-mail").Parse(EmailTemplate)
 	if err != nil {
-		log.Error("Failed parsing mail template", "error", err)
+		h.logger.Error("Failed parsing mail template", "error", err)
 
 		return nil, fmt.Errorf("failed parse template: %w", err)
 	}

@@ -8,7 +8,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 )
 
 type Parser struct {

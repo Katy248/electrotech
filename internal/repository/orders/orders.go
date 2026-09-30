@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/charmbracelet/log"
+	"charm.land/log/v2"
 )
 
 var ErrUserIsNil = errors.New("user is nil")
@@ -19,12 +19,12 @@ func InsertNew(o *models.Order) error {
 }
 
 func New(user *models.User, products []models.OrderProduct) (*models.Order, error) {
-	o := &models.Order{
-		CreationDate: time.Now(),
-	}
-
 	if user == nil {
 		return nil, ErrUserIsNil
+	}
+
+	o := &models.Order{ //nolint:exhaustruct_v5
+		CreationDate: time.Now(),
 	}
 
 	err := o.SetUser(user)
