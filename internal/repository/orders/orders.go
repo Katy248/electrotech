@@ -2,23 +2,32 @@ package orders
 
 import (
 	"electrotech/internal/models"
-	"electrotech/storage"
 	"errors"
 	"fmt"
 	"time"
 
 	"charm.land/log/v2"
+	"gorm.io/gorm"
 )
 
 var ErrUserIsNil = errors.New("user is nil")
 
-func InsertNew(o *models.Order) error {
-	err := storage.DB.Create(o).Error
+type Repo struct {
+	db     *gorm.DB
+	logger *log.Logger
+}
+
+func NewRepo(db *gorm.DB, logger *log.Logger) *Repo {
+	return &Repo{db: db, logger: logger}
+}
+
+func (r *Repo) InsertNew(o *models.Order) error {
+	err := r.db.Create(o).Error
 
 	return err
 }
 
-func New(user *models.User, products []models.OrderProduct) (*models.Order, error) {
+func (r *Repo) New(user *models.User, products []models.OrderProduct) (*models.Order, error) {
 	if user == nil {
 		return nil, ErrUserIsNil
 	}
@@ -32,7 +41,7 @@ func New(user *models.User, products []models.OrderProduct) (*models.Order, erro
 		return nil, fmt.Errorf("failed set user: %w", err)
 	}
 
-	err = storage.DB.Create(o).Error
+	err = r.db.Create(o).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed insert order: %w", err)
 	}
@@ -40,13 +49,13 @@ func New(user *models.User, products []models.OrderProduct) (*models.Order, erro
 	for _, p := range products {
 		o.AddProduct(p)
 
-		err := storage.DB.Save(&p).Error
+		err := r.db.Save(&p).Error
 		if err != nil {
 			return nil, fmt.Errorf("failed save product: %w", err)
 		}
 	}
 
-	err = storage.DB.Save(o).Error
+	err = r.db.Save(o).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed save order: %w", err)
 	}
@@ -54,22 +63,22 @@ func New(user *models.User, products []models.OrderProduct) (*models.Order, erro
 	return o, nil
 }
 
-var getOrdersQuery = `
+const getOrdersQuery = `
 SELECT id, user_id, creation_date
 FROM orders
 WHERE user_id = ?`
 
-func GetOrders(userID int64) ([]*models.Order, error) {
+func (r *Repo) GetOrders(userID int64) ([]*models.Order, error) {
 	var orders []*models.Order
 
-	err := storage.DB.Raw(getOrdersQuery, userID).Find(&orders).Error
+	err := r.db.Raw(getOrdersQuery, userID).Find(&orders).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed get orders: %w", err)
 	}
 
 	for _, o := range orders {
-		err = storage.DB.Where("order_id = ?", o.ID).Find(&o.OrderProducts).Error
-		log.Info("Order", "orderID", o.ID, "products", o.OrderProducts)
+		err = r.db.Where("order_id = ?", o.ID).Find(&o.OrderProducts).Error
+		r.logger.Info("Order", "orderID", o.ID, "products", o.OrderProducts)
 
 		if err != nil {
 			return nil, fmt.Errorf("failed get products: %w", err)

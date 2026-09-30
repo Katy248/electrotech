@@ -32,7 +32,7 @@ func NewParser(directory string) (*Parser, error) {
 		return nil, ErrImportsFileNotFound
 	}
 
-	return &Parser{dir: directory}, nil
+	return &Parser{dir: directory}, nil //nolint:exhaustruct_v5
 }
 
 func getOffersFilepath(dir string) string {

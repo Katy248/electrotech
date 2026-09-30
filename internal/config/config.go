@@ -2,6 +2,7 @@ package config
 
 import (
 	"electrotech/internal/repository/catalog"
+	"electrotech/storage"
 	"fmt"
 	"net/smtp"
 	"os"
@@ -14,18 +15,20 @@ import (
 )
 
 type Config struct {
-	Devel     bool           `mapstructure:"devel"`
-	GinMode   string         `mapstructure:"gin-mode"`
-	JWTSecret string         `mapstructure:"jwt-secret"`
-	Email     EmailConfig    `mapstructure:"mail"`
-	Catalog   catalog.Config `mapstructure:"catalog"`
-	Auth      AuthConfig     `mapstructure:"auth"`
+	Devel     bool             `mapstructure:"devel"`
+	GinMode   string           `mapstructure:"gin-mode"`
+	Port      int              `mapstructure:"port"`
+	JWTSecret string           `mapstructure:"jwt-secret"`
+	Email     EmailConfig      `mapstructure:"mail"`
+	Catalog   catalog.Config   `mapstructure:"catalog"`
+	Auth      AuthConfig       `mapstructure:"auth"`
+	DB        storage.DBConfig `mapstructure:"db"`
 }
 
 type AuthConfig struct {
-	Secret       string        `mapstructure:"secret"`
-	TokenTTL     time.Duration `mapstructure:"token-ttl"`
-	RefreshToken time.Duration `mapstructure:"refresh-token-ttl"`
+	Secret          string        `mapstructure:"secret"`
+	TokenTTL        time.Duration `mapstructure:"token-ttl"`
+	RefreshTokenTTL time.Duration `mapstructure:"refresh-token-ttl"`
 }
 
 type EmailConfig struct {

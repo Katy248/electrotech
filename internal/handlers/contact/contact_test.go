@@ -25,7 +25,7 @@ est laborum.`
 func TestBuildEmail(t *testing.T) {
 	t.Parallel()
 
-	request := &models.UserQuestion{
+	request := &models.UserQuestion{ //nolint:exhaustruct_v5
 		PersonName:   "John Doe",
 		ID:           123,
 		CreationDate: time.Now(),
@@ -37,7 +37,7 @@ func TestBuildEmail(t *testing.T) {
 	request.Email = &mailAddr
 	request.Phone = &phone
 
-	handler := NewContactUsHandler(nil, log.New(os.Stderr))
+	handler := NewContactUsHandler(nil, log.New(os.Stderr), nil)
 
 	email, err := handler.buildEmail(request)
 	if err != nil {

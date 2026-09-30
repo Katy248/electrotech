@@ -101,6 +101,7 @@ func TestParseOffersData(t *testing.T) {
 	}
 }
 
+//nolint:gochecknoglobals
 var (
 	offersData = []byte(`
 	<?xml version="1.0" encoding="UTF-8"?>

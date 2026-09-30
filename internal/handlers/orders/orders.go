@@ -6,6 +6,7 @@ import (
 	"electrotech/internal/repository/catalog"
 	"electrotech/internal/repository/orders"
 	"electrotech/internal/repository/users"
+	"fmt"
 	"net/http"
 
 	"charm.land/log/v2"
@@ -19,13 +20,23 @@ type EmailService interface {
 type Handler struct {
 	logger       *log.Logger
 	catalogRepo  *catalog.Repo
+	ordersRepo   *orders.Repo
+	usersRepo    *users.Repo
 	EmailService EmailService
 }
 
-func NewHandler(logger *log.Logger, catalogRepo *catalog.Repo, emailService EmailService) *Handler {
+func NewHandler(
+	logger *log.Logger,
+	catalogRepo *catalog.Repo,
+	ordersRepo *orders.Repo,
+	usersRepo *users.Repo,
+	emailService EmailService,
+) *Handler {
 	return &Handler{
 		logger:       logger,
 		catalogRepo:  catalogRepo,
+		ordersRepo:   ordersRepo,
+		usersRepo:    usersRepo,
 		EmailService: emailService,
 	}
 }
@@ -41,7 +52,6 @@ type OrderProductRequest struct {
 
 func (h *Handler) HandleCreateOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Получаем userID из контекста (предполагаем, что middleware аутентификации уже добавил его)
 		userID, exists := c.Get("user_id")
 		if !exists {
 			h.logger.Error("User not authenticated")
@@ -66,7 +76,7 @@ func (h *Handler) HandleCreateOrder() gin.HandlerFunc {
 			return
 		}
 
-		user, err := users.ByID(intUserID)
+		user, err := h.usersRepo.ByID(intUserID)
 		if err != nil {
 			h.logger.Error("User not found", "error", err)
 			c.JSON(http.StatusNotFound, electrotech.ErrorStr("user not found"))
@@ -74,28 +84,15 @@ func (h *Handler) HandleCreateOrder() gin.HandlerFunc {
 			return
 		}
 
-		products := []models.OrderProduct{}
+		products, err := h.mapProducts(req.Products)
+		if err != nil {
+			h.logger.Error("Failed map products", "error", err)
+			c.JSON(http.StatusNotFound, electrotech.ErrorStr("map products failed"))
 
-		for _, p := range req.Products {
-			product, err := h.catalogRepo.GetProduct(p.ProductId)
-			if err != nil {
-				h.logger.Error("Failed getting product price, product not found", "productId", p.ProductId, "error", err)
-				c.JSON(http.StatusNotFound, electrotech.ErrorStr("product not found"))
-
-				return
-			}
-
-			products = append(products,
-				models.OrderProduct{
-					ProductName:  product.Name,
-					Quantity:     int64(p.Quantity),
-					ProductPrice: float64(product.Price),
-					ProductID:    p.ProductId,
-				},
-			)
+			return
 		}
 
-		order, err := orders.New(user, products)
+		order, err := h.ordersRepo.New(user, products)
 		if err != nil {
 			h.logger.Error("Failed creating order", "error", err)
 			c.JSON(http.StatusInternalServerError, electrotech.ErrorStr("failed to create order"))
@@ -129,7 +126,7 @@ func (h *Handler) HandleGetUserOrders() gin.HandlerFunc {
 			return
 		}
 
-		orders, err := orders.GetOrders(intUserID)
+		orders, err := h.ordersRepo.GetOrders(intUserID)
 		if err != nil {
 			h.logger.Error("Failed getting user orders", "error", err, "userID", userID)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get orders"})
@@ -152,4 +149,25 @@ func (h *Handler) HandleGetUserOrders() gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, gin.H{"orders": orders})
 	}
+}
+
+func (h *Handler) mapProducts(products []OrderProductRequest) ([]models.OrderProduct, error) {
+	mapped := make([]models.OrderProduct, 0, len(products))
+	for _, p := range products {
+		product, err := h.catalogRepo.GetProduct(p.ProductId)
+		if err != nil {
+			return nil, fmt.Errorf("product %q: %w", p.ProductId, err)
+		}
+
+		mapped = append(mapped,
+			models.OrderProduct{ //nolint:exhaustruct_v5
+				ProductName:  product.Name,
+				Quantity:     int64(p.Quantity),
+				ProductPrice: float64(product.Price),
+				ProductID:    p.ProductId,
+			},
+		)
+	}
+
+	return mapped, nil
 }

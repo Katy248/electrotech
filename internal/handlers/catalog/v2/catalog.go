@@ -9,7 +9,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetProducts(r *catalog.Repo) gin.HandlerFunc {
+type Handler struct {
+	repo *catalog.Repo
+}
+
+func NewHandler(repo *catalog.Repo) *Handler {
+	return &Handler{repo: repo}
+}
+
+func (h *Handler) HandleGetProducts() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var request Request
 		if err := ctx.ShouldBind(&request); err != nil {
@@ -28,7 +36,7 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 			filters = append(filters, catalog.OnlyAvailableFilter())
 		}
 
-		products, err := r.GetProductsNew(
+		products, err := h.repo.GetProductsNew(
 			catalog.Page(request.Page), filters...,
 		)
 		if err != nil {

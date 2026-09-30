@@ -14,11 +14,13 @@ import (
 	"charm.land/log/v2"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 )
+
+const DefaultHTTPPort = 8080
 
 type HTTPServer struct {
 	engine *gin.Engine
+	port   int
 }
 
 func NewHTTPServer(
@@ -27,51 +29,43 @@ func NewHTTPServer(
 	contactHandler *contact.ContactUsHandler,
 	ordersHandler *orders.Handler,
 	userHandler *user.Handler,
+	authHandler *auth.Handler,
+	catalogHandler *catalogHandlers.Handler,
+	catalogV2Handler *v2.Handler,
 ) *HTTPServer {
 	gin.SetMode(config.GinMode)
 
 	server := gin.Default()
-	corsConf := cors.Config{
-		AllowAllOrigins:  true,
-		AllowMethods:     []string{"POST", "GET", "OPTION", "DELETE", "PUT"},
-		AllowHeaders:     []string{"Authorization", "Content-Type", "Origin", "X-Requested-With"},
-		AllowCredentials: true,
-	}
-	server.Use(cors.New(corsConf))
-
-	server.Use(func(ctx *gin.Context) {
-		log.Info(ctx.Request.Header)
-		ctx.Next()
-	})
+	server.Use(newCORS())
 
 	api := server.Group("/api")
 	{
 		api.Static("/files", config.Catalog.DataDir)
 		api.POST("/contact-us", contactHandler.HandleContactUs())
 
-		api.GET("/v2/products", v2.GetProducts(catalogRepo))
+		api.GET("/v2/products", catalogV2Handler.HandleGetProducts())
 		{
 			products := api.Group("/products")
 
-			products.GET("/all/:page", catalogHandlers.GetProducts(catalogRepo))
-			products.POST("/filter/:page", catalogHandlers.GetProducts(catalogRepo))
-			products.GET("/:id", catalogHandlers.GetProduct(catalogRepo))
+			products.GET("/all/:page", catalogHandler.HandleGetProducts())
+			products.POST("/filter/:page", catalogHandler.HandleGetProducts())
+			products.GET("/:id", catalogHandler.HandleGetProduct())
 		}
 		{
 			authGroup := api.Group("/auth")
-			authGroup.POST("/login", auth.LoginHandler())
-			authGroup.POST("/register", auth.RegisterHandler())
-			authGroup.POST("/refresh", auth.Refresh())
+			authGroup.POST("/login", authHandler.LoginHandler())
+			authGroup.POST("/register", authHandler.RegisterHandler())
+			authGroup.POST("/refresh", authHandler.Refresh())
 		}
 		{
 			ordersGroup := api.Group("/orders")
-			ordersGroup.Use(auth.AuthMiddleware())
+			ordersGroup.Use(authHandler.AuthMiddleware())
 			ordersGroup.POST("/create", ordersHandler.HandleCreateOrder())
 			ordersGroup.GET("/get", ordersHandler.HandleGetUserOrders())
 		}
 		{
 			usersGroup := api.Group("/user")
-			usersGroup.Use(auth.AuthMiddleware())
+			usersGroup.Use(authHandler.AuthMiddleware())
 			usersGroup.POST("/change-password", userHandler.HandleChangePassword())
 			usersGroup.POST("/change-email", userHandler.HandleChangeEmail())
 			usersGroup.POST("/change-phone", userHandler.HandleChangePhoneNumber())
@@ -82,11 +76,11 @@ func NewHTTPServer(
 		}
 	}
 
-	return &HTTPServer{engine: server}
+	return &HTTPServer{engine: server, port: config.Port}
 }
 
 func (s *HTTPServer) Run() error {
-	host := fmt.Sprintf(":%d", getPort())
+	host := fmt.Sprintf(":%d", s.getPort())
 	log.Info("Starting server", "host", host)
 
 	err := s.engine.Run(host)
@@ -99,15 +93,24 @@ func (s *HTTPServer) Run() error {
 	return nil
 }
 
-const DefaultHTTPPort = 8080
-
-func getPort() int {
-	viper.SetDefault("port", DefaultHTTPPort)
-
-	var port = viper.GetInt("port")
-	if port == 0 {
-		log.Warn("PORT value is invalid, fallback to default", "default", DefaultHTTPPort)
+func (s *HTTPServer) getPort() int {
+	var port = s.port
+	if port <= 0 {
+		log.Warn("port value is invalid, fallback to default", "default", DefaultHTTPPort)
+		port = DefaultHTTPPort
 	}
 
 	return port
+}
+
+func newCORS() gin.HandlerFunc {
+	//nolint:exhaustruct_v5
+	corsConf := cors.Config{
+		AllowAllOrigins:  true,
+		AllowMethods:     []string{"POST", "GET", "OPTION", "DELETE", "PUT"},
+		AllowHeaders:     []string{"Authorization", "Content-Type", "Origin", "X-Requested-With"},
+		AllowCredentials: true,
+	}
+
+	return cors.New(corsConf)
 }

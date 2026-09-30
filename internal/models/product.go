@@ -19,6 +19,7 @@ type Category struct {
 	Name string `json:"name"`
 }
 
+//nolint:gochecknoglobals
 var NilCategory = Category{Id: "", Name: ""}
 
 const (

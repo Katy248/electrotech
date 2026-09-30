@@ -13,7 +13,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetProducts(r *catalog.Repo) gin.HandlerFunc {
+type Handler struct {
+	repo *catalog.Repo
+}
+
+func NewHandler(repo *catalog.Repo) *Handler {
+	return &Handler{repo: repo}
+}
+
+func (h *Handler) HandleGetProducts() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		if strings.Contains(ctx.Request.URL.String(), "filter") {
 			log.Warn("Deprecated url, should be removed", "url", ctx.Request.URL.String())
@@ -31,7 +39,7 @@ func GetProducts(r *catalog.Repo) gin.HandlerFunc {
 			return
 		}
 
-		products, err := r.GetProducts(
+		products, err := h.repo.GetProducts(
 			catalog.Page(page),
 		)
 		if err != nil {

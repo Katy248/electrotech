@@ -3,10 +3,7 @@ package auth
 import (
 	"electrotech"
 	"electrotech/internal/models"
-	"electrotech/internal/repository/users"
 	"net/http"
-
-	"charm.land/log/v2"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,34 +22,34 @@ type AuthResponse struct {
 	PhoneNumber  string `json:"phone_number"`
 }
 
-func LoginHandler() gin.HandlerFunc {
+func (h *Handler) LoginHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req LoginRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			log.Error("Error binding login request body", "error", err)
+			h.logger.Error("Error binding login request body", "error", err)
 			c.JSON(http.StatusBadRequest, electrotech.Error(err))
 
 			return
 		}
 
-		user, err := users.ByEmail(req.Email)
+		user, err := h.usersRepo.ByEmail(req.Email)
 		if err != nil || user.Email == "" {
-			log.Errorf("Error getting user by email '%s': %v", req.Email, err)
+			h.logger.Errorf("Error getting user by email '%s': %v", req.Email, err)
 			c.JSON(http.StatusUnauthorized, electrotech.ErrorStr("invalid credentials"))
 
 			return
 		}
 
 		if !user.CheckPassword(req.Password) {
-			log.Error("Passwords don't match", "userId", user.ID)
+			h.logger.Error("Passwords don't match", "userId", user.ID)
 			c.JSON(http.StatusUnauthorized, electrotech.ErrorStr("invalid credentials"))
 
 			return
 		}
 
-		response, err := getAuthResponse(user)
+		response, err := h.getAuthResponse(user)
 		if err != nil {
-			log.Errorf("Error generating auth response: %v", err)
+			h.logger.Errorf("Error generating auth response: %v", err)
 			c.JSON(http.StatusInternalServerError, electrotech.ErrorStr("invalid credentials"))
 
 			return
@@ -66,34 +63,34 @@ type RefreshRequest struct {
 	RefreshToken string `binding:"required" json:"refresh_token"`
 }
 
-func Refresh() gin.HandlerFunc {
+func (h *Handler) Refresh() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req RefreshRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			log.Errorf("Error binding request: %v", err)
+			h.logger.Errorf("Error binding request: %v", err)
 			c.JSON(http.StatusBadRequest, electrotech.Error(err))
 
 			return
 		}
 
-		claimsUser, err := ValidateToken(req.RefreshToken)
+		claimsUser, err := h.ValidateToken(req.RefreshToken)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, electrotech.Error(err))
 
 			return
 		}
 
-		user, err := users.ByID(claimsUser.Id)
+		user, err := h.usersRepo.ByID(claimsUser.Id)
 		if err != nil {
-			log.Errorf("Error getting user by id '%d': %v", claimsUser.Id, err)
+			h.logger.Errorf("Error getting user by id '%d': %v", claimsUser.Id, err)
 			c.JSON(http.StatusUnauthorized, electrotech.Error(err))
 
 			return
 		}
 
-		response, err := getAuthResponse(user)
+		response, err := h.getAuthResponse(user)
 		if err != nil {
-			log.Errorf("Error generating auth response: %v", err)
+			h.logger.Errorf("Error generating auth response: %v", err)
 			c.JSON(http.StatusInternalServerError, electrotech.Error(err))
 
 			return
@@ -102,17 +99,18 @@ func Refresh() gin.HandlerFunc {
 		c.JSON(http.StatusOK, response)
 	}
 }
-func getAuthResponse(user *models.User) (*AuthResponse, error) {
-	token, err := GenerateToken(user.Email, user.ID)
+
+func (h *Handler) getAuthResponse(user *models.User) (*AuthResponse, error) {
+	token, err := h.GenerateToken(user.Email, user.ID)
 	if err != nil {
-		log.Errorf("Error generating token: %v", err)
+		h.logger.Errorf("Error generating token: %v", err)
 
 		return nil, err
 	}
 
-	refreshToken, err := GenerateRefreshToken(user.ID)
+	refreshToken, err := h.GenerateRefreshToken(user.ID)
 	if err != nil {
-		log.Errorf("Error generating refresh token: %v", err)
+		h.logger.Errorf("Error generating refresh token: %v", err)
 
 		return nil, err
 	}

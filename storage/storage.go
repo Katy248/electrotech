@@ -3,17 +3,15 @@ package storage
 import (
 	"database/sql"
 	"electrotech/storage/migration"
+	"fmt"
 
 	"charm.land/log/v2"
 	"github.com/glebarez/sqlite"
-	"github.com/spf13/viper"
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
-
-func SQLConnection() *sql.DB {
-	db, err := DB.DB()
+func SQLConnection(gormDB *gorm.DB) *sql.DB {
+	db, err := gormDB.DB()
 	if err != nil {
 		log.Fatal("failed to get database connection", "error", err)
 	}
@@ -21,30 +19,38 @@ func SQLConnection() *sql.DB {
 	return db
 }
 
-func Init(automigrate bool) {
-	sqlConnectionString := viper.GetString("db-connection")
-
-	var err error
-
-	DB, err = gorm.Open(sqlite.Open(sqlConnectionString), &gorm.Config{})
-	if err != nil {
-		log.Fatal("failed to connect database", "error", err)
-	}
-
-	if automigrate {
-		log.Debug("Auto-migrating database")
-		migrateDB()
-	}
+type DBConfig struct {
+	ConnectionString string `mapstructure:"connection-string"`
+	AutoMigrate      bool   `mapstructure:"auto-migrate"`
 }
+
+func Connect(config DBConfig, logger *log.Logger) (*gorm.DB, error) {
+	db, err := gorm.Open(sqlite.Open(config.ConnectionString), &gorm.Config{}) //nolint:exhaustruct_v5
+	if err != nil {
+		return nil, fmt.Errorf("connect to database: %w", err)
+	}
+
+	if config.AutoMigrate {
+		logger.Debug("Auto-migrating database")
+
+		err := migrateDB(db)
+		if err != nil {
+			return nil, fmt.Errorf("migrate database: %w", err)
+		}
+	}
+
+	return db, nil
+}
+
 func GetMigrationsDir() string {
-	viper.SetDefault("migrations-dir", "./sql/migrations")
-
-	return viper.GetString("migrations-dir")
+	return "./sql/migrations"
 }
 
-func migrateDB() {
-	err := migration.Up(SQLConnection(), GetMigrationsDir())
+func migrateDB(gormDB *gorm.DB) error {
+	err := migration.Up(SQLConnection(gormDB), GetMigrationsDir())
 	if err != nil {
-		log.Fatal("failed to migrate database", "error", err)
+		return fmt.Errorf("up migration: %w", err)
 	}
+
+	return nil
 }

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"electrotech"
 	"electrotech/internal/models"
-	"electrotech/storage"
 	"fmt"
 	"net/http"
 	"time"
@@ -12,6 +11,7 @@ import (
 	"charm.land/log/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"gorm.io/gorm"
 
 	_ "embed"
 	tmpl "html/template"
@@ -24,12 +24,14 @@ type EmailService interface {
 type ContactUsHandler struct {
 	emailService EmailService
 	logger       *log.Logger
+	db           *gorm.DB
 }
 
-func NewContactUsHandler(emailService EmailService, logger *log.Logger) *ContactUsHandler {
+func NewContactUsHandler(emailService EmailService, logger *log.Logger, db *gorm.DB) *ContactUsHandler {
 	return &ContactUsHandler{
 		emailService: emailService,
 		logger:       logger,
+		db:           db,
 	}
 }
 
@@ -77,7 +79,7 @@ func (h *ContactUsHandler) HandleContactUs() gin.HandlerFunc {
 			request.Name, request.Email, request.Phone, request.Message, ip,
 		)
 
-		err := storage.DB.Create(&dbRequest).Error
+		err := h.db.Create(&dbRequest).Error
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, electrotech.Error(err))
 			log.Error("Failed create request", "error", err)
@@ -129,7 +131,7 @@ func (h *ContactUsHandler) checkRecentRequest(ip string) bool {
 
 	dateAfter := time.Now().Add(-GetRequestTimeout())
 
-	err := storage.DB.
+	err := h.db.
 		Model(new(models.UserQuestion)).
 		Where("client_ip = ?", ip).
 		Where("DATETIME(creation_date) > DATETIME(?)", dateAfter).

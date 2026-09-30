@@ -1,2 +1,10 @@
 contact-us.request-timeout = "10s"
 catalog.data-dir = "./example"
+
+[auth]
+secret = "234897593847690837456098734q89secret"
+refresh-token-ttl = '48h'
+token-ttl = '2h'
+
+[db]
+automigrate = true

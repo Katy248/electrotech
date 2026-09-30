@@ -34,7 +34,7 @@ func NewFTPServer() (*FTPServer, error) {
 		Password string
 		PublicIP string
 	}
-
+	// TODO: move config from here
 	conf.Port = viper.GetInt("ftp.port")
 	conf.Username = viper.GetString("ftp.username")
 	conf.Password = viper.GetString("ftp.password")
@@ -70,6 +70,7 @@ func NewFTPServer() (*FTPServer, error) {
 
 	usr := os.Getenv("USER")
 
+	//nolint:exhaustruct_v5
 	srv, err := ftp.NewServer(&ftp.Options{
 		Driver: driver,
 		Port:   conf.Port,

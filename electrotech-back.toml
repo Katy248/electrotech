@@ -2,7 +2,8 @@ gin-mode = "release"
 contact-us.request-timeout = "6m"
 
 [auth]
-secret = "234897593847690837456098734q89secret"
+refresh-token-ttl = '48h'
+token-ttl = '2h'
 
 [email]
 sender-name = "shop-icentr.pro"

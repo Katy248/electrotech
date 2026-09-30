@@ -14,7 +14,7 @@ type Order struct {
 }
 
 func NewOrder() *Order {
-	return &Order{
+	return &Order{ //nolint:exhaustruct_v5
 		CreationDate: time.Now(),
 	}
 }
@@ -48,9 +48,13 @@ func (o *Order) SetUser(u *User) error {
 }
 
 // AddProduct adds a product to the order.
-//
-// TODO: Checking duplicates.
 func (o *Order) AddProduct(op OrderProduct) {
+	for _, p := range o.OrderProducts {
+		if p.ProductID == op.ProductID {
+			return
+		}
+	}
+
 	op.OrderID = o.ID
 	op.Order = *o
 	o.OrderProducts = append(o.OrderProducts, &op)

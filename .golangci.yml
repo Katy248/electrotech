@@ -8,14 +8,6 @@ linters:
     - gomodguard
     - exhaustruct
 
-    # temporary
-    - gochecknoglobals
-    - tagliatelle
-    - godox
-    - funlen
-    - exhaustruct_v5
-    - cyclop
-
     # own style
     - depguard
     - revive
@@ -25,3 +17,4 @@ linters:
     - musttag
     - testpackage
     - forbidigo
+    - tagliatelle

@@ -18,7 +18,7 @@ type GetProductResponse struct {
 	Product models.Product `binding:"required" json:"product"`
 }
 
-func GetProduct(repo *catalog.Repo) gin.HandlerFunc {
+func (h *Handler) HandleGetProduct() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var request GetProductRequest
 		if err := ctx.ShouldBindUri(&request); err != nil {
@@ -27,7 +27,7 @@ func GetProduct(repo *catalog.Repo) gin.HandlerFunc {
 			return
 		}
 
-		product, err := repo.GetProduct(request.ID)
+		product, err := h.repo.GetProduct(request.ID)
 		if err != nil {
 			if errors.Is(err, catalog.ErrNotFound) {
 				ctx.AbortWithStatusJSON(http.StatusNotFound, electrotech.Error(err))

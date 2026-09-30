@@ -3,11 +3,9 @@ package auth
 import (
 	"electrotech"
 	"electrotech/internal/models"
-	"electrotech/internal/repository/users"
 	"net/http"
 	"strings"
 
-	"charm.land/log/v2"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,7 +18,7 @@ type RegisterRequest struct {
 	PhoneNumber string `binding:"required"       json:"phone_number"`
 }
 
-func RegisterHandler() gin.HandlerFunc {
+func (h *Handler) RegisterHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req RegisterRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -32,9 +30,9 @@ func RegisterHandler() gin.HandlerFunc {
 		req.Email = strings.ToLower(req.Email)
 
 		// Проверяем, существует ли пользователь с таким email
-		existingUser, err := users.ByEmail(req.Email)
+		existingUser, err := h.usersRepo.ByEmail(req.Email)
 		if err == nil && existingUser.Email != "" {
-			log.Error("Attempt to create user with email already taken", "email", req.Email)
+			h.logger.Error("Attempt to create user with email already taken", "email", req.Email)
 			c.JSON(http.StatusConflict, electrotech.Error(err))
 
 			return
@@ -42,7 +40,7 @@ func RegisterHandler() gin.HandlerFunc {
 
 		phone, err := electrotech.FormatPhoneNumber(req.PhoneNumber)
 		if err != nil {
-			log.Errorf("Error formatting phone number (is is probably invalid): %v", err)
+			h.logger.Errorf("Error formatting phone number (is is probably invalid): %v", err)
 			c.JSON(http.StatusBadRequest, electrotech.Error(err))
 
 			return
@@ -56,16 +54,16 @@ func RegisterHandler() gin.HandlerFunc {
 			PhoneNumber: phone,
 		}
 		if err := user.SetPassword(req.Password); err != nil {
-			log.Error("Failed set (hash) user password")
+			h.logger.Error("Failed set (hash) user password")
 			c.JSON(http.StatusInternalServerError, electrotech.ErrorStr("failed set password"))
 
 			return
 		}
 
 		// Создаем нового пользователя
-		err = users.InsertNew(user)
+		err = h.usersRepo.InsertNew(user)
 		if err != nil {
-			log.Errorf("Error creating user: %v", err)
+			h.logger.Errorf("Error creating user: %v", err)
 			c.JSON(http.StatusInternalServerError, electrotech.Error(err))
 
 			return

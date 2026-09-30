@@ -4,11 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 
-	logger "charm.land/log/v2"
+	"charm.land/log/v2"
 	migrate "github.com/rubenv/sql-migrate"
 )
-
-var log = logger.Default().WithPrefix("migration")
 
 func Up(db *sql.DB, migrationsDir string) error {
 	source := migrate.FileMigrationSource{

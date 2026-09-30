@@ -2,7 +2,6 @@ package user
 
 import (
 	"electrotech"
-	"electrotech/internal/repository/users"
 	"net/http"
 
 	"charm.land/log/v2"
@@ -15,15 +14,15 @@ func (h *Handler) HandleChangePassword() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req ChangePasswordRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			log.Printf("Error binding request: %v", err)
+			h.logger.Printf("Error binding request: %v", err)
 			c.JSON(http.StatusBadRequest, electrotech.Error(err))
 
 			return
 		}
 
-		user, err := users.ByEmail(c.GetString("email"))
+		user, err := h.usersRepo.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
-			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
+			h.logger.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, electrotech.ErrorStr("invalid credentials"))
 
 			return
@@ -31,7 +30,7 @@ func (h *Handler) HandleChangePassword() gin.HandlerFunc {
 
 		err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.OldPassword))
 		if err != nil {
-			log.Printf("Error comparing password: %v", err)
+			h.logger.Printf("Error comparing password: %v", err)
 			c.JSON(http.StatusUnauthorized, electrotech.Error(err))
 
 			return
@@ -39,15 +38,15 @@ func (h *Handler) HandleChangePassword() gin.HandlerFunc {
 
 		err = user.SetPassword(req.NewPassword)
 		if err != nil {
-			log.Error("Error hashing password", "error", err, "password", req.NewPassword)
+			h.logger.Error("Error hashing password", "error", err, "password", req.NewPassword)
 			c.JSON(http.StatusInternalServerError, electrotech.ErrorStr("failed to hash password"))
 
 			return
 		}
 
-		err = users.Update(user)
+		err = h.usersRepo.Update(user)
 		if err != nil {
-			log.Printf("Error updating password: %v", err)
+			h.logger.Error("Error updating password", "error", err)
 			c.JSON(http.StatusInternalServerError, electrotech.ErrorStr("failed to update password"))
 
 			return
@@ -61,15 +60,15 @@ func (h *Handler) HandleChangeEmail() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req ChangeEmailRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
-			log.Printf("Error binding request: %v", err)
+			h.logger.Error("Error binding request", "error", err)
 			c.JSON(http.StatusBadRequest, electrotech.Error(err))
 
 			return
 		}
 
-		user, err := users.ByEmail(c.GetString("email"))
+		user, err := h.usersRepo.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
-			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
+			h.logger.Error("Error getting user by email", "error", err, "email", c.GetString("email"))
 			c.JSON(http.StatusUnauthorized, electrotech.ErrorStr("invalid credentials"))
 
 			return
@@ -77,9 +76,9 @@ func (h *Handler) HandleChangeEmail() gin.HandlerFunc {
 
 		user.Email = req.Email
 
-		err = users.Update(user)
+		err = h.usersRepo.Update(user)
 		if err != nil {
-			log.Error("Error updating email", "error", err, "new-email", req.Email)
+			h.logger.Error("Error updating email", "error", err, "new-email", req.Email)
 			c.JSON(http.StatusInternalServerError, electrotech.ErrorStr("failed to update email"))
 
 			return
@@ -99,9 +98,9 @@ func (h *Handler) HandleChangePhoneNumber() gin.HandlerFunc {
 			return
 		}
 
-		user, err := users.ByEmail(c.GetString("email"))
+		user, err := h.usersRepo.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
-			log.Error("Error getting user by email '%s': %v", c.GetString("email"), err)
+			h.logger.Error("Error getting user by email", "error", err, "email", c.GetString("email"))
 			c.JSON(http.StatusUnauthorized, electrotech.ErrorStr("invalid credentials"))
 
 			return
@@ -109,7 +108,7 @@ func (h *Handler) HandleChangePhoneNumber() gin.HandlerFunc {
 
 		phone, err := electrotech.FormatPhoneNumber(req.PhoneNumber)
 		if err != nil {
-			log.Error("Error formatting phone number: %v", err)
+			h.logger.Error("Error formatting phone number", "error", err)
 			c.JSON(http.StatusBadRequest, electrotech.Error(err))
 
 			return
@@ -117,9 +116,9 @@ func (h *Handler) HandleChangePhoneNumber() gin.HandlerFunc {
 
 		user.PhoneNumber = phone
 
-		err = users.Update(user)
+		err = h.usersRepo.Update(user)
 		if err != nil {
-			log.Printf("Error updating phone number: %v", err)
+			h.logger.Error("Error updating phone number", "error", err)
 			c.JSON(http.StatusInternalServerError, electrotech.ErrorStr("failed to update phone number"))
 
 			return
@@ -138,9 +137,9 @@ func (h *Handler) HandleUpdateUserData() gin.HandlerFunc {
 			return
 		}
 
-		user, err := users.ByEmail(c.GetString("email"))
+		user, err := h.usersRepo.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
-			log.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
+			h.logger.Error("Error getting user by email", "error", err, "email", c.GetString("email"))
 			c.JSON(http.StatusUnauthorized, electrotech.ErrorStr("invalid credentials"))
 
 			return
@@ -150,9 +149,9 @@ func (h *Handler) HandleUpdateUserData() gin.HandlerFunc {
 		user.LastName = req.LastName
 		user.Surname = req.Surname
 
-		err = users.Update(user)
+		err = h.usersRepo.Update(user)
 		if err != nil {
-			log.Printf("Error updating user data: %v", err)
+			h.logger.Error("Error updating user data", "error", err)
 			c.JSON(http.StatusInternalServerError, electrotech.ErrorStr("failed to update user data"))
 
 			return
@@ -164,9 +163,9 @@ func (h *Handler) HandleUpdateUserData() gin.HandlerFunc {
 
 func (h *Handler) HandleGetData() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user, err := users.ByEmail(c.GetString("email"))
+		user, err := h.usersRepo.ByEmail(c.GetString("email"))
 		if err != nil || user.Email == "" {
-			log.Error("Error getting user by email '%s': %v", c.GetString("email"), err)
+			h.logger.Error("Error getting user by email", "error", err, "email", c.GetString("email"))
 			c.JSON(http.StatusUnauthorized, electrotech.ErrorStr("invalid credentials"))
 
 			return

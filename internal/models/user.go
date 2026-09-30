@@ -40,7 +40,7 @@ func (u *User) CheckPassword(password string) bool {
 }
 
 func (u *User) CompanyData() *CompanyData {
-	data := &CompanyData{
+	data := &CompanyData{ //nolint:exhaustruct_v5
 		Name:     strValueOrEmpty(u.CompanyName),
 		INN:      strValueOrEmpty(u.CompanyInn),
 		Address:  strValueOrEmpty(u.CompanyAddress),

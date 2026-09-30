@@ -5,7 +5,6 @@ import (
 	"context"
 	"electrotech/internal/config"
 	"electrotech/internal/email"
-	"electrotech/internal/repository/catalog"
 	"electrotech/internal/server"
 	"fmt"
 	"os"
@@ -16,28 +15,23 @@ import (
 
 func NewApp() *fx.App {
 	app := fx.New(
+		fx.Provide(newDB),
 		fx.Provide(newCatalogRepo),
+		fx.Provide(newOrdersRepo),
+		fx.Provide(newUsersRepo),
+
 		fx.Provide(newEmailService),
 		fx.Provide(newConfig),
 		fx.Provide(newServer),
 		fx.Provide(newLogger),
 		provideHandlers(),
 
-		ftpModule(ftpEnabled),
+		ftpModule(),
 
 		fx.Invoke(func(_ *server.HTTPServer) {}),
 	)
 
 	return app
-}
-
-func newCatalogRepo(conf *config.Config) (*catalog.Repo, error) {
-	repo, err := catalog.New(&conf.Catalog)
-	if err != nil {
-		return nil, fmt.Errorf("new catalog repository: %w", err)
-	}
-
-	return repo, nil
 }
 
 func newLogger() *log.Logger {
@@ -50,10 +44,8 @@ func newLogger() *log.Logger {
 	return logger
 }
 
-var ftpEnabled = false
-
-func ftpModule(enabled bool) fx.Option {
-	if !enabled {
+func ftpModule() fx.Option {
+	if os.Getenv("FTP_ENABLED") == "" {
 		return fx.Module("ftp")
 	}
 

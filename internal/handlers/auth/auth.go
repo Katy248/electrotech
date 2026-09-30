@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -8,35 +9,38 @@ import (
 	"charm.land/log/v2"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 )
 
 const StrongSecretMinLength = 20
 
-func getSecretKey() string {
-	jwtSecret := viper.GetString("jwt-secret")
+var ErrSecretNotSet = errors.New("auth secret is not set")
+
+func (h *Handler) getSecretKey() (string, error) {
+	jwtSecret := h.config.Secret
 	if jwtSecret == "" {
-		log.Fatal("jwt-secret isn't set")
+		h.logger.Error("auth secret isn't set")
+
+		return "", ErrSecretNotSet
 	}
 
 	if len(jwtSecret) < StrongSecretMinLength {
-		log.Warn("jwt-secret is less than 20 characters, this must be security issue")
+		h.logger.Warn("auth secret is less than 20 characters, this must be security issue")
 	}
 
-	return jwtSecret
+	return jwtSecret, nil
 }
 
 const (
-	// TokenTTL - token time to live.
-	//
-	// TODO: make configurable.
-	TokenTTL        = time.Hour * 2
-	RefreshTokenTTL = time.Hour * 48 // TODO: make configurable
-	TokenIssuer     = "electrotech-back"
+	TokenIssuer = "electrotech-back"
 )
 
-func getKey() []byte {
-	return []byte(getSecretKey())
+func (h *Handler) getKey() []byte {
+	secret, err := h.getSecretKey()
+	if err != nil {
+		return nil
+	}
+
+	return []byte(secret)
 }
 
 type Claims struct {
@@ -46,7 +50,7 @@ type Claims struct {
 	Id    int64  `json:"user_id"`
 }
 
-func AuthMiddleware() gin.HandlerFunc {
+func (h *Handler) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" {
@@ -55,7 +59,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		claims, err := ValidateToken(tokenString)
+		claims, err := h.ValidateToken(tokenString)
 		if err != nil {
 			log.Error("Failed to validate token", "error", err)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
@@ -69,13 +73,13 @@ func AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-func GenerateToken(email string, userID int64) (string, error) {
-	expirationTime := time.Now().Add(TokenTTL)
+func (h *Handler) GenerateToken(email string, userID int64) (string, error) {
+	expirationTime := time.Now().Add(h.config.TokenTTL)
 
 	claims := &Claims{
 		Email: email,
 		Id:    userID,
-		StandardClaims: jwt.StandardClaims{
+		StandardClaims: jwt.StandardClaims{ //nolint:exhaustruct_v5
 			IssuedAt:  time.Now().Unix(),
 			ExpiresAt: expirationTime.Unix(),
 			Issuer:    TokenIssuer,
@@ -84,7 +88,7 @@ func GenerateToken(email string, userID int64) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString, err := token.SignedString(getKey())
+	tokenString, err := token.SignedString(h.getKey())
 	if err != nil {
 		return "", fmt.Errorf("sign token string: %w", err)
 	}
@@ -92,22 +96,22 @@ func GenerateToken(email string, userID int64) (string, error) {
 	return tokenString, nil
 }
 
-func GenerateRefreshToken(userID int64) (string, error) {
-	expirationTime := time.Now().Add(RefreshTokenTTL)
+func (h *Handler) GenerateRefreshToken(userID int64) (string, error) {
+	expirationTime := time.Now().Add(h.config.RefreshTokenTTL)
 
-	claims := &Claims{
+	claims := &Claims{ //nolint:exhaustruct_v5
 		Id: userID,
-		StandardClaims: jwt.StandardClaims{
+		StandardClaims: jwt.StandardClaims{ //nolint:exhaustruct_v5
 			IssuedAt:  time.Now().Unix(),
 			ExpiresAt: expirationTime.Unix(),
 			Issuer:    TokenIssuer,
-			NotBefore: time.Now().Add(TokenTTL).Unix(),
+			NotBefore: time.Now().Add(h.config.TokenTTL).Unix(),
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString, err := token.SignedString(getKey())
+	tokenString, err := token.SignedString(h.getKey())
 	if err != nil {
 		return "", fmt.Errorf("sign token string: %w", err)
 	}
@@ -115,11 +119,11 @@ func GenerateRefreshToken(userID int64) (string, error) {
 	return tokenString, nil
 }
 
-func ValidateToken(tokenString string) (*Claims, error) {
-	claims := &Claims{}
+func (h *Handler) ValidateToken(tokenString string) (*Claims, error) {
+	var claims Claims
 
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (any, error) {
-		return getKey(), nil
+	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (any, error) {
+		return h.getKey(), nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("parsing failed: %w", err)
@@ -133,5 +137,5 @@ func ValidateToken(tokenString string) (*Claims, error) {
 		return nil, fmt.Errorf("claims invalid: %w", err)
 	}
 
-	return claims, nil
+	return &claims, nil
 }
