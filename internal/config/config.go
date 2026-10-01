@@ -16,15 +16,15 @@ import (
 )
 
 type Config struct {
-	Devel     bool             `mapstructure:"devel"`
-	GinMode   string           `mapstructure:"gin-mode"`
-	Port      int              `mapstructure:"port"`
-	JWTSecret string           `mapstructure:"jwt-secret"`
-	Email     EmailConfig      `mapstructure:"mail"`
-	Catalog   catalog.Config   `mapstructure:"catalog"`
-	Auth      AuthConfig       `mapstructure:"auth"`
-	DB        storage.DBConfig `mapstructure:"db"`
-	FTP       ftp.Config       `mapstructure:"ftp"`
+	Devel     bool           `mapstructure:"devel"`
+	GinMode   string         `mapstructure:"gin-mode"`
+	Port      int            `mapstructure:"port"`
+	JWTSecret string         `mapstructure:"jwt-secret"`
+	Email     EmailConfig    `mapstructure:"mail"`
+	Catalog   catalog.Config `mapstructure:"catalog"`
+	Auth      AuthConfig     `mapstructure:"auth"`
+	DB        storage.Config `mapstructure:"db"`
+	FTP       ftp.Config     `mapstructure:"ftp"`
 }
 
 type AuthConfig struct {

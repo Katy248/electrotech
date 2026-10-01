@@ -19,12 +19,12 @@ func SQLConnection(gormDB *gorm.DB) *sql.DB {
 	return db
 }
 
-type DBConfig struct {
+type Config struct {
 	ConnectionString string `mapstructure:"connection-string"`
 	AutoMigrate      bool   `mapstructure:"auto-migrate"`
 }
 
-func Connect(config DBConfig, logger *log.Logger) (*gorm.DB, error) {
+func Connect(config Config, logger *log.Logger) (*gorm.DB, error) {
 	db, err := gorm.Open(sqlite.Open(config.ConnectionString), &gorm.Config{}) //nolint:exhaustruct_v5
 	if err != nil {
 		return nil, fmt.Errorf("connect to database: %w", err)
