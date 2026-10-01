@@ -23,7 +23,7 @@ type Products struct {
 func (r *Repo) GetProductsNew(p Page, filters ...FilterFunc) (*Products, error) {
 	products, err := r.parser.GetProducts()
 	if err != nil {
-		return nil, fmt.Errorf("failed get products: %w", err)
+		return nil, fmt.Errorf("get products from parser: %w", err)
 	}
 
 	var filtered []models.Product

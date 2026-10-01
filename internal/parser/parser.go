@@ -53,12 +53,12 @@ func fileExists(filename string) bool {
 
 func (p *Parser) GetProducts() ([]models.Product, error) {
 	if err := p.parse(); err != nil {
-		return nil, fmt.Errorf("failed parse xml data: %w", err)
+		return nil, fmt.Errorf("parse xml data: %w", err)
 	}
 
 	products, err := mapProducts(p.offers, p.imports)
 	if err != nil {
-		return nil, fmt.Errorf("failed map xml data: %w", err)
+		return nil, fmt.Errorf("map xml data: %w", err)
 	}
 
 	return products, nil
@@ -67,7 +67,7 @@ func (p *Parser) parse() error {
 	if p.imports == nil {
 		imp, err := p.parseImports()
 		if err != nil {
-			return fmt.Errorf("failed parse imports: %w", err)
+			return fmt.Errorf("parse imports: %w", err)
 		}
 
 		p.imports = imp
@@ -76,7 +76,7 @@ func (p *Parser) parse() error {
 	if p.offers == nil {
 		off, err := p.parseOffers()
 		if err != nil {
-			return fmt.Errorf("failed parse offers: %w", err)
+			return fmt.Errorf("parse offers: %w", err)
 		}
 
 		p.offers = off
