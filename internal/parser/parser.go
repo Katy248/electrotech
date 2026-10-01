@@ -36,11 +36,11 @@ func NewParser(directory string) (*Parser, error) {
 }
 
 func getOffersFilepath(dir string) string {
-	return dir + "/offers.xml"
+	return path.Join(dir, "offers.xml")
 }
 
 func getImportsFilepath(dir string) string {
-	return dir + "/import.xml"
+	return path.Join(dir, "import.xml")
 }
 
 func fileExists(filename string) bool {
