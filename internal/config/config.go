@@ -2,6 +2,7 @@ package config
 
 import (
 	"electrotech/internal/repository/catalog"
+	"electrotech/internal/server/ftp"
 	"electrotech/storage"
 	"fmt"
 	"net/smtp"
@@ -23,6 +24,7 @@ type Config struct {
 	Catalog   catalog.Config   `mapstructure:"catalog"`
 	Auth      AuthConfig       `mapstructure:"auth"`
 	DB        storage.DBConfig `mapstructure:"db"`
+	FTP       ftp.Config       `mapstructure:"ftp"`
 }
 
 type AuthConfig struct {
