@@ -1,4 +1,11 @@
 FROM golang:latest AS builder
+
+ENV GOPROXY=https://goproxy.cn,direct \
+    GOSUMDB=sum.golang.org \
+    GOMODCACHE=/go/pkg/mod \
+    GOCACHE=/root/.cache/go-build
+
+
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod go mod download
