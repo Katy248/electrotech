@@ -31,7 +31,7 @@ func Connect(config Config, logger *log.Logger) (*gorm.DB, error) {
 	}
 
 	if config.AutoMigrate {
-		logger.Debug("Auto-migrating database")
+		logger.Info("Auto-migrating database")
 
 		err := migrateDB(db)
 		if err != nil {

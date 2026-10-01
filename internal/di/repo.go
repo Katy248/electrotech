@@ -9,14 +9,27 @@ import (
 	"fmt"
 
 	"charm.land/log/v2"
+	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
 
-func newDB(conf *config.Config, logger *log.Logger) (*gorm.DB, error) {
+func newDB(lc fx.Lifecycle, conf *config.Config, logger *log.Logger) (*gorm.DB, error) {
 	db, err := storage.Connect(conf.DB, logger)
 	if err != nil {
 		return nil, fmt.Errorf("connect to database: %w", err)
 	}
+
+	lc.Append(fx.StopHook(func() {
+		db, err := db.DB()
+		if err != nil {
+			logger.Error("failed to close database: %w", err)
+		}
+
+		err = db.Close()
+		if err != nil {
+			logger.Error("failed to close database: %w", err)
+		}
+	}))
 
 	return db, nil
 }
