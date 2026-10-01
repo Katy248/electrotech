@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-
-	"charm.land/log/v2"
 )
 
 type Parser struct {
@@ -34,6 +32,11 @@ func NewParser(directory string) (*Parser, error) {
 
 	return &Parser{dir: directory}, nil //nolint:exhaustruct_v5
 }
+
+const (
+	importsFilepath = "import.xml"
+	offersFilepath  = "offers.xml"
+)
 
 func getOffersFilepath(dir string) string {
 	return path.Join(dir, offersFilepath)
@@ -90,17 +93,7 @@ const RootDir = "."
 func getDataFromFile(filepath string) ([]byte, error) {
 	filepath = path.Clean(filepath)
 
-	root, err := os.OpenRoot(RootDir)
-	if err != nil {
-		return nil, fmt.Errorf("open root %q: %w", RootDir, err)
-	}
-	defer func() {
-		if err := root.Close(); err != nil {
-			log.Error("Failed close root dir", "dir", RootDir, "error", err)
-		}
-	}()
-
-	data, err := root.ReadFile(filepath)
+	data, err := os.ReadFile(path.Clean(filepath))
 	if err != nil {
 		return nil, fmt.Errorf("read file %q: %w", filepath, err)
 	}
@@ -108,13 +101,8 @@ func getDataFromFile(filepath string) ([]byte, error) {
 	return data, nil
 }
 
-const (
-	importsFilepath = "import.xml"
-	offersFilepath  = "offers.xml"
-)
-
 func (p *Parser) parseImports() (*importsModel, error) {
-	data, err := getDataFromFile(importsFilepath)
+	data, err := getDataFromFile(getImportsFilepath(p.dir))
 	if err != nil {
 		return nil, fmt.Errorf("get data from file: %w", err)
 	}
@@ -123,7 +111,7 @@ func (p *Parser) parseImports() (*importsModel, error) {
 }
 
 func (p *Parser) parseOffers() (*offersModel, error) {
-	data, err := getDataFromFile(offersFilepath)
+	data, err := getDataFromFile(getOffersFilepath(p.dir))
 	if err != nil {
 		return nil, fmt.Errorf("get data from file: %w", err)
 	}
