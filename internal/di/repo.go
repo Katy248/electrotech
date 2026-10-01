@@ -19,16 +19,18 @@ func newDB(lc fx.Lifecycle, conf *config.Config, logger *log.Logger) (*gorm.DB, 
 		return nil, fmt.Errorf("connect to database: %w", err)
 	}
 
-	lc.Append(fx.StopHook(func() {
+	lc.Append(fx.StopHook(func() error {
 		db, err := db.DB()
 		if err != nil {
-			logger.Error("failed to close database: %w", err)
+			return fmt.Errorf("failed to close database: %w", err)
 		}
 
 		err = db.Close()
 		if err != nil {
-			logger.Error("failed to close database: %w", err)
+			return fmt.Errorf("failed to close database: %w", err)
 		}
+
+		return nil
 	}))
 
 	return db, nil
