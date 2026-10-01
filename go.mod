@@ -3,9 +3,8 @@ module electrotech
 go 1.25.8
 
 require (
+	charm.land/log/v2 v2.0.1
 	github.com/aymerick/douceur v0.2.0
-	github.com/charmbracelet/lipgloss v1.1.0
-	github.com/charmbracelet/log v0.4.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.10.1
@@ -15,6 +14,7 @@ require (
 	github.com/katy248/gravatar v0.2.0
 	github.com/rubenv/sql-migrate v1.8.0
 	github.com/spf13/viper v1.21.0
+	go.uber.org/fx v1.24.0
 	goftp.io/server/v2 v2.0.2
 	golang.org/x/crypto v0.40.0
 	gorm.io/gorm v1.31.1
@@ -22,16 +22,13 @@ require (
 
 require (
 	charm.land/lipgloss/v2 v2.0.5 // indirect
-	charm.land/log/v2 v2.0.1 // indirect
 	github.com/PuerkitoBio/goquery v1.10.3 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
-	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bytedance/sonic v1.13.3 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/charmbracelet/colorprofile v0.4.3 // indirect
 	github.com/charmbracelet/ultraviolet v0.0.0-20251205161215-1948445e3318 // indirect
 	github.com/charmbracelet/x/ansi v0.11.7 // indirect
-	github.com/charmbracelet/x/cellbuf v0.0.13-0.20250311204145-2c3ea96c31dd // indirect
 	github.com/charmbracelet/x/term v0.2.2 // indirect
 	github.com/charmbracelet/x/termios v0.1.1 // indirect
 	github.com/charmbracelet/x/windows v0.2.2 // indirect
@@ -63,7 +60,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
-	github.com/muesli/termenv v0.16.0 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
@@ -78,7 +74,6 @@ require (
 	github.com/ugorji/go/codec v1.3.0 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	go.uber.org/dig v1.19.0 // indirect
-	go.uber.org/fx v1.24.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
