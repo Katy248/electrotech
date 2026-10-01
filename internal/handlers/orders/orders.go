@@ -4,8 +4,6 @@ import (
 	"context"
 	"electrotech"
 	"electrotech/internal/models"
-	"electrotech/internal/repository/catalog"
-	"electrotech/internal/repository/orders"
 	"fmt"
 	"net/http"
 
@@ -21,18 +19,27 @@ type UserRepository interface {
 	ByID(ctx context.Context, id int64) (*models.User, error)
 }
 
+type OrderRepository interface {
+	New(ctx context.Context, user *models.User, products []models.OrderProduct) (*models.Order, error)
+	GetOrders(ctx context.Context, userID int64) ([]*models.Order, error)
+}
+
+type CatalogRepository interface {
+	GetProduct(id string) (models.Product, error)
+}
+
 type Handler struct {
 	logger       *log.Logger
-	catalogRepo  *catalog.Repo
-	ordersRepo   *orders.Repo
+	catalogRepo  CatalogRepository
+	ordersRepo   OrderRepository
 	usersRepo    UserRepository
 	EmailService EmailService
 }
 
 func NewHandler(
 	logger *log.Logger,
-	catalogRepo *catalog.Repo,
-	ordersRepo *orders.Repo,
+	catalogRepo CatalogRepository,
+	ordersRepo OrderRepository,
 	usersRepo UserRepository,
 	emailService EmailService,
 ) *Handler {
@@ -96,7 +103,7 @@ func (h *Handler) HandleCreateOrder() gin.HandlerFunc {
 			return
 		}
 
-		order, err := h.ordersRepo.New(user, products)
+		order, err := h.ordersRepo.New(c.Request.Context(), user, products)
 		if err != nil {
 			h.logger.Error("Failed creating order", "error", err)
 			c.JSON(http.StatusInternalServerError, electrotech.ErrorStr("failed to create order"))
@@ -130,7 +137,7 @@ func (h *Handler) HandleGetUserOrders() gin.HandlerFunc {
 			return
 		}
 
-		orders, err := h.ordersRepo.GetOrders(intUserID)
+		orders, err := h.ordersRepo.GetOrders(c.Request.Context(), intUserID)
 		if err != nil {
 			h.logger.Error("Failed getting user orders", "error", err, "userID", userID)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get orders"})

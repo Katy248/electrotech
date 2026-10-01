@@ -39,7 +39,7 @@ func (h *Handler) HandleGetProducts() gin.HandlerFunc {
 			return
 		}
 
-		products, err := h.repo.GetProducts(
+		products, err := h.repo.GetProductsNew(
 			catalog.Page(page),
 		)
 		if err != nil {
@@ -50,7 +50,7 @@ func (h *Handler) HandleGetProducts() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, gin.H{
-			"products": products,
+			"products": products.Products,
 		})
 	}
 }

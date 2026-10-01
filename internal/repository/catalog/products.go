@@ -13,44 +13,6 @@ var (
 
 const PageSize = 20
 
-// Deprecated: Use [Repo.GetProductsNew] instead.
-func (r *Repo) GetProducts(p Page, filters ...FilterFunc) ([]models.Product, error) {
-	products, err := r.parser.GetProducts()
-	if err != nil {
-		return nil, fmt.Errorf("failed get products: %w", err)
-	}
-
-	var filtered []models.Product
-
-	for _, p := range products {
-		ok := true
-
-		for _, f := range filters {
-			if !f(p) {
-				ok = false
-
-				break
-			}
-		}
-
-		if ok {
-			filtered = append(filtered, p)
-		}
-	}
-
-	if len(filtered) == 0 {
-		return nil, nil
-	}
-
-	if int(p*PageSize) > len(filtered) {
-		return nil, nil
-	} else {
-		filtered = filtered[int(p*PageSize):]
-	}
-
-	return takeFirst(filtered, PageSize), nil
-}
-
 type Products struct {
 	Products []models.Product
 	Page     int
