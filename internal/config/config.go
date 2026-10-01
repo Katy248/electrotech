@@ -142,6 +142,7 @@ func unmarshalConfig(viper *viper.Viper) *Config {
 		DB: storage.Config{
 			ConnectionString: viper.GetString("db.connection-string"),
 			AutoMigrate:      viper.GetBool("db.auto-migrate"),
+			MigrationsDir:    viper.GetString("db.migrations-dir"),
 		},
 		FTP: ftp.Config{
 			Port:     viper.GetInt("ftp.port"),
