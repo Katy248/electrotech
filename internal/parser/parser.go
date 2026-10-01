@@ -40,7 +40,7 @@ func getOffersFilepath(dir string) string {
 }
 
 func getImportsFilepath(dir string) string {
-	return path.Join(dir, "import.xml")
+	return "import.xml"
 }
 
 func fileExists(filename string) bool {
@@ -108,17 +108,22 @@ func getDataFromFile(filepath string) ([]byte, error) {
 	return data, nil
 }
 
+const (
+	importsFilepath = "import.xml"
+	offersFilepath  = "offers.xml"
+)
+
 func (p *Parser) parseImports() (*importsModel, error) {
-	data, err := getDataFromFile(getImportsFilepath(p.dir))
+	data, err := getDataFromFile(importsFilepath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get data from file: %w", err)
 	}
 
 	return parseImportsData(data)
 }
 
 func (p *Parser) parseOffers() (*offersModel, error) {
-	data, err := getDataFromFile(getOffersFilepath(p.dir))
+	data, err := getDataFromFile(offersFilepath)
 	if err != nil {
 		return nil, err
 	}
