@@ -30,7 +30,7 @@ func (h *Handler) RegisterHandler() gin.HandlerFunc {
 		req.Email = strings.ToLower(req.Email)
 
 		// Проверяем, существует ли пользователь с таким email
-		existingUser, err := h.usersRepo.ByEmail(req.Email)
+		existingUser, err := h.usersRepo.ByEmail(c.Request.Context(), req.Email)
 		if err == nil && existingUser.Email != "" {
 			h.logger.Error("Attempt to create user with email already taken", "email", req.Email)
 			c.JSON(http.StatusConflict, electrotech.Error(err))
@@ -61,7 +61,7 @@ func (h *Handler) RegisterHandler() gin.HandlerFunc {
 		}
 
 		// Создаем нового пользователя
-		err = h.usersRepo.InsertNew(user)
+		err = h.usersRepo.InsertNew(c.Request.Context(), user)
 		if err != nil {
 			h.logger.Errorf("Error creating user: %v", err)
 			c.JSON(http.StatusInternalServerError, electrotech.Error(err))

@@ -1,11 +1,11 @@
 package orders
 
 import (
+	"context"
 	"electrotech"
 	"electrotech/internal/models"
 	"electrotech/internal/repository/catalog"
 	"electrotech/internal/repository/orders"
-	"electrotech/internal/repository/users"
 	"fmt"
 	"net/http"
 
@@ -17,11 +17,15 @@ type EmailService interface {
 	SendInfo(content []byte, subject string) error
 }
 
+type UserRepository interface {
+	ByID(ctx context.Context, id int64) (*models.User, error)
+}
+
 type Handler struct {
 	logger       *log.Logger
 	catalogRepo  *catalog.Repo
 	ordersRepo   *orders.Repo
-	usersRepo    *users.Repo
+	usersRepo    UserRepository
 	EmailService EmailService
 }
 
@@ -29,7 +33,7 @@ func NewHandler(
 	logger *log.Logger,
 	catalogRepo *catalog.Repo,
 	ordersRepo *orders.Repo,
-	usersRepo *users.Repo,
+	usersRepo UserRepository,
 	emailService EmailService,
 ) *Handler {
 	return &Handler{
@@ -76,7 +80,7 @@ func (h *Handler) HandleCreateOrder() gin.HandlerFunc {
 			return
 		}
 
-		user, err := h.usersRepo.ByID(intUserID)
+		user, err := h.usersRepo.ByID(c.Request.Context(), intUserID)
 		if err != nil {
 			h.logger.Error("User not found", "error", err)
 			c.JSON(http.StatusNotFound, electrotech.ErrorStr("user not found"))

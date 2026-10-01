@@ -32,7 +32,7 @@ func (h *Handler) LoginHandler() gin.HandlerFunc {
 			return
 		}
 
-		user, err := h.usersRepo.ByEmail(req.Email)
+		user, err := h.usersRepo.ByEmail(c.Request.Context(), req.Email)
 		if err != nil || user.Email == "" {
 			h.logger.Errorf("Error getting user by email '%s': %v", req.Email, err)
 			c.JSON(http.StatusUnauthorized, electrotech.ErrorStr("invalid credentials"))
@@ -80,7 +80,7 @@ func (h *Handler) Refresh() gin.HandlerFunc {
 			return
 		}
 
-		user, err := h.usersRepo.ByID(claimsUser.Id)
+		user, err := h.usersRepo.ByID(c.Request.Context(), claimsUser.Id)
 		if err != nil {
 			h.logger.Errorf("Error getting user by id '%d': %v", claimsUser.Id, err)
 			c.JSON(http.StatusUnauthorized, electrotech.Error(err))

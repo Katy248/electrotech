@@ -24,7 +24,7 @@ func (h *Handler) HandleUpdateCompanyData() gin.HandlerFunc {
 			return
 		}
 
-		user, err := h.usersRepo.ByEmail(c.GetString("email"))
+		user, err := h.usersRepo.ByEmail(c.Request.Context(), c.GetString("email"))
 		if err != nil || user.Email == "" {
 			h.logger.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, electrotech.ErrorStr("invalid credentials"))
@@ -38,7 +38,7 @@ func (h *Handler) HandleUpdateCompanyData() gin.HandlerFunc {
 		user.PositionInCompany = &req.PositionInCompany
 		user.CompanyOkpo = &req.CompanyOKPO
 
-		err = h.usersRepo.Update(user)
+		err = h.usersRepo.Update(c.Request.Context(), user)
 		if err != nil {
 			h.logger.Printf("Error updating company data: %v", err)
 			c.JSON(http.StatusInternalServerError, electrotech.ErrorStr("failed to update company data"))
@@ -52,7 +52,7 @@ func (h *Handler) HandleUpdateCompanyData() gin.HandlerFunc {
 
 func (h *Handler) HandleGetCompanyData() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user, err := h.usersRepo.ByEmail(c.GetString("email"))
+		user, err := h.usersRepo.ByEmail(c.Request.Context(), c.GetString("email"))
 		if err != nil || user.Email == "" {
 			h.logger.Printf("Error getting user by email '%s': %v", c.GetString("email"), err)
 			c.JSON(http.StatusUnauthorized, electrotech.ErrorStr("invalid credentials"))
