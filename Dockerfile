@@ -1,7 +1,7 @@
 FROM golang:latest AS builder
 WORKDIR /app
 COPY go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
 COPY . .
 ENV GOCACHE=/root/.cache/go-build
 ENV CGO_ENABLED=0
