@@ -36,11 +36,11 @@ func NewParser(directory string) (*Parser, error) {
 }
 
 func getOffersFilepath(dir string) string {
-	return path.Join(dir, "offers.xml")
+	return path.Join(dir, offersFilepath)
 }
 
 func getImportsFilepath(dir string) string {
-	return "import.xml"
+	return path.Join(dir, importsFilepath)
 }
 
 func fileExists(filename string) bool {
@@ -125,7 +125,7 @@ func (p *Parser) parseImports() (*importsModel, error) {
 func (p *Parser) parseOffers() (*offersModel, error) {
 	data, err := getDataFromFile(offersFilepath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get data from file: %w", err)
 	}
 
 	return parseOffersData(data)
