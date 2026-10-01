@@ -36,6 +36,7 @@ func newServer(
 ) *server.HTTPServer {
 	srv := server.NewHTTPServer(
 		config,
+		logger,
 		catalogRepo,
 		contactHandler,
 		ordersHandler,

@@ -16,15 +16,14 @@ import (
 )
 
 type Config struct {
-	Devel     bool           `mapstructure:"devel"`
-	GinMode   string         `mapstructure:"gin-mode"`
-	Port      int            `mapstructure:"port"`
-	JWTSecret string         `mapstructure:"jwt-secret"`
-	Email     EmailConfig    `mapstructure:"mail"`
-	Catalog   catalog.Config `mapstructure:"catalog"`
-	Auth      AuthConfig     `mapstructure:"auth"`
-	DB        storage.Config `mapstructure:"db"`
-	FTP       ftp.Config     `mapstructure:"ftp"`
+	Devel   bool           `mapstructure:"devel"`
+	GinMode string         `mapstructure:"gin-mode"`
+	Port    int            `mapstructure:"port"`
+	Email   EmailConfig    `mapstructure:"mail"`
+	Catalog catalog.Config `mapstructure:"catalog"`
+	Auth    AuthConfig     `mapstructure:"auth"`
+	DB      storage.Config `mapstructure:"db"`
+	FTP     ftp.Config     `mapstructure:"ftp"`
 }
 
 type AuthConfig struct {
@@ -82,14 +81,16 @@ func New(logger *log.Logger) (*Config, error) {
 		viper.SetConfigName("electrotech-back")
 	}
 
+	viper.SetEnvPrefix("EL")
 	viper.SetEnvKeyReplacer(
 		strings.NewReplacer("-", "_", ".", "_"),
 	)
+	viper.AutomaticEnv()
+
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("/app")
 	viper.AddConfigPath("/etc")
 	viper.AddConfigPath("/etc/electrotech")
-	viper.AutomaticEnv()
 
 	// Default configurations
 	viper.SetDefault("data-dir", "/data")
@@ -99,14 +100,54 @@ func New(logger *log.Logger) (*Config, error) {
 		logger.Warn("Failed read config file", "error", err)
 	}
 
-	log.SetReportCaller(true)
+	setDefaults(viper.GetViper())
 
-	var config Config
+	config := unmarshalConfig(viper.GetViper())
 
-	err = viper.Unmarshal(&config)
-	if err != nil {
-		return nil, fmt.Errorf("unmarshal config: %w", err)
+	return config, nil
+}
+
+const (
+	DefaultHTTPPort = 8080
+	DefaultFTPPort  = 8021
+)
+
+func setDefaults(viper *viper.Viper) {
+	viper.SetDefault("port", DefaultHTTPPort)
+	viper.SetDefault("ftp.port", DefaultFTPPort)
+}
+
+func unmarshalConfig(viper *viper.Viper) *Config {
+	return &Config{
+		Devel:   viper.GetBool("devel"),
+		GinMode: viper.GetString("gin-mode"),
+		Port:    viper.GetInt("port"),
+		Email: EmailConfig{
+			Host:             viper.GetString("mail.host"),
+			Port:             viper.GetInt("mail.port"),
+			User:             viper.GetString("mail.user"),
+			Password:         viper.GetString("mail.password"),
+			Enabled:          viper.GetBool("mail.enabled"),
+			InfoSender:       viper.GetString("mail.info-sender"),
+			InfoReceiverConf: viper.GetString("mail.info-receiver"),
+		},
+		Catalog: catalog.Config{
+			DataDir: viper.GetString("catalog.data-dir"),
+		},
+		Auth: AuthConfig{
+			Secret:          viper.GetString("auth.secret"),
+			TokenTTL:        viper.GetDuration("auth.token-ttl"),
+			RefreshTokenTTL: viper.GetDuration("auth.refresh-token-ttl"),
+		},
+		DB: storage.Config{
+			ConnectionString: viper.GetString("db.connection-string"),
+			AutoMigrate:      viper.GetBool("db.auto-migrate"),
+		},
+		FTP: ftp.Config{
+			Port:     viper.GetInt("ftp.port"),
+			Username: viper.GetString("ftp.username"),
+			Password: viper.GetString("ftp.password"),
+			PublicIP: viper.GetString("ftp.public-ip"),
+		},
 	}
-
-	return &config, nil
 }

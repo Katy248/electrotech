@@ -34,6 +34,7 @@ func NewApp() *fx.App {
 
 func newLogger() *log.Logger {
 	logger := log.New(os.Stderr)
+	logger.SetReportCaller(true)
 
 	if os.Getenv("DEVEL") != "" {
 		logger.SetLevel(log.DebugLevel)

@@ -12,4 +12,3 @@ sender-email = "noreply@shop-icentr.pro"
 
 [ftp]
 enable = true
-port = 8021

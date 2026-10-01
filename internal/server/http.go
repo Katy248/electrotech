@@ -21,10 +21,12 @@ const DefaultHTTPPort = 8080
 type HTTPServer struct {
 	engine *gin.Engine
 	port   int
+	logger *log.Logger
 }
 
 func NewHTTPServer(
 	config *config.Config,
+	logger *log.Logger,
 	catalogRepo *catalog.Repo,
 	contactHandler *contact.ContactUsHandler,
 	ordersHandler *orders.Handler,
@@ -76,16 +78,16 @@ func NewHTTPServer(
 		}
 	}
 
-	return &HTTPServer{engine: server, port: config.Port}
+	return &HTTPServer{engine: server, port: config.Port, logger: logger}
 }
 
 func (s *HTTPServer) Run() error {
 	host := fmt.Sprintf(":%d", s.getPort())
-	log.Info("Starting server", "host", host)
+	s.logger.Info("Starting server", "host", host)
 
 	err := s.engine.Run(host)
 	if err != nil {
-		log.Error("Failed run server", "error", err)
+		s.logger.Error("Failed run server", "error", err)
 
 		return fmt.Errorf("run HTTP server: %w", err)
 	}
@@ -96,7 +98,7 @@ func (s *HTTPServer) Run() error {
 func (s *HTTPServer) getPort() int {
 	var port = s.port
 	if port <= 0 {
-		log.Warn("port value is invalid, fallback to default", "default", DefaultHTTPPort)
+		s.logger.Warn("port value is invalid, fallback to default", "default", DefaultHTTPPort)
 		port = DefaultHTTPPort
 	}
 
