@@ -19,7 +19,7 @@ func FormatPhoneNumber(phone string) (string, error) {
 
 	if len(phone) < PhoneNumberMinLength {
 		return "", fmt.Errorf(
-			"%w: probably invalid phone number, length is less than 11 (%d)",
+			"%w: length is less than 11 (%d)",
 			ErrPhoneNumberInvalid,
 			len(phone),
 		)
