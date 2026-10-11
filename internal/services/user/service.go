@@ -6,6 +6,7 @@ import (
 	"electrotech/internal/config"
 	"electrotech/internal/models"
 	"electrotech/pkg/problem"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -28,12 +29,17 @@ func New(
 	logger *log.Logger,
 	repo UserRepository,
 	config *config.AuthConfig,
-) *Service {
-	return &Service{
+) (*Service, error) {
+	service := &Service{
 		logger: logger,
 		repo:   repo,
 		config: config,
 	}
+	if _, err := service.getSecretKey(); err != nil {
+		return nil, fmt.Errorf("bad secret key specified: %w", err)
+	}
+
+	return service, nil
 }
 
 var (
@@ -71,6 +77,8 @@ var (
 	)
 	errInsertNewUser = errInternal.Extend("/", http.StatusInternalServerError, "internal server error").
 				WithDetails("insert user")
+
+	errInvalidToken = errAuth.Extend("/invalid-token", http.StatusUnauthorized, "invalid refresh token")
 )
 
 func (s *Service) Login(ctx context.Context, email, password string) (*models.AuthResponse, error) {
@@ -135,4 +143,29 @@ func (s *Service) Register(ctx context.Context, req *models.RegisterRequest) err
 	}
 
 	return nil
+}
+
+func (s *Service) Refresh(ctx context.Context, token string) (*models.AuthResponse, error) {
+	claimsUser, err := s.ValidateToken(token)
+	if err != nil {
+		s.logger.Error("Invalid refresh token", "error", err)
+
+		return nil, errInvalidToken.WithError(err)
+	}
+
+	user, err := s.repo.ByID(ctx, claimsUser.Id)
+	if err != nil {
+		s.logger.Error("Error getting user by id", "userID", claimsUser.Id, "error", err)
+
+		return nil, errInvalidToken.WithDetails("no such user").WithError(err)
+	}
+
+	response, err := s.newAuthResponse(user)
+	if err != nil {
+		s.logger.Error("Error generating auth response", "error", err)
+
+		return nil, errCreateAuthResponse
+	}
+
+	return response, nil
 }

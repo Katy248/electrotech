@@ -14,17 +14,10 @@ const (
 	StrongSecretMinLength = 20
 )
 
-type Claims struct {
-	jwt.StandardClaims
-
-	Email string `json:"email"`
-	Id    int64  `json:"user_id"`
-}
-
 func (s *Service) GenerateToken(email string, userID int64) (string, error) {
 	expirationTime := time.Now().Add(s.config.TokenTTL)
 
-	claims := &Claims{
+	claims := &models.Claims{
 		Email: email,
 		Id:    userID,
 		StandardClaims: jwt.StandardClaims{ //nolint:exhaustruct_v5
@@ -46,7 +39,7 @@ func (s *Service) GenerateToken(email string, userID int64) (string, error) {
 func (s *Service) GenerateRefreshToken(userID int64) (string, error) {
 	expirationTime := time.Now().Add(s.config.RefreshTokenTTL)
 
-	claims := &Claims{ //nolint:exhaustruct_v5
+	claims := &models.Claims{ //nolint:exhaustruct_v5
 		Id: userID,
 		StandardClaims: jwt.StandardClaims{ //nolint:exhaustruct_v5
 			IssuedAt:  time.Now().Unix(),
@@ -112,4 +105,25 @@ func (s *Service) newAuthResponse(user *models.User) (*models.AuthResponse, erro
 		LastName:     user.LastName,
 		PhoneNumber:  user.PhoneNumber,
 	}, nil
+}
+
+func (s *Service) ValidateToken(tokenString string) (*models.Claims, error) {
+	var claims models.Claims
+
+	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (any, error) {
+		return s.getKey(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("parsing failed: %w", err)
+	}
+
+	if !token.Valid {
+		return nil, fmt.Errorf("token invalid: %w", jwt.ErrSignatureInvalid)
+	}
+
+	if err := claims.Valid(); err != nil {
+		return nil, fmt.Errorf("claims invalid: %w", err)
+	}
+
+	return &claims, nil
 }
