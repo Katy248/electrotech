@@ -1,12 +1,13 @@
 package electrotech
 
-type ErrorResponse struct {
-	ErrorMessage string `json:"error"`
-}
+import (
+	"electrotech/pkg/problem"
+	"net/http"
+)
 
-func Error(err error) ErrorResponse {
-	return ErrorResponse{ErrorMessage: err.Error()}
+func Error(err error) *problem.ProblemError {
+	return problem.NewFrom(err, "err:electrotech/internal", http.StatusInternalServerError, err.Error())
 }
-func ErrorStr(err string) ErrorResponse {
-	return ErrorResponse{ErrorMessage: err}
+func ErrorStr(err string) *problem.ProblemError {
+	return problem.New("err:electrotech/internal", http.StatusInternalServerError, err)
 }

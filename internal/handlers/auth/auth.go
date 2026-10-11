@@ -3,7 +3,6 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"time"
 
 	"charm.land/log/v2"
@@ -54,7 +53,7 @@ func (h *Handler) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "authorization header required"})
+			c.AbortWithStatusJSON(errNoHeader.Status, errNoHeader)
 
 			return
 		}
@@ -62,7 +61,7 @@ func (h *Handler) AuthMiddleware() gin.HandlerFunc {
 		claims, err := h.ValidateToken(tokenString)
 		if err != nil {
 			log.Error("Failed to validate token", "error", err)
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+			c.AbortWithStatusJSON(errInvalidToken.Status, errInvalidToken)
 
 			return
 		}
