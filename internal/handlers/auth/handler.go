@@ -15,17 +15,27 @@ type UserRepository interface {
 	InsertNew(ctx context.Context, user *models.User) error
 }
 
+type UserService interface {
+	Login(ctx context.Context, email, password string) (*models.AuthResponse, error)
+	Register(ctx context.Context, request *models.RegisterRequest) error
+}
+
 type Handler struct {
 	logger    *log.Logger
 	config    *config.AuthConfig
 	usersRepo UserRepository
+	service   UserService
 }
 
-func NewHandler(logger *log.Logger, config *config.AuthConfig, usersRepo UserRepository) (*Handler, error) {
+func NewHandler(
+	logger *log.Logger, config *config.AuthConfig, usersRepo UserRepository,
+	service UserService,
+) (*Handler, error) {
 	handler := &Handler{
 		logger:    logger,
 		config:    config,
 		usersRepo: usersRepo,
+		service:   service,
 	}
 
 	if _, err := handler.getSecretKey(); err != nil {

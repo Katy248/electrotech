@@ -8,7 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var ErrInternal = problem.New("err:electrotech/internal", http.StatusInternalServerError, "internal server error")
+var ErrInternal = problem.New(
+	"err:electrotech/internal/unknown",
+	http.StatusInternalServerError,
+	"unknown internal server error",
+)
 
 func SendError(ctx *gin.Context, err error) {
 	if p, isProblem := errors.AsType[*problem.ProblemError](err); isProblem {

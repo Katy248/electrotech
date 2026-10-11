@@ -18,6 +18,8 @@ func NewApp() *fx.App {
 		fx.Provide(newOrdersRepo),
 		fx.Provide(newUsersRepo),
 
+		fx.Provide(newUserService),
+
 		fx.Provide(newEmailService),
 		fx.Provide(newConfig),
 		fx.Provide(newServer),

@@ -3,6 +3,7 @@ package problem
 import (
 	"errors"
 	"fmt"
+	"path"
 )
 
 var _ error = (*ProblemError)(nil)
@@ -67,7 +68,7 @@ func (p *ProblemError) WithError(err error) *ProblemError {
 func (p *ProblemError) Extend(t string, status int, title string) *ProblemError {
 	newErr := newFromExisting(p)
 
-	newErr.Type += t
+	newErr.Type = path.Join(newErr.Type, t)
 	newErr.Status = status
 	newErr.Title = title
 

@@ -17,6 +17,8 @@ import (
 	"electrotech/internal/server"
 	"fmt"
 
+	userS "electrotech/internal/services/user"
+
 	"charm.land/log/v2"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
@@ -87,8 +89,13 @@ func newUserHandler(logger *log.Logger, usersRepo *users.Repo) *user.Handler {
 	return user.NewHandler(logger, usersRepo)
 }
 
-func newAuthHandler(logger *log.Logger, config *config.Config, usersRepo *users.Repo) (*auth.Handler, error) {
-	h, err := auth.NewHandler(logger, &config.Auth, usersRepo)
+func newAuthHandler(
+	logger *log.Logger,
+	config *config.Config,
+	usersRepo *users.Repo,
+	userService *userS.Service,
+) (*auth.Handler, error) {
+	h, err := auth.NewHandler(logger, &config.Auth, usersRepo, userService)
 	if err != nil {
 		return nil, fmt.Errorf("new auth handler: %w", err)
 	}

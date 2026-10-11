@@ -1,0 +1,138 @@
+package user
+
+import (
+	"context"
+	"electrotech"
+	"electrotech/internal/config"
+	"electrotech/internal/models"
+	"electrotech/pkg/problem"
+	"net/http"
+	"strings"
+
+	"charm.land/log/v2"
+)
+
+type UserRepository interface {
+	ByID(ctx context.Context, id int64) (*models.User, error)
+	ByEmail(ctx context.Context, email string) (*models.User, error)
+	InsertNew(ctx context.Context, user *models.User) error
+}
+
+type Service struct {
+	logger *log.Logger
+	repo   UserRepository
+	config *config.AuthConfig
+}
+
+func New(
+	logger *log.Logger,
+	repo UserRepository,
+	config *config.AuthConfig,
+) *Service {
+	return &Service{
+		logger: logger,
+		repo:   repo,
+		config: config,
+	}
+}
+
+var (
+	errAuth = problem.New(
+		"err:electrotech/auth", http.StatusUnauthorized, "auth error")
+	errInternal = problem.New(
+		"err:electrotech/internal",
+		http.StatusInternalServerError,
+		"internal server error",
+	)
+	errInvalidCredentials = errAuth.Extend(
+		"/invalid-credentials",
+		http.StatusUnauthorized,
+		"invalid credentials",
+	)
+	errEmailTaken = errAuth.Extend(
+		"/email-taken",
+		http.StatusConflict,
+		"email already taken",
+	)
+	errCreateAuthResponse = errInternal.Extend(
+		"/",
+		http.StatusInternalServerError,
+		"internal server error",
+	).WithDetails("creating auth response")
+	errHashPassword = errInternal.Extend(
+		"/",
+		http.StatusInternalServerError,
+		"internal server error",
+	).WithDetails("hash user password")
+	errFormatPhone = errAuth.Extend(
+		"/phone",
+		http.StatusBadRequest,
+		"phone number format invalid",
+	)
+	errInsertNewUser = errInternal.Extend("/", http.StatusInternalServerError, "internal server error").
+				WithDetails("insert user")
+)
+
+func (s *Service) Login(ctx context.Context, email, password string) (*models.AuthResponse, error) {
+	user, err := s.repo.ByEmail(ctx, email)
+	if err != nil || user.Email == "" {
+		s.logger.Error("Failed get user", "user", email, "error", err)
+
+		return nil, errInvalidCredentials.WithError(err)
+	}
+
+	if !user.CheckPassword(password) {
+		s.logger.Error("Password doesn't match", "user", email)
+
+		return nil, errInvalidCredentials
+	}
+
+	r, err := s.newAuthResponse(user)
+	if err != nil {
+		return nil, errCreateAuthResponse.WithError(err)
+	}
+
+	return r, nil
+}
+
+func (s *Service) Register(ctx context.Context, req *models.RegisterRequest) error {
+	phone, err := electrotech.FormatPhoneNumber(req.PhoneNumber)
+	if err != nil {
+		s.logger.Error("Error formatting phone number (probably number invalid)", "phone", req.PhoneNumber, "error", err)
+
+		return errFormatPhone.WithError(err).WithDetails(err.Error())
+	}
+
+	req.Email = strings.ToLower(req.Email)
+
+	// Проверяем, существует ли пользователь с таким email
+	existingUser, err := s.repo.ByEmail(ctx, req.Email)
+	if err == nil && existingUser.Email != "" {
+		s.logger.Error("Attempt to create user with email already taken", "email", req.Email)
+
+		return errEmailTaken.WithError(err)
+	}
+
+	user := &models.User{ //nolint:exhaustruct_v5
+		Email:       req.Email,
+		FirstName:   req.FirstName,
+		Surname:     req.Surname,
+		LastName:    req.LastName,
+		PhoneNumber: phone,
+	}
+	if err := user.SetPassword(req.Password); err != nil {
+		s.logger.Error("Failed set (hash) user password")
+
+		return errHashPassword.WithError(err)
+	}
+
+	// Создаем нового пользователя
+	err = s.repo.InsertNew(ctx, user)
+	if err != nil {
+		s.logger.Errorf("Error creating user: %v", err)
+
+		return errInsertNewUser.WithError(err)
+	}
+
+	return nil
+}
