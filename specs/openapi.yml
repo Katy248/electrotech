@@ -1,0 +1,118 @@
+openapi: "3.2.1"
+
+info:
+  title: "Electrotech Backend"
+  summary: "Specification for Electrotech shop backend API"
+  version: "2.0.0"
+  contact:
+    name: "Anton Petrov"
+    email: "petrovanton247@gmail.com"
+
+servers:
+  - url: https://shop-icentr.pro
+    description: "Production server"
+
+tags:
+  - name: "meta"
+    description: "Meta endpoints for checking service"
+  - name: "orders"
+    description: "Managing user orders"
+
+paths:
+  "/api/health":
+    get:
+      tags: ["meta"]
+      description: "Returns service health status"
+      operationId: GetHealth
+      responses:
+        "200":
+          $ref: "#/components/responses/HealthResponse"
+        "502":
+          $ref: "#/components/responses/HealthResponse"
+  "/api/orders/get":
+    get:
+      tags: ["orders"]
+      operationId: "GetOrders"
+      responses:
+        "200":
+          $ref: "#/components/responses/GetOrdersResponse"
+  # "/api/orders/create":
+  #   post:
+  #     tags: ["orders"]
+
+components:
+  schemas:
+    HealthStatus:
+      type: string
+      enum:
+        - ok
+        - unavailable
+    Health:
+      type: object
+      required: [status, dependencies]
+      properties:
+        status:
+          $ref: "#/components/schemas/HealthStatus"
+        dependencies:
+          type: object
+          required: ["db"]
+          properties:
+            db:
+              $ref: "#/components/schemas/HealthStatus"
+    OrderProduct:
+      type: object
+      required: ["id", orderId, productName, quantity, productPrice]
+      properties:
+        id:
+          type: string
+        orderId:
+          type: string
+        productName:
+          type: string
+        quantity:
+          type: number
+          format: int64
+          minimum: 1
+        productPrice:
+          type: number
+          format: float64
+        productId:
+          type: string
+        imagePath:
+          type: string
+
+    Order:
+      type: object
+      required: ["id", "userId", "creationDate", "products"]
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        creationDate:
+          type: string
+        products:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/OrderProduct"
+  requestBodies: {}
+  responses:
+    HealthResponse:
+      description: "Health response containing status of sesrvice and its dependencies"
+      content:
+        "application/json":
+          schema:
+            $ref: "#/components/schemas/Health"
+    GetOrdersResponse:
+      description: "Response with orders list"
+      content:
+        "application/json":
+          schema:
+            type: object
+            properties:
+              orders:
+                type: array
+                minItems: 0
+                items:
+                  $ref: "#/components/schemas/Order"

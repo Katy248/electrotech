@@ -2,6 +2,7 @@ package v2
 
 import (
 	"electrotech"
+	"electrotech/internal/models"
 	"electrotech/internal/repository/catalog"
 	"net/http"
 
@@ -48,12 +49,12 @@ func (h *Handler) HandleGetProducts() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, gin.H{
-			"code":     http.StatusOK,
-			"products": products.Products,
-			"pages":    products.Pages,
-			"total":    products.Total,
-			"page":     products.Page,
+		ctx.JSON(http.StatusOK, Response{
+			Code:     http.StatusOK,
+			Products: products.Products,
+			Pages:    products.Pages,
+			Page:     products.Page,
+			Total:    products.Total,
 		})
 	}
 }
@@ -62,4 +63,12 @@ type Request struct {
 	Page          int    `binding:"gte=0" form:"page"`
 	Query         string `form:"query"`
 	OnlyAvailable bool   `form:"oa"`
+}
+
+type Response struct {
+	Code     int              `json:"code"`
+	Products []models.Product `json:"products"`
+	Pages    int              `json:"pages"`
+	Total    int              `json:"total"`
+	Page     int              `json:"page"`
 }

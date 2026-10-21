@@ -11,6 +11,7 @@ import (
 
 	"charm.land/log/v2"
 	"github.com/aymerick/douceur/inliner"
+	"github.com/dustin/go-humanize"
 )
 
 func (h *Handler) sendEmail(order models.Order) {
@@ -32,12 +33,20 @@ var ErrOrderUserIsNil = errors.New("order user is nil")
 //go:embed email.html
 var EmailTemplate string
 
+const FormatDecimals = 2
+
 func (h *Handler) buildMail(order models.Order) ([]byte, error) {
 	if order.User == nil {
 		return nil, ErrOrderUserIsNil
 	}
 
-	template, err := tmpl.New("new-order-mail").Parse(EmailTemplate)
+	template, err := tmpl.New("new-order-mail").
+		Funcs(tmpl.FuncMap{
+			"humanizeComma": func(value float64) string {
+				return humanize.CommafWithDigits(value, FormatDecimals)
+			},
+		}).
+		Parse(EmailTemplate)
 	if err != nil {
 		h.logger.Error("Failed parsing mail template", "error", err)
 

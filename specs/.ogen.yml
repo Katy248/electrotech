@@ -1,0 +1,9 @@
+generator:
+  ignore_not_implemented: ["all"]
+  features:
+    disable:
+      - paths/client
+      - ogen/otel
+      - ogen/unimplemented
+parser:
+  infer_types: true

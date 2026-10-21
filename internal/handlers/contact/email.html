@@ -2,6 +2,7 @@
 <html lang="ru" xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta charset="UTF-8" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>Новый запрос от пользователя</title>
         <style>
             body {
@@ -51,7 +52,9 @@
             {{ end }}
             <h2>Сообщение</h2>
             <p>{{.Message}}</p>
-            <p>Дата запроса: {{ .CreationDate.Format "2006.01.02 в 15:04:05" }}</p>
+            <p>
+                Дата запроса: {{ .CreationDate.Format "2006.01.02 в 15:04:05" }}
+            </p>
         </main>
     </body>
 </html>

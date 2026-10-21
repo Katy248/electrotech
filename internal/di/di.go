@@ -42,6 +42,8 @@ func newLogger() *log.Logger {
 		logger.SetLevel(log.DebugLevel)
 	}
 
+	log.SetDefault(logger)
+
 	return logger
 }
 

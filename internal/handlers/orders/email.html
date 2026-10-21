@@ -2,6 +2,7 @@
 <html lang="ru" xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta charset="UTF-8" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>Новый заказ</title>
         <style>
             body {
@@ -42,16 +43,22 @@
     </head>
     <body>
         <main>
-            <p class="preview">Поступил новый заказ от <q>{{ .User.CompanyName }}</q> на сумму {{ .Sum | printf "%.2f руб." }}</p>
+            <p class="preview">
+                Поступил новый заказ от <q>{{ .User.CompanyName }}</q> на сумму
+                {{ .Sum | humanizeComma | printf "%s руб." }}
+            </p>
             <h1>Новый заказ № {{ .ID }}</h1>
-            <p>Сумма заказа: {{ .Sum | printf "%.2f руб." }}</p>
-            <p>Дата заказа: {{ .CreationDate.Format "2006.01.02 в 15:04:05" }}</p>
+            <p>Сумма заказа: {{ .Sum | humanizeComma | printf "%s руб." }}</p>
+            <p>
+                Дата заказа: {{ .CreationDate.Format "2006.01.02 в 15:04:05" }}
+            </p>
             <h2>Товары</h2>
             <ul>
                 {{ range .OrderProducts }}
                 <li>
                     <strong>{{ .ProductName }}</strong>
-                    ({{ printf "%.2f" .ProductPrice }} руб.) x {{ .Quantity }} = {{ .Sum | printf "%.2f руб."}}
+                    ({{ humanizeComma .ProductPrice | printf "%s" }} руб.) x {{
+                    .Quantity }} = {{ .Sum | humanizeComma| printf "%s руб."}}
                 </li>
                 {{ end }}
             </ul>
@@ -61,9 +68,19 @@
             <p>ИНН: {{ .User.CompanyInn }}</p>
             <p>ОКПО: {{ .User.CompanyOkpo }}</p>
             <h3>Контакты</h3>
-            <p>{{ .User.Surname }} {{ .User.FirstName }} {{ .User.LastName }} - <em>{{ .User.PositionInCompany}}</em></p>
-            <p>Почта: <a href="mailto:{{ .User.Email }}">{{ .User.Email }}</a></p>
-            <p>Телефон: <a href="tel:{{ .User.PhoneNumber }}">{{ .User.PhoneNumber }}</a></p>
+            <p>
+                {{ .User.Surname }} {{ .User.FirstName }} {{ .User.LastName }} -
+                <em>{{ .User.PositionInCompany}}</em>
+            </p>
+            <p>
+                Почта: <a href="mailto:{{ .User.Email }}">{{ .User.Email }}</a>
+            </p>
+            <p>
+                Телефон:
+                <a href="tel:{{ .User.PhoneNumber }}"
+                    >{{ .User.PhoneNumber }}</a
+                >
+            </p>
         </main>
     </body>
 </html>
