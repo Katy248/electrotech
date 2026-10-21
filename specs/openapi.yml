@@ -21,6 +21,7 @@ tags:
 paths:
   "/api/v3/health":
     get:
+      security: []
       tags: ["meta"]
       description: "Returns service health status"
       operationId: GetHealth
@@ -29,7 +30,7 @@ paths:
           $ref: "#/components/responses/HealthResponse"
         "502":
           $ref: "#/components/responses/HealthResponse"
-  "/api/v3/orders/get":
+  "/api/v3/orders":
     get:
       security:
         - jwtAuth: []
@@ -40,7 +41,6 @@ paths:
           $ref: "#/components/responses/BadResponse"
         "200":
           $ref: "#/components/responses/GetOrdersResponse"
-  "/api/v3/orders/create":
     post:
       security:
         - jwtAuth: []

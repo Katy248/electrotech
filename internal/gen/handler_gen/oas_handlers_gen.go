@@ -30,7 +30,7 @@ func recordError(string, error) {}
 
 // handleCreateOrderRequest handles CreateOrder operation.
 //
-// POST /api/v3/orders/create
+// POST /api/v3/orders
 func (s *Server) handleCreateOrderRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
@@ -165,56 +165,8 @@ func (s *Server) handleGetHealthRequest(args [0]string, argsEscaped bool, w http
 	ctx := r.Context()
 
 	var (
-		err          error
-		opErrContext = ogenerrors.OperationContext{
-			Name: GetHealthOperation,
-			ID:   "GetHealth",
-		}
+		err error
 	)
-	{
-		type bitset = [1]uint8
-		var satisfied bitset
-		{
-			sctx, ok, err := s.securityJwtAuth(ctx, GetHealthOperation, r)
-			if err != nil {
-				err = &ogenerrors.SecurityError{
-					OperationContext: opErrContext,
-					Security:         "JwtAuth",
-					Err:              err,
-				}
-				defer recordError("Security:JwtAuth", err)
-				s.cfg.ErrorHandler(ctx, w, r, err)
-				return
-			}
-			if ok {
-				satisfied[0] |= 1 << 0
-				ctx = sctx
-			}
-		}
-
-		if ok := func() bool {
-		nextRequirement:
-			for _, requirement := range []bitset{
-				{0b00000001},
-			} {
-				for i, mask := range requirement {
-					if satisfied[i]&mask != mask {
-						continue nextRequirement
-					}
-				}
-				return true
-			}
-			return false
-		}(); !ok {
-			err = &ogenerrors.SecurityError{
-				OperationContext: opErrContext,
-				Err:              ogenerrors.ErrSecurityRequirementIsNotSatisfied,
-			}
-			defer recordError("Security", err)
-			s.cfg.ErrorHandler(ctx, w, r, err)
-			return
-		}
-	}
 
 	var rawBody []byte
 
@@ -269,7 +221,7 @@ func (s *Server) handleGetHealthRequest(args [0]string, argsEscaped bool, w http
 
 // handleGetOrdersRequest handles GetOrders operation.
 //
-// GET /api/v3/orders/get
+// GET /api/v3/orders
 func (s *Server) handleGetOrdersRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter

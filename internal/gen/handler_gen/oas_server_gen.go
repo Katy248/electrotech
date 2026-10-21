@@ -10,7 +10,7 @@ import (
 type Handler interface {
 	// CreateOrder implements CreateOrder operation.
 	//
-	// POST /api/v3/orders/create
+	// POST /api/v3/orders
 	CreateOrder(ctx context.Context, req *CreateOrderReq) (CreateOrderRes, error)
 	// GetHealth implements GetHealth operation.
 	//
@@ -20,7 +20,7 @@ type Handler interface {
 	GetHealth(ctx context.Context) (GetHealthRes, error)
 	// GetOrders implements GetOrders operation.
 	//
-	// GET /api/v3/orders/get
+	// GET /api/v3/orders
 	GetOrders(ctx context.Context) (GetOrdersRes, error)
 }
 

@@ -11,14 +11,9 @@ import (
 )
 
 var (
-	rn3AllowedHeaders = map[string]string{
-		"GET": "Authorization",
-	}
 	rn1AllowedHeaders = map[string]string{
+		"GET":  "Authorization",
 		"POST": "Authorization,Content-Type",
-	}
-	rn5AllowedHeaders = map[string]string{
-		"GET": "Authorization",
 	}
 )
 
@@ -88,7 +83,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET",
-							allowedHeaders: rn3AllowedHeaders,
+							allowedHeaders: nil,
 							acceptPost:     "",
 							acceptPatch:    "",
 						})
@@ -97,68 +92,31 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-			case 'o': // Prefix: "orders/"
+			case 'o': // Prefix: "orders"
 
-				if l := len("orders/"); len(elem) >= l && elem[0:l] == "orders/" {
+				if l := len("orders"); len(elem) >= l && elem[0:l] == "orders" {
 					elem = elem[l:]
 				} else {
 					break
 				}
 
 				if len(elem) == 0 {
-					break
-				}
-				switch elem[0] {
-				case 'c': // Prefix: "create"
-
-					if l := len("create"); len(elem) >= l && elem[0:l] == "create" {
-						elem = elem[l:]
-					} else {
-						break
+					// Leaf node.
+					switch r.Method {
+					case "GET":
+						s.handleGetOrdersRequest([0]string{}, elemIsEscaped, w, r)
+					case "POST":
+						s.handleCreateOrderRequest([0]string{}, elemIsEscaped, w, r)
+					default:
+						s.notAllowed(w, r, notAllowedParams{
+							allowedMethods: "GET,POST",
+							allowedHeaders: rn1AllowedHeaders,
+							acceptPost:     "application/json",
+							acceptPatch:    "",
+						})
 					}
 
-					if len(elem) == 0 {
-						// Leaf node.
-						switch r.Method {
-						case "POST":
-							s.handleCreateOrderRequest([0]string{}, elemIsEscaped, w, r)
-						default:
-							s.notAllowed(w, r, notAllowedParams{
-								allowedMethods: "POST",
-								allowedHeaders: rn1AllowedHeaders,
-								acceptPost:     "application/json",
-								acceptPatch:    "",
-							})
-						}
-
-						return
-					}
-
-				case 'g': // Prefix: "get"
-
-					if l := len("get"); len(elem) >= l && elem[0:l] == "get" {
-						elem = elem[l:]
-					} else {
-						break
-					}
-
-					if len(elem) == 0 {
-						// Leaf node.
-						switch r.Method {
-						case "GET":
-							s.handleGetOrdersRequest([0]string{}, elemIsEscaped, w, r)
-						default:
-							s.notAllowed(w, r, notAllowedParams{
-								allowedMethods: "GET",
-								allowedHeaders: rn5AllowedHeaders,
-								acceptPost:     "",
-								acceptPatch:    "",
-							})
-						}
-
-						return
-					}
-
+					return
 				}
 
 			}
@@ -286,68 +244,38 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					}
 				}
 
-			case 'o': // Prefix: "orders/"
+			case 'o': // Prefix: "orders"
 
-				if l := len("orders/"); len(elem) >= l && elem[0:l] == "orders/" {
+				if l := len("orders"); len(elem) >= l && elem[0:l] == "orders" {
 					elem = elem[l:]
 				} else {
 					break
 				}
 
 				if len(elem) == 0 {
-					break
-				}
-				switch elem[0] {
-				case 'c': // Prefix: "create"
-
-					if l := len("create"); len(elem) >= l && elem[0:l] == "create" {
-						elem = elem[l:]
-					} else {
-						break
+					// Leaf node.
+					switch method {
+					case "GET":
+						r.name = GetOrdersOperation
+						r.summary = ""
+						r.operationID = "GetOrders"
+						r.operationGroup = ""
+						r.pathPattern = "/api/v3/orders"
+						r.args = args
+						r.count = 0
+						return r, true
+					case "POST":
+						r.name = CreateOrderOperation
+						r.summary = ""
+						r.operationID = "CreateOrder"
+						r.operationGroup = ""
+						r.pathPattern = "/api/v3/orders"
+						r.args = args
+						r.count = 0
+						return r, true
+					default:
+						return
 					}
-
-					if len(elem) == 0 {
-						// Leaf node.
-						switch method {
-						case "POST":
-							r.name = CreateOrderOperation
-							r.summary = ""
-							r.operationID = "CreateOrder"
-							r.operationGroup = ""
-							r.pathPattern = "/api/v3/orders/create"
-							r.args = args
-							r.count = 0
-							return r, true
-						default:
-							return
-						}
-					}
-
-				case 'g': // Prefix: "get"
-
-					if l := len("get"); len(elem) >= l && elem[0:l] == "get" {
-						elem = elem[l:]
-					} else {
-						break
-					}
-
-					if len(elem) == 0 {
-						// Leaf node.
-						switch method {
-						case "GET":
-							r.name = GetOrdersOperation
-							r.summary = ""
-							r.operationID = "GetOrders"
-							r.operationGroup = ""
-							r.pathPattern = "/api/v3/orders/get"
-							r.args = args
-							r.count = 0
-							return r, true
-						default:
-							return
-						}
-					}
-
 				}
 
 			}

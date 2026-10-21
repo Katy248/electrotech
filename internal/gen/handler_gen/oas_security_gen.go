@@ -35,7 +35,6 @@ func findAuthorization(h http.Header, prefix string) (string, bool) {
 // operationRolesJwtAuth is a private map storing roles per operation.
 var operationRolesJwtAuth = map[string][]string{
 	CreateOrderOperation: []string{},
-	GetHealthOperation:   []string{},
 	GetOrdersOperation:   []string{},
 }
 
