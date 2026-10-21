@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+// OrderItem used to create orders. It passes to order service.
+type OrderItem struct {
+	ProductID string
+	Quantity  int64
+}
+
 type Order struct {
 	ID            int64           `gorm:"primaryKey"   json:"id"`
 	UserID        int64           `json:"userId"`

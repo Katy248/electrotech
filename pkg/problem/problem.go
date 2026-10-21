@@ -23,6 +23,9 @@ func New(t string, status int, title string) *ProblemError {
 		Type:   t,
 		Status: status,
 		Title:  title,
+		Detail: "",
+
+		innerErr: nil,
 	}
 }
 func NewFrom(err error, t string, status int, title string) *ProblemError {
@@ -30,6 +33,7 @@ func NewFrom(err error, t string, status int, title string) *ProblemError {
 		Type:   t,
 		Status: status,
 		Title:  title,
+		Detail: "",
 
 		innerErr: err,
 	}

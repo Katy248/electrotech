@@ -1,4 +1,4 @@
-package orders
+package order
 
 import (
 	"bytes"
@@ -9,23 +9,26 @@ import (
 
 	tmpl "html/template"
 
-	"charm.land/log/v2"
 	"github.com/aymerick/douceur/inliner"
 	"github.com/dustin/go-humanize"
 )
 
-func (h *Handler) sendEmail(order models.Order) {
-	buff, err := h.buildMail(order)
+func (s *Service) sendEmail(order models.Order) {
+	buff, err := s.buildMail(order)
 	if err != nil {
-		h.logger.Error("Failed building mail", "error", err, "buffer", string(buff))
+		s.logger.Error("Failed building mail", "error", err, "buffer", string(buff))
 
 		return
 	}
 
-	err = h.EmailService.SendInfo(buff, fmt.Sprintf("New Order #%d", order.ID))
+	err = s.emailService.SendInfo(buff, fmt.Sprintf("New Order #%d", order.ID))
 	if err != nil {
-		h.logger.Error("Failed send email", "error", err)
+		s.logger.Error("Failed send email", "error", err)
+
+		return
 	}
+
+	s.logger.Info("Email sended")
 }
 
 var ErrOrderUserIsNil = errors.New("order user is nil")
@@ -35,7 +38,7 @@ var EmailTemplate string
 
 const FormatDecimals = 2
 
-func (h *Handler) buildMail(order models.Order) ([]byte, error) {
+func (s *Service) buildMail(order models.Order) ([]byte, error) {
 	if order.User == nil {
 		return nil, ErrOrderUserIsNil
 	}
@@ -48,8 +51,6 @@ func (h *Handler) buildMail(order models.Order) ([]byte, error) {
 		}).
 		Parse(EmailTemplate)
 	if err != nil {
-		h.logger.Error("Failed parsing mail template", "error", err)
-
 		return nil, fmt.Errorf("failed parse template: %w", err)
 	}
 
@@ -57,8 +58,6 @@ func (h *Handler) buildMail(order models.Order) ([]byte, error) {
 
 	err = template.Execute(buff, order)
 	if err != nil {
-		log.Error("Failed executing mail template", "error", err, "order", order)
-
 		return buff.Bytes(), fmt.Errorf("failed execute template: %w", err)
 	}
 

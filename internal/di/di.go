@@ -19,11 +19,14 @@ func NewApp() *fx.App {
 		fx.Provide(newUsersRepo),
 
 		fx.Provide(newUserService),
+		fx.Provide(newOrderService),
 
 		fx.Provide(newEmailService),
 		fx.Provide(newConfig),
 		fx.Provide(newServer),
 		fx.Provide(newLogger),
+		fx.Provide(newHandlers),
+		fx.Provide(newAuthMiddleware),
 		provideHandlers(),
 
 		ftpModule(),

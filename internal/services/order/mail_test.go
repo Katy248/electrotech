@@ -1,4 +1,4 @@
-package orders
+package order
 
 import (
 	"electrotech/internal/models"
@@ -57,7 +57,7 @@ func TestBuildMail(t *testing.T) {
 
 	file, _ := os.Create("test.html")
 
-	handler := &Handler{ //nolint:exhaustruct_v5
+	handler := &Service{ //nolint:exhaustruct_v5
 		logger: log.New(os.Stdout),
 	}
 

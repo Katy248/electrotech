@@ -19,7 +19,7 @@ tags:
     description: "Managing user orders"
 
 paths:
-  "/api/health":
+  "/api/v3/health":
     get:
       tags: ["meta"]
       description: "Returns service health status"
@@ -29,19 +29,52 @@ paths:
           $ref: "#/components/responses/HealthResponse"
         "502":
           $ref: "#/components/responses/HealthResponse"
-  "/api/orders/get":
+  "/api/v3/orders/get":
     get:
+      security:
+        - jwtAuth: []
       tags: ["orders"]
       operationId: "GetOrders"
       responses:
+        default:
+          $ref: "#/components/responses/BadResponse"
         "200":
           $ref: "#/components/responses/GetOrdersResponse"
-  # "/api/orders/create":
-  #   post:
-  #     tags: ["orders"]
-
+  "/api/v3/orders/create":
+    post:
+      security:
+        - jwtAuth: []
+      tags: ["orders"]
+      operationId: "CreateOrder"
+      requestBody:
+        $ref: "#/components/requestBodies/CreateOrderRequest"
+      responses:
+        default:
+          $ref: "#/components/responses/BadResponse"
+        "201":
+          $ref: "#/components/responses/CreateOrderResponse"
+security:
+  - jwtAuth: []
 components:
+  securitySchemes:
+    jwtAuth:
+      type: apiKey
+      in: header
+      name: Authorization
   schemas:
+    Problem:
+      type: object
+      required: [type, status, title]
+      properties:
+        type:
+          type: string
+        status:
+          type: number
+          format: int
+        title:
+          type: string
+        detail:
+          type: string
     HealthStatus:
       type: string
       enum:
@@ -61,12 +94,15 @@ components:
               $ref: "#/components/schemas/HealthStatus"
     OrderProduct:
       type: object
-      required: ["id", orderId, productName, quantity, productPrice]
+      required:
+        [id, orderId, productName, quantity, productPrice, productId, imagePath]
       properties:
         id:
-          type: string
+          type: number
+          format: int64
         orderId:
-          type: string
+          type: number
+          format: int64
         productName:
           type: string
         quantity:
@@ -86,9 +122,11 @@ components:
       required: ["id", "userId", "creationDate", "products"]
       properties:
         id:
-          type: string
+          type: number
+          format: int64
         userId:
-          type: string
+          type: number
+          format: int64
         creationDate:
           type: string
         products:
@@ -96,8 +134,35 @@ components:
           minItems: 1
           items:
             $ref: "#/components/schemas/OrderProduct"
-  requestBodies: {}
+  requestBodies:
+    CreateOrderRequest:
+      required: true
+      content:
+        "application/json":
+          schema:
+            type: object
+            required: [products]
+            properties:
+              products:
+                type: array
+                maxItems: 1
+                items:
+                  type: object
+                  required: [id, quantity]
+                  properties:
+                    id:
+                      type: string
+                    quantity:
+                      type: number
+                      format: int64
+                      minimum: 1
   responses:
+    BadResponse:
+      description: "Default bad response that describes problem"
+      content:
+        "application/json":
+          schema:
+            $ref: "#/components/schemas/Problem"
     HealthResponse:
       description: "Health response containing status of sesrvice and its dependencies"
       content:
@@ -116,3 +181,14 @@ components:
                 minItems: 0
                 items:
                   $ref: "#/components/schemas/Order"
+    CreateOrderResponse:
+      description: "Returns on order created"
+      content:
+        "application/json":
+          schema:
+            type: object
+            required: [orderId]
+            properties:
+              orderId:
+                type: number
+                format: int64

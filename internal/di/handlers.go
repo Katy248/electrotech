@@ -5,18 +5,19 @@ import (
 	"context"
 	"electrotech/internal/config"
 	"electrotech/internal/email"
+	"electrotech/internal/handlers"
 	"electrotech/internal/handlers/auth"
 	catalogHandlers "electrotech/internal/handlers/catalog"
 	v2 "electrotech/internal/handlers/catalog/v2"
 	"electrotech/internal/handlers/contact"
-	"electrotech/internal/handlers/orders"
 	"electrotech/internal/handlers/user"
 	"electrotech/internal/repository/catalog"
-	ordersRepo "electrotech/internal/repository/orders"
+	"electrotech/internal/repository/orders"
 	"electrotech/internal/repository/users"
 	"electrotech/internal/server"
 	"fmt"
 
+	"electrotech/internal/services/order"
 	userS "electrotech/internal/services/user"
 
 	"charm.land/log/v2"
@@ -30,23 +31,28 @@ func newServer(
 	catalogRepo *catalog.Repo,
 	logger *log.Logger,
 	contactHandler *contact.ContactUsHandler,
-	ordersHandler *orders.Handler,
 	userHandler *user.Handler,
 	authHandler *auth.Handler,
 	catalogHandler *catalogHandlers.Handler,
 	catalogV2Handler *v2.Handler,
-) *server.HTTPServer {
-	srv := server.NewHTTPServer(
+	handler *handlers.Handler,
+	middleware *handlers.AuthMiddleware,
+) (*server.HTTPServer, error) {
+	srv, err := server.NewHTTPServer(
 		config,
 		logger,
 		catalogRepo,
 		contactHandler,
-		ordersHandler,
 		userHandler,
 		authHandler,
 		catalogHandler,
 		catalogV2Handler,
+		handler,
+		middleware,
 	)
+	if err != nil {
+		return nil, fmt.Errorf("new HTTP server: %w", err)
+	}
 
 	lc.Append(fx.StartHook(func(ctx context.Context) {
 		go func() {
@@ -57,13 +63,12 @@ func newServer(
 		}()
 	}))
 
-	return srv
+	return srv, nil
 }
 
 func provideHandlers() fx.Option {
 	return fx.Options(
 		fx.Provide(newContactHandler),
-		fx.Provide(newOrdersHandler),
 		fx.Provide(newUserHandler),
 		fx.Provide(newAuthHandler),
 		fx.Provide(newCatalogHandler),
@@ -73,16 +78,6 @@ func provideHandlers() fx.Option {
 
 func newContactHandler(emailService *email.Service, logger *log.Logger, db *gorm.DB) *contact.ContactUsHandler {
 	return contact.NewContactUsHandler(emailService, logger, db)
-}
-
-func newOrdersHandler(
-	logger *log.Logger,
-	emailService *email.Service,
-	catalogRepo *catalog.Repo,
-	ordersRepo *ordersRepo.Repo,
-	usersRepo *users.Repo,
-) *orders.Handler {
-	return orders.NewHandler(logger, catalogRepo, ordersRepo, usersRepo, emailService)
 }
 
 func newUserHandler(logger *log.Logger, usersRepo *users.Repo) *user.Handler {
@@ -109,4 +104,20 @@ func newCatalogHandler(repo *catalog.Repo) *catalogHandlers.Handler {
 
 func newCatalogV2Handler(repo *catalog.Repo) *v2.Handler {
 	return v2.NewHandler(repo)
+}
+
+func newAuthMiddleware(config *config.Config, service *userS.Service) *handlers.AuthMiddleware {
+	return handlers.NewAuthMiddleware(&config.Auth, service)
+}
+
+func newHandlers(
+	logger *log.Logger,
+	db *gorm.DB,
+	userRepo *users.Repo,
+	catalogRepo *catalog.Repo,
+	ordersRepo *orders.Repo,
+	emailService *email.Service,
+	orderService *order.Service,
+) *handlers.Handler {
+	return handlers.New(db, logger, userRepo, catalogRepo, ordersRepo, emailService, orderService)
 }

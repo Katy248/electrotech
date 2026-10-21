@@ -2,11 +2,12 @@ package server
 
 import (
 	"electrotech/internal/config"
+	"electrotech/internal/gen/handler_gen"
+	"electrotech/internal/handlers"
 	"electrotech/internal/handlers/auth"
 	catalogHandlers "electrotech/internal/handlers/catalog"
 	v2 "electrotech/internal/handlers/catalog/v2"
 	"electrotech/internal/handlers/contact"
-	"electrotech/internal/handlers/orders"
 	"electrotech/internal/handlers/user"
 	"electrotech/internal/repository/catalog"
 	"fmt"
@@ -29,12 +30,13 @@ func NewHTTPServer(
 	logger *log.Logger,
 	catalogRepo *catalog.Repo,
 	contactHandler *contact.ContactUsHandler,
-	ordersHandler *orders.Handler,
 	userHandler *user.Handler,
 	authHandler *auth.Handler,
 	catalogHandler *catalogHandlers.Handler,
 	catalogV2Handler *v2.Handler,
-) *HTTPServer {
+	handle *handlers.Handler,
+	middleware *handlers.AuthMiddleware,
+) (*HTTPServer, error) {
 	gin.SetMode(config.GinMode)
 
 	server := gin.Default()
@@ -60,12 +62,6 @@ func NewHTTPServer(
 			authGroup.POST("/refresh", authHandler.Refresh())
 		}
 		{
-			ordersGroup := api.Group("/orders")
-			ordersGroup.Use(authHandler.AuthMiddleware())
-			ordersGroup.POST("/create", ordersHandler.HandleCreateOrder())
-			ordersGroup.GET("/get", ordersHandler.HandleGetUserOrders())
-		}
-		{
 			usersGroup := api.Group("/user")
 			usersGroup.Use(authHandler.AuthMiddleware())
 			usersGroup.POST("/change-password", userHandler.HandleChangePassword())
@@ -78,7 +74,14 @@ func NewHTTPServer(
 		}
 	}
 
-	return &HTTPServer{engine: server, port: config.Port, logger: logger}
+	srv, err := handler_gen.NewServer(handle, middleware)
+	if err != nil {
+		return nil, fmt.Errorf("new server for handler: %w", err)
+	}
+
+	server.Any("/api/v3/*path", gin.WrapH(srv))
+
+	return &HTTPServer{engine: server, port: config.Port, logger: logger}, nil
 }
 
 func (s *HTTPServer) Run() error {
