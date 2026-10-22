@@ -22,6 +22,26 @@ type Handler interface {
 	//
 	// GET /api/v3/orders
 	GetOrders(ctx context.Context) (GetOrdersRes, error)
+	// GetUser implements GetUser operation.
+	//
+	// GET /api/v3/user
+	GetUser(ctx context.Context) (GetUserRes, error)
+	// UpdateUser implements UpdateUser operation.
+	//
+	// PATCH /api/v3/user
+	UpdateUser(ctx context.Context, req *UpdateUserReq) (UpdateUserRes, error)
+	// UpdateUserEmail implements UpdateUserEmail operation.
+	//
+	// POST /api/v3/user/email
+	UpdateUserEmail(ctx context.Context, req *UpdateUserEmailReq) (UpdateUserEmailRes, error)
+	// UpdateUserPassword implements UpdateUserPassword operation.
+	//
+	// POST /api/v3/user/password
+	UpdateUserPassword(ctx context.Context, req *UpdateUserPasswordReq) (UpdateUserPasswordRes, error)
+	// UpdateUserPhone implements UpdateUserPhone operation.
+	//
+	// POST /api/v3/user/phone
+	UpdateUserPhone(ctx context.Context, req *UpdateUserPhoneReq) (UpdateUserPhoneRes, error)
 }
 
 // Server implements http server based on OpenAPI v3 specification and

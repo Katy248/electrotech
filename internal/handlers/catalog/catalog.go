@@ -40,6 +40,7 @@ func (h *Handler) HandleGetProducts() gin.HandlerFunc {
 		}
 
 		products, err := h.repo.GetProductsNew(
+			ctx.Request.Context(),
 			catalog.Page(page),
 		)
 		if err != nil {

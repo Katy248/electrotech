@@ -8,3 +8,4 @@ token-ttl = '2h'
 
 [db]
 automigrate = true
+connection-string = "./db.sqlite3"

@@ -32,8 +32,72 @@ func (s *BadResponseStatusCode) SetResponse(val Problem) {
 	s.Response = val
 }
 
-func (*BadResponseStatusCode) createOrderRes() {}
-func (*BadResponseStatusCode) getOrdersRes()   {}
+func (*BadResponseStatusCode) createOrderRes()        {}
+func (*BadResponseStatusCode) getOrdersRes()          {}
+func (*BadResponseStatusCode) getUserRes()            {}
+func (*BadResponseStatusCode) updateUserEmailRes()    {}
+func (*BadResponseStatusCode) updateUserPasswordRes() {}
+func (*BadResponseStatusCode) updateUserPhoneRes()    {}
+func (*BadResponseStatusCode) updateUserRes()         {}
+
+// Ref: #/components/schemas/Company
+type Company struct {
+	Name     OptString `json:"name"`
+	Inn      OptString `json:"inn"`
+	Okpo     OptString `json:"okpo"`
+	Address  OptString `json:"address"`
+	Position OptString `json:"position"`
+}
+
+// GetName returns the value of Name.
+func (s *Company) GetName() OptString {
+	return s.Name
+}
+
+// GetInn returns the value of Inn.
+func (s *Company) GetInn() OptString {
+	return s.Inn
+}
+
+// GetOkpo returns the value of Okpo.
+func (s *Company) GetOkpo() OptString {
+	return s.Okpo
+}
+
+// GetAddress returns the value of Address.
+func (s *Company) GetAddress() OptString {
+	return s.Address
+}
+
+// GetPosition returns the value of Position.
+func (s *Company) GetPosition() OptString {
+	return s.Position
+}
+
+// SetName sets the value of Name.
+func (s *Company) SetName(val OptString) {
+	s.Name = val
+}
+
+// SetInn sets the value of Inn.
+func (s *Company) SetInn(val OptString) {
+	s.Inn = val
+}
+
+// SetOkpo sets the value of Okpo.
+func (s *Company) SetOkpo(val OptString) {
+	s.Okpo = val
+}
+
+// SetAddress sets the value of Address.
+func (s *Company) SetAddress(val OptString) {
+	s.Address = val
+}
+
+// SetPosition sets the value of Position.
+func (s *Company) SetPosition(val OptString) {
+	s.Position = val
+}
 
 type CreateOrderReq struct {
 	Products []CreateOrderReqProductsItem `json:"products"`
@@ -219,6 +283,52 @@ func (s *JwtAuth) SetAPIKey(val string) {
 // SetRoles sets the value of Roles.
 func (s *JwtAuth) SetRoles(val []string) {
 	s.Roles = val
+}
+
+// NewOptCompany returns new OptCompany with value set to v.
+func NewOptCompany(v Company) OptCompany {
+	return OptCompany{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptCompany is optional Company.
+type OptCompany struct {
+	Value Company
+	Set   bool
+}
+
+// IsSet returns true if OptCompany was set.
+func (o OptCompany) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptCompany) Reset() {
+	var v Company
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptCompany) SetTo(v Company) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptCompany) Get() (v Company, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptCompany) Or(d Company) Company {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
 }
 
 // NewOptString returns new OptString with value set to v.
@@ -443,3 +553,202 @@ func (s *Problem) SetTitle(val string) {
 func (s *Problem) SetDetail(val OptString) {
 	s.Detail = val
 }
+
+// UpdateUserEmailOK is response for UpdateUserEmail operation.
+type UpdateUserEmailOK struct{}
+
+func (*UpdateUserEmailOK) updateUserEmailRes() {}
+
+type UpdateUserEmailReq struct {
+	Email string `json:"email"`
+}
+
+// GetEmail returns the value of Email.
+func (s *UpdateUserEmailReq) GetEmail() string {
+	return s.Email
+}
+
+// SetEmail sets the value of Email.
+func (s *UpdateUserEmailReq) SetEmail(val string) {
+	s.Email = val
+}
+
+// UpdateUserPasswordOK is response for UpdateUserPassword operation.
+type UpdateUserPasswordOK struct{}
+
+func (*UpdateUserPasswordOK) updateUserPasswordRes() {}
+
+type UpdateUserPasswordReq struct {
+	OldPassword string `json:"oldPassword"`
+	NewPassword string `json:"newPassword"`
+}
+
+// GetOldPassword returns the value of OldPassword.
+func (s *UpdateUserPasswordReq) GetOldPassword() string {
+	return s.OldPassword
+}
+
+// GetNewPassword returns the value of NewPassword.
+func (s *UpdateUserPasswordReq) GetNewPassword() string {
+	return s.NewPassword
+}
+
+// SetOldPassword sets the value of OldPassword.
+func (s *UpdateUserPasswordReq) SetOldPassword(val string) {
+	s.OldPassword = val
+}
+
+// SetNewPassword sets the value of NewPassword.
+func (s *UpdateUserPasswordReq) SetNewPassword(val string) {
+	s.NewPassword = val
+}
+
+// UpdateUserPhoneOK is response for UpdateUserPhone operation.
+type UpdateUserPhoneOK struct{}
+
+func (*UpdateUserPhoneOK) updateUserPhoneRes() {}
+
+type UpdateUserPhoneReq struct {
+	Phone string `json:"phone"`
+}
+
+// GetPhone returns the value of Phone.
+func (s *UpdateUserPhoneReq) GetPhone() string {
+	return s.Phone
+}
+
+// SetPhone sets the value of Phone.
+func (s *UpdateUserPhoneReq) SetPhone(val string) {
+	s.Phone = val
+}
+
+type UpdateUserReq struct {
+	FirstName OptString  `json:"firstName"`
+	Surname   OptString  `json:"surname"`
+	LastName  OptString  `json:"lastName"`
+	Company   OptCompany `json:"company"`
+}
+
+// GetFirstName returns the value of FirstName.
+func (s *UpdateUserReq) GetFirstName() OptString {
+	return s.FirstName
+}
+
+// GetSurname returns the value of Surname.
+func (s *UpdateUserReq) GetSurname() OptString {
+	return s.Surname
+}
+
+// GetLastName returns the value of LastName.
+func (s *UpdateUserReq) GetLastName() OptString {
+	return s.LastName
+}
+
+// GetCompany returns the value of Company.
+func (s *UpdateUserReq) GetCompany() OptCompany {
+	return s.Company
+}
+
+// SetFirstName sets the value of FirstName.
+func (s *UpdateUserReq) SetFirstName(val OptString) {
+	s.FirstName = val
+}
+
+// SetSurname sets the value of Surname.
+func (s *UpdateUserReq) SetSurname(val OptString) {
+	s.Surname = val
+}
+
+// SetLastName sets the value of LastName.
+func (s *UpdateUserReq) SetLastName(val OptString) {
+	s.LastName = val
+}
+
+// SetCompany sets the value of Company.
+func (s *UpdateUserReq) SetCompany(val OptCompany) {
+	s.Company = val
+}
+
+// Ref: #/components/schemas/User
+type User struct {
+	ID        int64      `json:"id"`
+	Email     string     `json:"email"`
+	FirstName string     `json:"firstName"`
+	Surname   OptString  `json:"surname"`
+	LastName  OptString  `json:"lastName"`
+	Phone     string     `json:"phone"`
+	Company   OptCompany `json:"company"`
+}
+
+// GetID returns the value of ID.
+func (s *User) GetID() int64 {
+	return s.ID
+}
+
+// GetEmail returns the value of Email.
+func (s *User) GetEmail() string {
+	return s.Email
+}
+
+// GetFirstName returns the value of FirstName.
+func (s *User) GetFirstName() string {
+	return s.FirstName
+}
+
+// GetSurname returns the value of Surname.
+func (s *User) GetSurname() OptString {
+	return s.Surname
+}
+
+// GetLastName returns the value of LastName.
+func (s *User) GetLastName() OptString {
+	return s.LastName
+}
+
+// GetPhone returns the value of Phone.
+func (s *User) GetPhone() string {
+	return s.Phone
+}
+
+// GetCompany returns the value of Company.
+func (s *User) GetCompany() OptCompany {
+	return s.Company
+}
+
+// SetID sets the value of ID.
+func (s *User) SetID(val int64) {
+	s.ID = val
+}
+
+// SetEmail sets the value of Email.
+func (s *User) SetEmail(val string) {
+	s.Email = val
+}
+
+// SetFirstName sets the value of FirstName.
+func (s *User) SetFirstName(val string) {
+	s.FirstName = val
+}
+
+// SetSurname sets the value of Surname.
+func (s *User) SetSurname(val OptString) {
+	s.Surname = val
+}
+
+// SetLastName sets the value of LastName.
+func (s *User) SetLastName(val OptString) {
+	s.LastName = val
+}
+
+// SetPhone sets the value of Phone.
+func (s *User) SetPhone(val string) {
+	s.Phone = val
+}
+
+// SetCompany sets the value of Company.
+func (s *User) SetCompany(val OptCompany) {
+	s.Company = val
+}
+
+func (*User) getUserRes()    {}
+func (*User) updateUserRes() {}

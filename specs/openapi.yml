@@ -3,7 +3,7 @@ openapi: "3.2.1"
 info:
   title: "Electrotech Backend"
   summary: "Specification for Electrotech shop backend API"
-  version: "2.0.0"
+  version: "3.0.0"
   contact:
     name: "Anton Petrov"
     email: "petrovanton247@gmail.com"
@@ -17,6 +17,8 @@ tags:
     description: "Meta endpoints for checking service"
   - name: "orders"
     description: "Managing user orders"
+  - name: "user"
+    description: "Manage user information"
 
 paths:
   "/api/v3/health":
@@ -53,6 +55,68 @@ paths:
           $ref: "#/components/responses/BadResponse"
         "201":
           $ref: "#/components/responses/CreateOrderResponse"
+  "/api/v3/user":
+    get:
+      security:
+        - jwtAuth: []
+      tags: [user]
+      operationId: GetUser
+      responses:
+        default:
+          $ref: "#/components/responses/BadResponse"
+        "200":
+          $ref: "#/components/responses/GetUserResponse"
+    patch:
+      security:
+        - jwtAuth: []
+      tags: [user]
+      operationId: UpdateUser
+      requestBody:
+        $ref: "#/components/requestBodies/PatchUserRequest"
+      responses:
+        default:
+          $ref: "#/components/responses/BadResponse"
+        "200":
+          $ref: "#/components/responses/PatchUserResponse"
+  "/api/v3/user/password":
+    post:
+      security:
+        - jwtAuth: []
+      tags: [user]
+      operationId: UpdateUserPassword
+      requestBody:
+        $ref: "#/components/requestBodies/UpdateUserPasswordRequest"
+      responses:
+        default:
+          $ref: "#/components/responses/BadResponse"
+        "200":
+          description: "Successfully updated password"
+  "/api/v3/user/email":
+    post:
+      security:
+        - jwtAuth: []
+      tags: [user]
+      operationId: UpdateUserEmail
+      requestBody:
+        $ref: "#/components/requestBodies/UpdateUserEmailRequest"
+      responses:
+        default:
+          $ref: "#/components/responses/BadResponse"
+        "200":
+          description: "Successfully updated email"
+  "/api/v3/user/phone":
+    post:
+      security:
+        - jwtAuth: []
+      tags: [user]
+      operationId: UpdateUserPhone
+      requestBody:
+        $ref: "#/components/requestBodies/UpdateUserPhoneRequest"
+      responses:
+        default:
+          $ref: "#/components/responses/BadResponse"
+        "200":
+          description: "Successfully updated phone"
 security:
   - jwtAuth: []
 components:
@@ -108,7 +172,6 @@ components:
         quantity:
           type: number
           format: int64
-          minimum: 1
         productPrice:
           type: number
           format: float64
@@ -134,7 +197,75 @@ components:
           minItems: 1
           items:
             $ref: "#/components/schemas/OrderProduct"
+    Company:
+      type: object
+      properties:
+        name:
+          type: string
+        inn:
+          type: string
+        okpo:
+          type: string
+        address:
+          type: string
+        position:
+          type: string
+    User:
+      type: object
+      required: [id, email, phone, firstName]
+      properties:
+        id:
+          type: number
+          format: int64
+        email:
+          type: string
+        firstName:
+          type: string
+          example: "Anton"
+        surname:
+          type: string
+          example: "Petrov"
+        lastName:
+          type: string
+          example: "Vladimirovich"
+        phone:
+          type: string
+        company:
+          $ref: "#/components/schemas/Company"
   requestBodies:
+    UpdateUserPasswordRequest:
+      required: true
+      content:
+        "application/json":
+          schema:
+            type: object
+            required: [oldPassword, newPassword]
+            properties:
+              oldPassword:
+                type: string
+              newPassword:
+                type: string
+    UpdateUserEmailRequest:
+      required: true
+      content:
+        "application/json":
+          schema:
+            type: object
+            required: [email]
+            properties:
+              email:
+                type: string
+                format: email
+    UpdateUserPhoneRequest:
+      required: true
+      content:
+        "application/json":
+          schema:
+            type: object
+            required: [phone]
+            properties:
+              phone:
+                type: string
     CreateOrderRequest:
       required: true
       content:
@@ -155,7 +286,21 @@ components:
                     quantity:
                       type: number
                       format: int64
-                      minimum: 1
+    PatchUserRequest:
+      required: true
+      content:
+        "application/json":
+          schema:
+            type: object
+            properties:
+              firstName:
+                type: string
+              surname:
+                type: string
+              lastName:
+                type: string
+              company:
+                $ref: "#/components/schemas/Company"
   responses:
     BadResponse:
       description: "Default bad response that describes problem"
@@ -192,3 +337,15 @@ components:
               orderId:
                 type: number
                 format: int64
+    GetUserResponse:
+      description: "Returns user data"
+      content:
+        "application/json":
+          schema:
+            $ref: "#/components/schemas/User"
+    PatchUserResponse:
+      description: "Returns updated user data"
+      content:
+        "application/json":
+          schema:
+            $ref: "#/components/schemas/User"

@@ -5,3 +5,5 @@
 *.sqlite
 
 .DS_Store
+
+.gocache/

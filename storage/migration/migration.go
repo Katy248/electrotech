@@ -2,22 +2,24 @@ package migration
 
 import (
 	"database/sql"
+	"electrotech/sql/migrations"
 	"fmt"
 
 	"charm.land/log/v2"
 	migrate "github.com/rubenv/sql-migrate"
 )
 
-func Up(db *sql.DB, migrationsDir string) error {
-	source := migrate.FileMigrationSource{
-		Dir: migrationsDir,
+func Up(db *sql.DB) error {
+	source := migrate.EmbedFileSystemMigrationSource{
+		FileSystem: migrations.Migrations,
+		Root:       ".",
 	}
 
 	log.Debug("Migrating database...")
 
 	count, err := migrate.Exec(db, "sqlite3", source, migrate.Up)
 	if err != nil {
-		return fmt.Errorf("failed execute: %w", err)
+		return fmt.Errorf("execute migration: %w", err)
 	}
 
 	log.Info("Database migrated", "migrations", count)

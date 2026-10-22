@@ -6,7 +6,12 @@ package handler_gen
 type OperationName = string
 
 const (
-	CreateOrderOperation OperationName = "CreateOrder"
-	GetHealthOperation   OperationName = "GetHealth"
-	GetOrdersOperation   OperationName = "GetOrders"
+	CreateOrderOperation        OperationName = "CreateOrder"
+	GetHealthOperation          OperationName = "GetHealth"
+	GetOrdersOperation          OperationName = "GetOrders"
+	GetUserOperation            OperationName = "GetUser"
+	UpdateUserOperation         OperationName = "UpdateUser"
+	UpdateUserEmailOperation    OperationName = "UpdateUserEmail"
+	UpdateUserPasswordOperation OperationName = "UpdateUserPassword"
+	UpdateUserPhoneOperation    OperationName = "UpdateUserPhone"
 )

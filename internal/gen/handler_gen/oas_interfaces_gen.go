@@ -12,3 +12,23 @@ type GetHealthRes interface {
 type GetOrdersRes interface {
 	getOrdersRes()
 }
+
+type GetUserRes interface {
+	getUserRes()
+}
+
+type UpdateUserEmailRes interface {
+	updateUserEmailRes()
+}
+
+type UpdateUserPasswordRes interface {
+	updateUserPasswordRes()
+}
+
+type UpdateUserPhoneRes interface {
+	updateUserPhoneRes()
+}
+
+type UpdateUserRes interface {
+	updateUserRes()
+}

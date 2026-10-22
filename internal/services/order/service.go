@@ -17,7 +17,7 @@ type OrderRepository interface {
 	GetOrders(ctx context.Context, userID int64) ([]*models.Order, error)
 }
 type CatalogRepository interface {
-	GetProduct(id string) (models.Product, error)
+	GetProduct(ctx context.Context, id string) (models.Product, error)
 }
 type UserRepository interface {
 	ByID(ctx context.Context, id int64) (*models.User, error)
@@ -70,11 +70,13 @@ func (s *Service) GetOrders(ctx context.Context, userID int64) ([]*models.Order,
 		}
 	}
 
+	wg.Wait()
+
 	return orders, nil
 }
 
 func (s *Service) GetImagePath(ctx context.Context, productID string) (string, error) {
-	product, err := s.catalog.GetProduct(productID)
+	product, err := s.catalog.GetProduct(ctx, productID)
 	if err != nil {
 		return "", fmt.Errorf("get product from repo: %w", err)
 	}
@@ -107,7 +109,7 @@ func (s *Service) ItemsToProducts(ctx context.Context, items []models.OrderItem)
 	mapped := make([]models.OrderProduct, 0, len(items))
 
 	for _, p := range items {
-		product, err := s.catalog.GetProduct(p.ProductID)
+		product, err := s.catalog.GetProduct(ctx, p.ProductID)
 		if err != nil {
 			return nil, fmt.Errorf("product %q: %w", p.ProductID, err)
 		}

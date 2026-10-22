@@ -22,7 +22,6 @@ func SQLConnection(gormDB *gorm.DB) *sql.DB {
 type Config struct {
 	ConnectionString string `mapstructure:"connection-string"`
 	AutoMigrate      bool   `mapstructure:"auto-migrate"`
-	MigrationsDir    string `mapstructure:"migrations-dir"`
 }
 
 func Connect(config Config, logger *log.Logger) (*gorm.DB, error) {
@@ -31,10 +30,12 @@ func Connect(config Config, logger *log.Logger) (*gorm.DB, error) {
 		return nil, fmt.Errorf("connect to database: %w", err)
 	}
 
+	logger.Info("Connected to database", "conn", config.ConnectionString)
+
 	if config.AutoMigrate {
 		logger.Info("Auto-migrating database")
 
-		err := migrateDB(db, config.MigrationsDir)
+		err := migrateDB(db)
 		if err != nil {
 			return nil, fmt.Errorf("migrate database: %w", err)
 		}
@@ -43,8 +44,8 @@ func Connect(config Config, logger *log.Logger) (*gorm.DB, error) {
 	return db, nil
 }
 
-func migrateDB(gormDB *gorm.DB, migrationsDir string) error {
-	err := migration.Up(SQLConnection(gormDB), migrationsDir)
+func migrateDB(gormDB *gorm.DB) error {
+	err := migration.Up(SQLConnection(gormDB))
 	if err != nil {
 		return fmt.Errorf("up migration: %w", err)
 	}

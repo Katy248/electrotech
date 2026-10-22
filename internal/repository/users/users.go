@@ -3,6 +3,7 @@ package users
 import (
 	"context"
 	"electrotech/internal/models"
+	"fmt"
 	"strings"
 
 	"charm.land/log/v2"
@@ -54,6 +55,23 @@ func (r *Repo) Update(ctx context.Context, u *models.User) error {
 	err := r.DB.Save(u).Error
 
 	return err
+}
+
+func (r *Repo) UpdatePartial(ctx context.Context, id int64, updates map[string]any) error {
+	if len(updates) == 0 {
+		return nil
+	}
+
+	err := r.DB.
+		WithContext(ctx).
+		Model(&models.User{}). //nolint:exhaustruct_v5
+		Where("id = ?", id).
+		Updates(updates).Error
+	if err != nil {
+		return fmt.Errorf("updates: %w", err)
+	}
+
+	return nil
 }
 
 func normalizeEmail(u *models.User) {

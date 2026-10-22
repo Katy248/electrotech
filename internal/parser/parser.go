@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"context"
 	"electrotech/internal/models"
 	"encoding/xml"
 	"errors"
@@ -54,19 +55,23 @@ func fileExists(filename string) bool {
 	return true
 }
 
-func (p *Parser) GetProducts() ([]models.Product, error) {
-	if err := p.parse(); err != nil {
+func (p *Parser) GetProducts(ctx context.Context) ([]models.Product, error) {
+	if err := p.parse(ctx); err != nil {
 		return nil, fmt.Errorf("parse xml data: %w", err)
 	}
 
-	products, err := mapProducts(p.offers, p.imports)
+	products, err := mapProducts(ctx, p.offers, p.imports)
 	if err != nil {
 		return nil, fmt.Errorf("map xml data: %w", err)
 	}
 
 	return products, nil
 }
-func (p *Parser) parse() error {
+func (p *Parser) parse(ctx context.Context) error {
+	if err := ctx.Err(); err != nil {
+		return fmt.Errorf("context canceled: %w", err)
+	}
+
 	if p.imports == nil {
 		imp, err := p.parseImports()
 		if err != nil {

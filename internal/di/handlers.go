@@ -10,9 +10,7 @@ import (
 	catalogHandlers "electrotech/internal/handlers/catalog"
 	v2 "electrotech/internal/handlers/catalog/v2"
 	"electrotech/internal/handlers/contact"
-	"electrotech/internal/handlers/user"
 	"electrotech/internal/repository/catalog"
-	"electrotech/internal/repository/orders"
 	"electrotech/internal/repository/users"
 	"electrotech/internal/server"
 	"fmt"
@@ -31,7 +29,6 @@ func newServer(
 	catalogRepo *catalog.Repo,
 	logger *log.Logger,
 	contactHandler *contact.ContactUsHandler,
-	userHandler *user.Handler,
 	authHandler *auth.Handler,
 	catalogHandler *catalogHandlers.Handler,
 	catalogV2Handler *v2.Handler,
@@ -43,7 +40,6 @@ func newServer(
 		logger,
 		catalogRepo,
 		contactHandler,
-		userHandler,
 		authHandler,
 		catalogHandler,
 		catalogV2Handler,
@@ -69,7 +65,6 @@ func newServer(
 func provideHandlers() fx.Option {
 	return fx.Options(
 		fx.Provide(newContactHandler),
-		fx.Provide(newUserHandler),
 		fx.Provide(newAuthHandler),
 		fx.Provide(newCatalogHandler),
 		fx.Provide(newCatalogV2Handler),
@@ -78,10 +73,6 @@ func provideHandlers() fx.Option {
 
 func newContactHandler(emailService *email.Service, logger *log.Logger, db *gorm.DB) *contact.ContactUsHandler {
 	return contact.NewContactUsHandler(emailService, logger, db)
-}
-
-func newUserHandler(logger *log.Logger, usersRepo *users.Repo) *user.Handler {
-	return user.NewHandler(logger, usersRepo)
 }
 
 func newAuthHandler(
@@ -113,11 +104,8 @@ func newAuthMiddleware(config *config.Config, service *userS.Service) *handlers.
 func newHandlers(
 	logger *log.Logger,
 	db *gorm.DB,
-	userRepo *users.Repo,
-	catalogRepo *catalog.Repo,
-	ordersRepo *orders.Repo,
-	emailService *email.Service,
 	orderService *order.Service,
+	userService *userS.Service,
 ) *handlers.Handler {
-	return handlers.New(db, logger, userRepo, catalogRepo, ordersRepo, emailService, orderService)
+	return handlers.New(db, logger, orderService, userService)
 }

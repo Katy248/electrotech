@@ -1,6 +1,7 @@
 package catalog
 
 import (
+	"context"
 	"electrotech/internal/models"
 	"errors"
 	"fmt"
@@ -20,8 +21,8 @@ type Products struct {
 	Total    int
 }
 
-func (r *Repo) GetProductsNew(p Page, filters ...FilterFunc) (*Products, error) {
-	products, err := r.parser.GetProducts()
+func (r *Repo) GetProductsNew(ctx context.Context, p Page, filters ...FilterFunc) (*Products, error) {
+	products, err := r.parser.GetProducts(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get products from parser: %w", err)
 	}
@@ -50,7 +51,7 @@ func (r *Repo) GetProductsNew(p Page, filters ...FilterFunc) (*Products, error) 
 
 	total := len(filtered)
 
-	pages := getPages(len(filtered), PageSize)
+	pages := GetPages(len(filtered), PageSize)
 
 	if int(p*PageSize) > len(filtered)-1 {
 		return nil, ErrNotFound
@@ -66,7 +67,7 @@ func (r *Repo) GetProductsNew(p Page, filters ...FilterFunc) (*Products, error) 
 	}, nil
 }
 
-func getPages(productsCount int, pageSize int) int {
+func GetPages(productsCount int, pageSize int) int {
 	pages := productsCount / pageSize
 	if productsCount%pageSize != 0 {
 		pages++
@@ -107,23 +108,50 @@ func OnlyAvailableFilter() FilterFunc {
 	}
 }
 
-func (r *Repo) GetProduct(id string) (models.Product, error) {
-	products, err := r.parser.GetProducts()
-	if err != nil {
-		return models.Product{}, fmt.Errorf("get parsed products: %w", err)
-	}
-
-	for _, p := range products {
-		if p.Id == id {
-			return p, nil
-		}
-	}
-
-	return models.Product{}, ErrNotFound
+type result struct {
+	product models.Product
+	err     error
 }
 
-func (r *Repo) GetProductPrice(id string) (float32, error) {
-	product, err := r.GetProduct(id)
+func (r *Repo) GetProduct(ctx context.Context, id string) (models.Product, error) {
+	resChan := make(chan result, 1)
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	go func(ctx context.Context, resChan chan result) {
+		products, err := r.parser.GetProducts(ctx)
+		if err != nil {
+			resChan <- result{err: fmt.Errorf("parse products: %w", err)} //nolint:exhaustruct_v5
+
+			return
+		}
+
+		for _, p := range products {
+			if p.Id == id {
+				resChan <- result{product: p} //nolint:exhaustruct_v5
+
+				return
+			}
+		}
+
+		resChan <- result{err: ErrNotFound} //nolint:exhaustruct_v5
+	}(ctx, resChan)
+
+	select {
+	case res := <-resChan:
+		if res.err != nil {
+			return models.Product{}, res.err
+		}
+
+		return res.product, nil
+	case <-ctx.Done():
+		return models.Product{}, fmt.Errorf("context canceled: %w", ctx.Err())
+	}
+}
+
+func (r *Repo) GetProductPrice(ctx context.Context, id string) (float32, error) {
+	product, err := r.GetProduct(ctx, id)
 	if err != nil {
 		return 0, err
 	}
@@ -131,8 +159,8 @@ func (r *Repo) GetProductPrice(id string) (float32, error) {
 	return product.Price, nil
 }
 
-func (r *Repo) GetProductName(id string) (string, error) {
-	product, err := r.GetProduct(id)
+func (r *Repo) GetProductName(ctx context.Context, id string) (string, error) {
+	product, err := r.GetProduct(ctx, id)
 	if err != nil {
 		return "", err
 	}

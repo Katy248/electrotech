@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"reflect"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -73,4 +74,40 @@ type CompanyData struct {
 
 func (c *CompanyData) DataFilled() bool {
 	return c.Name != "" && c.INN != "" && c.OKPO != "" && c.Address != "" && c.Position != ""
+}
+
+type UserUpdate struct {
+	FirstName         *string
+	Surname           *string
+	LastName          *string
+	CompanyName       *string
+	CompanyInn        *string
+	CompanyOkpo       *string
+	CompanyAddress    *string
+	PositionInCompany *string
+	// PhoneNumber       *string
+	// Email             *string
+}
+
+// HasChanges returns true if at least one field is set.
+func (u *UserUpdate) HasChanges() bool {
+	return len(u.Values()) > 0
+}
+
+// Values builds a GORM-friendly map of only the non-nil fields.
+// Keys are Go field names; GORM resolves them to DB columns.
+func (u *UserUpdate) Values() map[string]any {
+	values := make(map[string]any)
+
+	v := reflect.ValueOf(u).Elem()
+	for i := range v.NumField() {
+		field := v.Field(i)
+		if field.Kind() != reflect.Pointer || field.IsNil() {
+			continue
+		}
+
+		values[v.Type().Field(i).Name] = field.Elem().Interface()
+	}
+
+	return values
 }

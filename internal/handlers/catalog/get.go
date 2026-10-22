@@ -27,7 +27,7 @@ func (h *Handler) HandleGetProduct() gin.HandlerFunc {
 			return
 		}
 
-		product, err := h.repo.GetProduct(request.ID)
+		product, err := h.repo.GetProduct(ctx.Request.Context(), request.ID)
 		if err != nil {
 			if errors.Is(err, catalog.ErrNotFound) {
 				ctx.AbortWithStatusJSON(http.StatusNotFound, electrotech.Error(err))

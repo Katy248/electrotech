@@ -8,7 +8,6 @@ import (
 	catalogHandlers "electrotech/internal/handlers/catalog"
 	v2 "electrotech/internal/handlers/catalog/v2"
 	"electrotech/internal/handlers/contact"
-	"electrotech/internal/handlers/user"
 	"electrotech/internal/repository/catalog"
 	"fmt"
 
@@ -30,7 +29,6 @@ func NewHTTPServer(
 	logger *log.Logger,
 	catalogRepo *catalog.Repo,
 	contactHandler *contact.ContactUsHandler,
-	userHandler *user.Handler,
 	authHandler *auth.Handler,
 	catalogHandler *catalogHandlers.Handler,
 	catalogV2Handler *v2.Handler,
@@ -60,17 +58,6 @@ func NewHTTPServer(
 			authGroup.POST("/login", authHandler.LoginHandler())
 			authGroup.POST("/register", authHandler.RegisterHandler())
 			authGroup.POST("/refresh", authHandler.Refresh())
-		}
-		{
-			usersGroup := api.Group("/user")
-			usersGroup.Use(authHandler.AuthMiddleware())
-			usersGroup.POST("/change-password", userHandler.HandleChangePassword())
-			usersGroup.POST("/change-email", userHandler.HandleChangeEmail())
-			usersGroup.POST("/change-phone", userHandler.HandleChangePhoneNumber())
-			usersGroup.POST("/update-data", userHandler.HandleUpdateUserData())
-			usersGroup.POST("/get-data", userHandler.HandleGetData())
-			usersGroup.POST("/update-company-data", userHandler.HandleUpdateCompanyData())
-			usersGroup.POST("/get-company-data", userHandler.HandleGetCompanyData())
 		}
 	}
 

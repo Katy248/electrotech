@@ -11,12 +11,15 @@ import (
 	"strings"
 
 	"charm.land/log/v2"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserRepository interface {
 	ByID(ctx context.Context, id int64) (*models.User, error)
 	ByEmail(ctx context.Context, email string) (*models.User, error)
 	InsertNew(ctx context.Context, user *models.User) error
+	Update(ctx context.Context, user *models.User) error
+	UpdatePartial(ctx context.Context, userID int64, updates map[string]any) error
 }
 
 type Service struct {
@@ -77,7 +80,6 @@ var (
 	)
 	errInsertNewUser = errInternal.Extend("/", http.StatusInternalServerError, "internal server error").
 				WithDetails("insert user")
-
 	errInvalidToken = errAuth.Extend("/invalid-token", http.StatusUnauthorized, "invalid refresh token")
 )
 
@@ -168,4 +170,90 @@ func (s *Service) Refresh(ctx context.Context, token string) (*models.AuthRespon
 	}
 
 	return response, nil
+}
+
+func (s *Service) UpdateEmail(ctx context.Context, id int64, email string) error {
+	user, err := s.repo.ByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("select user by id: %w", err)
+	}
+
+	user.Email = email
+
+	err = s.repo.Update(ctx, user)
+	if err != nil {
+		return fmt.Errorf("save changes: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Service) UpdatePassword(ctx context.Context, id int64, oldPassword, newPassword string) error {
+	user, err := s.repo.ByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("select user by id: %w", err)
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(oldPassword))
+	if err != nil {
+		return fmt.Errorf("passwords don't match: %w", err)
+	}
+
+	err = user.SetPassword(newPassword)
+	if err != nil {
+		return fmt.Errorf("set password: %w", err)
+	}
+
+	err = s.repo.Update(ctx, user)
+	if err != nil {
+		return fmt.Errorf("save changes: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Service) UpdatePhone(ctx context.Context, id int64, phone string) error {
+	user, err := s.repo.ByID(ctx, id)
+	if err != nil || user.Email == "" {
+		return fmt.Errorf("select user by id: %w", err)
+	}
+
+	phone, err = electrotech.FormatPhoneNumber(phone)
+	if err != nil {
+		return fmt.Errorf("format phone: %w", err)
+	}
+
+	user.PhoneNumber = phone
+
+	err = s.repo.Update(ctx, user)
+	if err != nil {
+		return fmt.Errorf("save changes: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Service) GetUser(ctx context.Context, userID int64) (*models.User, error) {
+	user, err := s.repo.ByID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("select user by id: %w", err)
+	}
+
+	return user, nil
+}
+
+// Update updates user fields.
+//
+// TODO: Check empty string setting.
+func (s *Service) Update(ctx context.Context, id int64, update *models.UserUpdate) error {
+	if !update.HasChanges() {
+		return nil // nothing to do — no DB call
+	}
+
+	err := s.repo.UpdatePartial(ctx, id, update.Values())
+	if err != nil {
+		return fmt.Errorf("save changes: %w", err)
+	}
+
+	return nil
 }

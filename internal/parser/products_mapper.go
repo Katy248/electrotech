@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"context"
 	"electrotech/internal/models"
 	"errors"
 	"fmt"
@@ -8,7 +9,11 @@ import (
 	"charm.land/log/v2"
 )
 
-func mapProducts(offers *offersModel, imports *importsModel) ([]models.Product, error) {
+func mapProducts(ctx context.Context, offers *offersModel, imports *importsModel) ([]models.Product, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, fmt.Errorf("context canceled: %w", err)
+	}
+
 	products := []models.Product{}
 
 	for _, xmlProduct := range imports.Catalog.Products {

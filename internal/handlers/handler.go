@@ -13,31 +13,19 @@ type OrderService interface {
 	GetOrders(ctx context.Context, userID int64) ([]*models.Order, error)
 	CreateOrder(ctx context.Context, userID int64, items []models.OrderItem) (int64, error)
 }
-type EmailService interface {
-	SendInfo(content []byte, subject string) error
-}
-
-type UserRepository interface {
-	ByID(ctx context.Context, id int64) (*models.User, error)
-}
-
-type OrderRepository interface {
-	New(ctx context.Context, user *models.User, products []models.OrderProduct) (*models.Order, error)
-	GetOrders(ctx context.Context, userID int64) ([]*models.Order, error)
-}
-
-type CatalogRepository interface {
-	GetProduct(id string) (models.Product, error)
+type UserService interface {
+	UpdateEmail(ctx context.Context, id int64, email string) error
+	UpdatePassword(ctx context.Context, id int64, old, new string) error
+	UpdatePhone(ctx context.Context, id int64, phone string) error
+	GetUser(ctx context.Context, id int64) (*models.User, error)
+	Update(ctx context.Context, id int64, update *models.UserUpdate) error
 }
 
 type Handler struct {
 	db           *gorm.DB
 	logger       *log.Logger
-	userRepo     UserRepository
-	catalogRepo  CatalogRepository
-	ordersRepo   OrderRepository
-	emailService EmailService
 	orderService OrderService
+	userService  UserService
 }
 
 var _ handler_gen.Handler = (*Handler)(nil)
@@ -45,20 +33,14 @@ var _ handler_gen.Handler = (*Handler)(nil)
 func New(
 	db *gorm.DB,
 	logger *log.Logger,
-	userRepo UserRepository,
-	catalogRepo CatalogRepository,
-	ordersRepo OrderRepository,
-	emailService EmailService,
 	orderService OrderService,
+	userService UserService,
 ) *Handler {
 	return &Handler{
 		db:           db,
 		logger:       logger,
-		userRepo:     userRepo,
-		catalogRepo:  catalogRepo,
-		ordersRepo:   ordersRepo,
-		emailService: emailService,
 		orderService: orderService,
+		userService:  userService,
 	}
 }
 

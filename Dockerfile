@@ -21,9 +21,6 @@ WORKDIR /bin
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app/srv ./
 
-ENV EL_DB_MIGRATIONS_DIR=/usr/share/srv/migrations
-COPY --from=builder /app/sql/migrations /usr/share/srv/migrations
-
 COPY --from=builder /app/electrotech-back.toml /etc/electrotech-back.toml
 
 EXPOSE 8080 8021 30000-30020
