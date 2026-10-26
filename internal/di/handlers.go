@@ -4,7 +4,6 @@ package di
 import (
 	"context"
 	"electrotech/internal/config"
-	"electrotech/internal/email"
 	"electrotech/internal/handlers"
 	"electrotech/internal/handlers/auth"
 	catalogHandlers "electrotech/internal/handlers/catalog"
@@ -15,13 +14,13 @@ import (
 	"electrotech/internal/server"
 	"fmt"
 
+	"electrotech/internal/services/feedback"
 	"electrotech/internal/services/health"
 	"electrotech/internal/services/order"
 	userS "electrotech/internal/services/user"
 
 	"charm.land/log/v2"
 	"go.uber.org/fx"
-	"gorm.io/gorm"
 )
 
 func newServer(
@@ -72,8 +71,8 @@ func provideHandlers() fx.Option {
 	)
 }
 
-func newContactHandler(emailService *email.Service, logger *log.Logger, db *gorm.DB) *contact.ContactUsHandler {
-	return contact.NewContactUsHandler(emailService, logger, db)
+func newContactHandler(logger *log.Logger, feedbackService *feedback.Service) *contact.ContactUsHandler {
+	return contact.NewContactUsHandler(logger, feedbackService)
 }
 
 func newAuthHandler(

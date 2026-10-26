@@ -1,4 +1,4 @@
-package contact
+package feedback
 
 import (
 	"electrotech/internal/models"
@@ -37,7 +37,7 @@ func TestBuildEmail(t *testing.T) {
 	request.Email = &mailAddr
 	request.Phone = &phone
 
-	handler := NewContactUsHandler(nil, log.New(os.Stderr), nil)
+	handler := New(log.Default(), nil, nil)
 
 	email, err := handler.buildEmail(request)
 	if err != nil {

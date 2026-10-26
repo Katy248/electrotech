@@ -7,6 +7,14 @@ import (
 	"charm.land/log/v2"
 )
 
+type CreateUserQuestion struct {
+	PersonName string `validate:"required"`
+	Email      string `validate:"required_without=Phone"`
+	Phone      string `validate:"required_without=Email"`
+	Message    string `validatte:"required"`
+	ClientIP   string `validate:"required,ip"`
+}
+
 type UserQuestion struct {
 	ID           int       `json:"id"`
 	CreationDate time.Time `json:"creationDate"`

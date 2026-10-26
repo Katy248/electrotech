@@ -6,6 +6,7 @@ import (
 	"electrotech/internal/repository/catalog"
 	"electrotech/internal/repository/orders"
 	"electrotech/internal/repository/users"
+	"electrotech/internal/services/feedback"
 	"electrotech/internal/services/health"
 	"electrotech/internal/services/order"
 	"electrotech/internal/services/user"
@@ -46,4 +47,12 @@ func newHealthService(
 		health.WithLogger(logger),
 		health.WithDB(db),
 	)
+}
+
+func newFeedbackService(
+	logger *log.Logger,
+	emailService *email.Service,
+	db *gorm.DB,
+) *feedback.Service {
+	return feedback.New(logger, emailService, db)
 }
