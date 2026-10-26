@@ -13,7 +13,7 @@ import (
 )
 
 func ftpModule() fx.Option {
-	if os.Getenv("FTP_ENABLED") == "" {
+	if os.Getenv("EL_FTP_ENABLED") == "" {
 		return fx.Module("ftp")
 	}
 

@@ -4,9 +4,9 @@ import (
 	"context"
 	"electrotech/internal/gen/handler_gen"
 	"electrotech/internal/models"
+	"electrotech/internal/services/health"
 
 	"charm.land/log/v2"
-	"gorm.io/gorm"
 )
 
 type OrderService interface {
@@ -22,25 +22,25 @@ type UserService interface {
 }
 
 type Handler struct {
-	db           *gorm.DB
-	logger       *log.Logger
-	orderService OrderService
-	userService  UserService
+	logger        *log.Logger
+	orderService  OrderService
+	userService   UserService
+	healthService *health.Service
 }
 
 var _ handler_gen.Handler = (*Handler)(nil)
 
 func New(
-	db *gorm.DB,
 	logger *log.Logger,
 	orderService OrderService,
 	userService UserService,
+	healthService *health.Service,
 ) *Handler {
 	return &Handler{
-		db:           db,
-		logger:       logger,
-		orderService: orderService,
-		userService:  userService,
+		logger:        logger,
+		orderService:  orderService,
+		userService:   userService,
+		healthService: healthService,
 	}
 }
 
@@ -50,33 +50,30 @@ func New(
 func (h *Handler) GetHealth(
 	ctx context.Context,
 ) (handler_gen.GetHealthRes, error) {
-	sqlDB, err := h.db.DB()
-	if err != nil {
-		h.logger.Error("Get SQL database from ORM", "error", err)
+	status := h.healthService.GetHealth(ctx)
 
-		return &handler_gen.GetHealthBadGateway{
-			Status: handler_gen.HealthStatusUnavailable,
-			Dependencies: handler_gen.HealthDependencies{
-				Db: handler_gen.HealthStatusUnavailable,
-			},
-		}, nil
+	deps := handler_gen.HealthDependencies{}
+	for name, status := range status.Dependencies {
+		deps[name] = mapHealthStatus(status)
 	}
 
-	if err := sqlDB.Ping(); err != nil {
-		h.logger.Error("Ping database", "error", err)
-
-		return &handler_gen.GetHealthBadGateway{
-			Status: handler_gen.HealthStatusUnavailable,
-			Dependencies: handler_gen.HealthDependencies{
-				Db: handler_gen.HealthStatusUnavailable,
-			},
+	if status.Status() == health.StatusOK {
+		return &handler_gen.GetHealthOK{
+			Status:       mapHealthStatus(status.Status()),
+			Dependencies: deps,
 		}, nil
 	}
 
 	return &handler_gen.GetHealthBadGateway{
-		Status: handler_gen.HealthStatusOk,
-		Dependencies: handler_gen.HealthDependencies{
-			Db: handler_gen.HealthStatusOk,
-		},
+		Status:       mapHealthStatus(status.Status()),
+		Dependencies: deps,
 	}, nil
+}
+
+func mapHealthStatus(s health.Status) handler_gen.HealthStatus {
+	if s == health.StatusOK {
+		return handler_gen.HealthStatusOk
+	}
+
+	return handler_gen.HealthStatusUnavailable
 }

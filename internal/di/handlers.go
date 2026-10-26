@@ -15,6 +15,7 @@ import (
 	"electrotech/internal/server"
 	"fmt"
 
+	"electrotech/internal/services/health"
 	"electrotech/internal/services/order"
 	userS "electrotech/internal/services/user"
 
@@ -103,9 +104,9 @@ func newAuthMiddleware(config *config.Config, service *userS.Service) *handlers.
 
 func newHandlers(
 	logger *log.Logger,
-	db *gorm.DB,
 	orderService *order.Service,
 	userService *userS.Service,
+	healthService *health.Service,
 ) *handlers.Handler {
-	return handlers.New(db, logger, orderService, userService)
+	return handlers.New(logger, orderService, userService, healthService)
 }

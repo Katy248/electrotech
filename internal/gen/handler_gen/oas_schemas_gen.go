@@ -204,18 +204,15 @@ func (s *Health) SetDependencies(val HealthDependencies) {
 	s.Dependencies = val
 }
 
-type HealthDependencies struct {
-	Db HealthStatus `json:"db"`
-}
+type HealthDependencies map[string]HealthStatus
 
-// GetDb returns the value of Db.
-func (s *HealthDependencies) GetDb() HealthStatus {
-	return s.Db
-}
-
-// SetDb sets the value of Db.
-func (s *HealthDependencies) SetDb(val HealthStatus) {
-	s.Db = val
+func (s *HealthDependencies) init() HealthDependencies {
+	m := *s
+	if m == nil {
+		m = map[string]HealthStatus{}
+		*s = m
+	}
+	return m
 }
 
 // Ref: #/components/schemas/HealthStatus

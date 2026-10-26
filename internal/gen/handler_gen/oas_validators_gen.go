@@ -161,23 +161,22 @@ func (s *Health) Validate() error {
 	return nil
 }
 
-func (s *HealthDependencies) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
+func (s HealthDependencies) Validate() error {
+	var failures []validate.FieldError
+	for key, elem := range s {
+		if err := func() error {
+			if err := elem.Validate(); err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			failures = append(failures, validate.FieldError{
+				Name:  key,
+				Error: err,
+			})
+		}
 	}
 
-	var failures []validate.FieldError
-	if err := func() error {
-		if err := s.Db.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "db",
-			Error: err,
-		})
-	}
 	if len(failures) > 0 {
 		return &validate.Error{Fields: failures}
 	}

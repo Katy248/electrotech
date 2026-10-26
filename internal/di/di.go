@@ -20,6 +20,7 @@ func NewApp() *fx.App {
 
 		fx.Provide(newUserService),
 		fx.Provide(newOrderService),
+		fx.Provide(newHealthService),
 
 		fx.Provide(newEmailService),
 		fx.Provide(newConfig),

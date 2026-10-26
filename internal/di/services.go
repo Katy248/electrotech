@@ -6,11 +6,13 @@ import (
 	"electrotech/internal/repository/catalog"
 	"electrotech/internal/repository/orders"
 	"electrotech/internal/repository/users"
+	"electrotech/internal/services/health"
 	"electrotech/internal/services/order"
 	"electrotech/internal/services/user"
 	"fmt"
 
 	"charm.land/log/v2"
+	"gorm.io/gorm"
 )
 
 func newUserService(
@@ -34,4 +36,14 @@ func newOrderService(
 	emailService *email.Service,
 ) *order.Service {
 	return order.New(logger, orderRepo, catalogRepo, userRepo, emailService)
+}
+
+func newHealthService(
+	logger *log.Logger,
+	db *gorm.DB,
+) *health.Service {
+	return health.New(
+		health.WithLogger(logger),
+		health.WithDB(db),
+	)
 }

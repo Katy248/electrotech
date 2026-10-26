@@ -148,6 +148,7 @@ func unmarshalConfig(viper *viper.Viper) *Config {
 			Username: viper.GetString("ftp.username"),
 			Password: viper.GetString("ftp.password"),
 			PublicIP: viper.GetString("ftp.public-ip"),
+			DataDir:  viper.GetString("catalog.data-dir"),
 		},
 	}
 }

@@ -152,10 +152,10 @@ components:
           $ref: "#/components/schemas/HealthStatus"
         dependencies:
           type: object
-          required: ["db"]
-          properties:
-            db:
-              $ref: "#/components/schemas/HealthStatus"
+          additionalProperties:
+            $ref: "#/components/schemas/HealthStatus"
+          example:
+            - "db"
     OrderProduct:
       type: object
       required:

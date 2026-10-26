@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"charm.land/log/v2"
-	"github.com/spf13/viper"
 	ftp "goftp.io/server/v2"
 	"goftp.io/server/v2/driver/file"
 )
@@ -33,6 +32,7 @@ type Config struct {
 	Username string `mapstructure:"username"`
 	Password string `mapstructure:"password"`
 	PublicIP string `mapstructure:"public-ip"`
+	DataDir  string
 }
 
 func (conf *Config) validate(logger *log.Logger) error {
@@ -67,7 +67,7 @@ func NewFTPServer(conf *Config, logger *log.Logger) (*Server, error) {
 		return nil, fmt.Errorf("validate config: %w", err)
 	}
 
-	driver, err := file.NewDriver(viper.GetString("data-dir"))
+	driver, err := file.NewDriver(conf.DataDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed create driver for data directory: %w", err)
 	}
