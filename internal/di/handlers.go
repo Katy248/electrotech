@@ -8,7 +8,6 @@ import (
 	"electrotech/internal/handlers/auth"
 	catalogHandlers "electrotech/internal/handlers/catalog"
 	v2 "electrotech/internal/handlers/catalog/v2"
-	"electrotech/internal/handlers/contact"
 	"electrotech/internal/repository/catalog"
 	"electrotech/internal/repository/users"
 	"electrotech/internal/server"
@@ -28,7 +27,6 @@ func newServer(
 	config *config.Config,
 	catalogRepo *catalog.Repo,
 	logger *log.Logger,
-	contactHandler *contact.ContactUsHandler,
 	authHandler *auth.Handler,
 	catalogHandler *catalogHandlers.Handler,
 	catalogV2Handler *v2.Handler,
@@ -39,7 +37,6 @@ func newServer(
 		config,
 		logger,
 		catalogRepo,
-		contactHandler,
 		authHandler,
 		catalogHandler,
 		catalogV2Handler,
@@ -64,15 +61,10 @@ func newServer(
 
 func provideHandlers() fx.Option {
 	return fx.Options(
-		fx.Provide(newContactHandler),
 		fx.Provide(newAuthHandler),
 		fx.Provide(newCatalogHandler),
 		fx.Provide(newCatalogV2Handler),
 	)
-}
-
-func newContactHandler(logger *log.Logger, feedbackService *feedback.Service) *contact.ContactUsHandler {
-	return contact.NewContactUsHandler(logger, feedbackService)
 }
 
 func newAuthHandler(
@@ -106,6 +98,7 @@ func newHandlers(
 	orderService *order.Service,
 	userService *userS.Service,
 	healthService *health.Service,
+	feedbackService *feedback.Service,
 ) *handlers.Handler {
-	return handlers.New(logger, orderService, userService, healthService)
+	return handlers.New(logger, orderService, userService, healthService, feedbackService)
 }

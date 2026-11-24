@@ -26,6 +26,10 @@ type Handler interface {
 	//
 	// GET /api/v3/user
 	GetUser(ctx context.Context) (GetUserRes, error)
+	// PostFeedback implements PostFeedback operation.
+	//
+	// POST /api/v3/feedback
+	PostFeedback(ctx context.Context, req *PostFeedbackReq) (PostFeedbackRes, error)
 	// UpdateUser implements UpdateUser operation.
 	//
 	// PATCH /api/v3/user

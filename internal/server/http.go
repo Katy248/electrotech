@@ -7,7 +7,6 @@ import (
 	"electrotech/internal/handlers/auth"
 	catalogHandlers "electrotech/internal/handlers/catalog"
 	v2 "electrotech/internal/handlers/catalog/v2"
-	"electrotech/internal/handlers/contact"
 	"electrotech/internal/repository/catalog"
 	"fmt"
 
@@ -28,7 +27,6 @@ func NewHTTPServer(
 	config *config.Config,
 	logger *log.Logger,
 	catalogRepo *catalog.Repo,
-	contactHandler *contact.ContactUsHandler,
 	authHandler *auth.Handler,
 	catalogHandler *catalogHandlers.Handler,
 	catalogV2Handler *v2.Handler,
@@ -43,7 +41,6 @@ func NewHTTPServer(
 	api := server.Group("/api")
 	{
 		api.Static("/files", config.Catalog.DataDir)
-		api.POST("/contact-us", contactHandler.HandleContactUs())
 
 		api.GET("/v2/products", catalogV2Handler.HandleGetProducts())
 		{

@@ -9,7 +9,7 @@ import (
 
 // GetOrders implements [handler.Handler].
 //
-//nolint:ireturn
+//nolint:ireturn, nilerr
 func (h *Handler) GetOrders(ctx context.Context) (handler_gen.GetOrdersRes, error) {
 	userID, exists := GetUserID(ctx)
 	if !exists {

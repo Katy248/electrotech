@@ -35,6 +35,7 @@ func (s *BadResponseStatusCode) SetResponse(val Problem) {
 func (*BadResponseStatusCode) createOrderRes()        {}
 func (*BadResponseStatusCode) getOrdersRes()          {}
 func (*BadResponseStatusCode) getUserRes()            {}
+func (*BadResponseStatusCode) postFeedbackRes()       {}
 func (*BadResponseStatusCode) updateUserEmailRes()    {}
 func (*BadResponseStatusCode) updateUserPasswordRes() {}
 func (*BadResponseStatusCode) updateUserPhoneRes()    {}
@@ -501,6 +502,58 @@ func (s *OrderProduct) SetProductId(val string) {
 // SetImagePath sets the value of ImagePath.
 func (s *OrderProduct) SetImagePath(val string) {
 	s.ImagePath = val
+}
+
+// PostFeedbackCreated is response for PostFeedback operation.
+type PostFeedbackCreated struct{}
+
+func (*PostFeedbackCreated) postFeedbackRes() {}
+
+type PostFeedbackReq struct {
+	Name    string    `json:"name"`
+	Phone   OptString `json:"phone"`
+	Email   OptString `json:"email"`
+	Message string    `json:"message"`
+}
+
+// GetName returns the value of Name.
+func (s *PostFeedbackReq) GetName() string {
+	return s.Name
+}
+
+// GetPhone returns the value of Phone.
+func (s *PostFeedbackReq) GetPhone() OptString {
+	return s.Phone
+}
+
+// GetEmail returns the value of Email.
+func (s *PostFeedbackReq) GetEmail() OptString {
+	return s.Email
+}
+
+// GetMessage returns the value of Message.
+func (s *PostFeedbackReq) GetMessage() string {
+	return s.Message
+}
+
+// SetName sets the value of Name.
+func (s *PostFeedbackReq) SetName(val string) {
+	s.Name = val
+}
+
+// SetPhone sets the value of Phone.
+func (s *PostFeedbackReq) SetPhone(val OptString) {
+	s.Phone = val
+}
+
+// SetEmail sets the value of Email.
+func (s *PostFeedbackReq) SetEmail(val OptString) {
+	s.Email = val
+}
+
+// SetMessage sets the value of Message.
+func (s *PostFeedbackReq) SetMessage(val string) {
+	s.Message = val
 }
 
 // Ref: #/components/schemas/Problem

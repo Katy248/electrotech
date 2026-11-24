@@ -15,7 +15,7 @@ type OrderService interface {
 }
 type UserService interface {
 	UpdateEmail(ctx context.Context, id int64, email string) error
-	UpdatePassword(ctx context.Context, id int64, old, new string) error
+	UpdatePassword(ctx context.Context, id int64, oldPass, newPass string) error
 	UpdatePhone(ctx context.Context, id int64, phone string) error
 	GetUser(ctx context.Context, id int64) (*models.User, error)
 	Update(ctx context.Context, id int64, update *models.UserUpdate) error
@@ -26,6 +26,7 @@ type Handler struct {
 	orderService  OrderService
 	userService   UserService
 	healthService *health.Service
+	feedback      FeedbackService
 }
 
 var _ handler_gen.Handler = (*Handler)(nil)
@@ -35,12 +36,14 @@ func New(
 	orderService OrderService,
 	userService UserService,
 	healthService *health.Service,
+	feedback FeedbackService,
 ) *Handler {
 	return &Handler{
 		logger:        logger,
 		orderService:  orderService,
 		userService:   userService,
 		healthService: healthService,
+		feedback:      feedback,
 	}
 }
 

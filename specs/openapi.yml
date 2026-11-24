@@ -116,7 +116,19 @@ paths:
         default:
           $ref: "#/components/responses/BadResponse"
         "200":
-          description: "Successfully updated phone"
+          description: Successfully updated phone
+  "/api/v3/feedback":
+    post:
+      security: []
+      operationId: PostFeedback
+      requestBody:
+        $ref: "#/components/requestBodies/PostFeedback"
+      responses:
+        default:
+          $ref: "#/components/responses/BadResponse"
+        "201":
+          description: "Successfully post user feedback"
+
 security:
   - jwtAuth: []
 components:
@@ -233,6 +245,22 @@ components:
         company:
           $ref: "#/components/schemas/Company"
   requestBodies:
+    PostFeedback:
+      required: true
+      content:
+        "application/json":
+          schema:
+            type: object
+            required: [name, message]
+            properties:
+              name:
+                type: string
+              phone:
+                type: string
+              email:
+                type: string
+              message:
+                type: string
     UpdateUserPasswordRequest:
       required: true
       content:

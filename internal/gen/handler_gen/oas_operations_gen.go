@@ -10,6 +10,7 @@ const (
 	GetHealthOperation          OperationName = "GetHealth"
 	GetOrdersOperation          OperationName = "GetOrders"
 	GetUserOperation            OperationName = "GetUser"
+	PostFeedbackOperation       OperationName = "PostFeedback"
 	UpdateUserOperation         OperationName = "UpdateUser"
 	UpdateUserEmailOperation    OperationName = "UpdateUserEmail"
 	UpdateUserPasswordOperation OperationName = "UpdateUserPassword"

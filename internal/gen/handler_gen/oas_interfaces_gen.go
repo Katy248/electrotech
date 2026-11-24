@@ -17,6 +17,10 @@ type GetUserRes interface {
 	getUserRes()
 }
 
+type PostFeedbackRes interface {
+	postFeedbackRes()
+}
+
 type UpdateUserEmailRes interface {
 	updateUserEmailRes()
 }

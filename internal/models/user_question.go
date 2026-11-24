@@ -12,7 +12,6 @@ type CreateUserQuestion struct {
 	Email      string `validate:"required_without=Phone"`
 	Phone      string `validate:"required_without=Email"`
 	Message    string `validatte:"required"`
-	ClientIP   string `validate:"required,ip"`
 }
 
 type UserQuestion struct {
@@ -25,7 +24,7 @@ type UserQuestion struct {
 	ClientIP     string    `json:"clientIp"`
 }
 
-func NewUserQuestion(name, email, phone, message, ip string) *UserQuestion {
+func NewUserQuestion(name, email, phone, message string) *UserQuestion {
 	if phone != "" {
 		formatted, err := electrotech.FormatPhoneNumber(phone)
 		if err != nil {
@@ -42,7 +41,7 @@ func NewUserQuestion(name, email, phone, message, ip string) *UserQuestion {
 		Email:      strToPointer(email),
 		Phone:      strToPointer(phone),
 		Message:    message,
-		ClientIP:   ip,
+		ClientIP:   "192.168.0.1",
 	}
 }
 

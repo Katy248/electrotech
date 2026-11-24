@@ -25,18 +25,19 @@ func (h *Handler) GetUser(ctx context.Context) (handler_gen.GetUserRes, error) {
 //
 //nolint:ireturn
 func (h *Handler) UpdateUser(ctx context.Context, req *handler_gen.UpdateUserReq) (handler_gen.UpdateUserRes, error) {
+	//nolint:exhaustruct_v5
 	update := models.UserUpdate{
-		FirstName: optStringToNilString(req.FirstName),
-		LastName:  optStringToNilString(req.LastName),
-		Surname:   optStringToNilString(req.Surname),
+		FirstName: optStringToPtr(req.FirstName),
+		LastName:  optStringToPtr(req.LastName),
+		Surname:   optStringToPtr(req.Surname),
 	}
 
 	if req.Company.Set {
-		update.CompanyAddress = optStringToNilString(req.Company.Value.Address)
-		update.CompanyInn = optStringToNilString(req.Company.Value.Inn)
-		update.CompanyName = optStringToNilString(req.Company.Value.Name)
-		update.CompanyOkpo = optStringToNilString(req.Company.Value.Okpo)
-		update.PositionInCompany = optStringToNilString(req.Company.Value.Position)
+		update.CompanyAddress = optStringToPtr(req.Company.Value.Address)
+		update.CompanyInn = optStringToPtr(req.Company.Value.Inn)
+		update.CompanyName = optStringToPtr(req.Company.Value.Name)
+		update.CompanyOkpo = optStringToPtr(req.Company.Value.Okpo)
+		update.PositionInCompany = optStringToPtr(req.Company.Value.Position)
 	}
 
 	userID, _ := GetUserID(ctx)
@@ -105,7 +106,7 @@ func (h *Handler) UpdateUserPhone(
 	return &handler_gen.UpdateUserPhoneOK{}, nil
 }
 
-func optStringToNilString(opt handler_gen.OptString) *string {
+func optStringToPtr(opt handler_gen.OptString) *string {
 	if opt.Set {
 		return &opt.Value
 	}

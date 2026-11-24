@@ -18,3 +18,4 @@ linters:
     - testpackage
     - forbidigo
     - tagliatelle
+    - ireturn

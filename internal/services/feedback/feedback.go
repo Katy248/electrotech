@@ -44,7 +44,7 @@ func (s *Service) NewUserQuestion(ctx context.Context, q *models.CreateUserQuest
 	}
 
 	dbRequest := models.NewUserQuestion(
-		q.PersonName, q.Email, q.Phone, q.Message, q.ClientIP,
+		q.PersonName, q.Email, q.Phone, q.Message,
 	)
 
 	err = s.db.WithContext(ctx).Create(&dbRequest).Error
